@@ -1,75 +1,54 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { supabase } from "@/lib/supabaseClient"
+import { useState } from "react";
 
-export default function RegisterFlag() {
+export default function Register() {
 
-  const [serial,setSerial] = useState("")
-  const [message,setMessage] = useState("")
-  const [user,setUser] = useState<any>(null)
+  const [quantity, setQuantity] = useState(1);
 
-  useEffect(() => {
+  async function buyTickets() {
 
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-    }
+    const res = await fetch("/api/create-checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        quantity: quantity,
+        userId: "test-user"
+      })
+    });
 
-    checkUser()
+    const data = await res.json();
 
-  }, [])
-
-  const registerFlag = async () => {
-
-    if(!user){
-      setMessage("You must be logged in")
-      return
-    }
-
-    const { error } = await supabase.rpc("register_flag", {
-      p_event_id: "PASTE_YOUR_EVENT_ID",
-      p_serial: serial
-    })
-
-    if(error){
-      setMessage(error.message)
-    } else {
-      setMessage("Flag registered successfully")
-    }
-
-  }
-
-  if(!user){
-    return (
-      <div style={{padding:40}}>
-        <h1>You must log in to register a flag</h1>
-      </div>
-    )
+    window.location.href = data.url;
   }
 
   return (
+    <main style={{maxWidth:600,margin:"40px auto"}}>
 
-    <div style={{padding:40}}>
+      <h1>Event Tickets</h1>
 
-      <h1>Register Flag</h1>
+      <p>Select how many tickets you want to purchase.</p>
 
       <input
-        placeholder="Enter flag serial"
-        value={serial}
-        onChange={(e)=>setSerial(e.target.value)}
-        style={{padding:10,fontSize:18}}
+        type="number"
+        value={quantity}
+        min={1}
+        max={10}
+        onChange={(e)=>setQuantity(Number(e.target.value))}
+        style={{fontSize:20,padding:10,width:100}}
       />
 
       <br/><br/>
 
-      <button onClick={registerFlag} style={{padding:10,fontSize:18}}>
-        Register Flag
+      <button
+        onClick={buyTickets}
+        style={{fontSize:20,padding:"12px 20px"}}
+      >
+        Buy Tickets
       </button>
 
-      <p>{message}</p>
-
-    </div>
-
-  )
+    </main>
+  );
 }
