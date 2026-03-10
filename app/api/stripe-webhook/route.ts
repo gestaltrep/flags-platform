@@ -23,7 +23,6 @@ export async function POST(req: Request) {
 
       const session = event.data.object as any;
 
-      const userId = session.metadata?.user_id || "test-user";
       const quantity = Number(session.metadata?.quantity || 1);
 
       const supabase = createClient(
@@ -33,14 +32,14 @@ export async function POST(req: Request) {
 
       const eventId = "d61cd74b-a259-4c80-b280-446850b4723b";
 
-      console.log("Stripe payment received:", quantity);
+      console.log("Stripe payment received for tickets:", quantity);
 
       // record purchase
       await supabase.from("wallet_transactions").insert({
-        user_id: userId,
+        user_id: null,
         event_id: eventId,
         amount: quantity,
-        type: "ticket_purchase"
+        type: "deposit"
       });
 
       // generate ticket codes
@@ -48,11 +47,15 @@ export async function POST(req: Request) {
 
         const code = crypto.randomBytes(3).toString("hex").toUpperCase();
 
-        await supabase.from("ticket_codes").insert({
+        const { error } = await supabase.from("ticket_codes").insert({
           event_id: eventId,
-          buyer_user_id: userId,
+          buyer_user_id: null,
           code: code
         });
+
+        if (error) {
+          console.error("Ticket code insert error:", error);
+        }
 
       }
 
