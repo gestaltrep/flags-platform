@@ -21,9 +21,9 @@ export async function POST(req: Request) {
 
     if (event.type === "checkout.session.completed") {
 
-      const session = event.data.object as any;
+      const session: any = event.data.object;
 
-      const quantity = Number(session.metadata?.quantity || 1);
+      const quantity = parseInt(session.metadata?.quantity || "1");
 
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,34 +32,42 @@ export async function POST(req: Request) {
 
       const eventId = "d61cd74b-a259-4c80-b280-446850b4723b";
 
-      console.log("Stripe payment received for tickets:", quantity);
+      console.log("Stripe tickets purchased:", quantity);
 
-      // record purchase
-      await supabase.from("wallet_transactions").insert({
-        user_id: null,
-        event_id: eventId,
-        amount: quantity,
-        type: "deposit"
-      });
+      // attempt wallet insert
+      const walletInsert = await supabase
+        .from("wallet_transactions")
+        .insert({
+          user_id: null,
+          event_id: eventId,
+          amount: quantity,
+          type: "stake"
+        });
+
+      if (walletInsert.error) {
+        console.error("Wallet insert error:", walletInsert.error);
+      }
 
       // generate ticket codes
       for (let i = 0; i < quantity; i++) {
 
         const code = crypto.randomBytes(3).toString("hex").toUpperCase();
 
-        const { error } = await supabase.from("ticket_codes").insert({
-          event_id: eventId,
-          buyer_user_id: null,
-          code: code
-        });
+        const { error } = await supabase
+          .from("ticket_codes")
+          .insert({
+            event_id: eventId,
+            buyer_user_id: null,
+            code: code
+          });
 
         if (error) {
-          console.error("Ticket code insert error:", error);
+          console.error("Ticket insert error:", error);
         }
 
       }
 
-      console.log("Ticket codes generated");
+      console.log("Ticket codes generated:", quantity);
 
     }
 
