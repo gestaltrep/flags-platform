@@ -35,8 +35,8 @@ export async function POST(req: Request) {
         quantity: quantity
       },
 
-      success_url: "https://flags-platform.vercel.app/dashboard",
-      cancel_url: "https://flags-platform.vercel.app/register"
+      success_url: "https://flags-platform.vercel.app/register?success=true",
+      cancel_url: "https://flags-platform.vercel.app/register?canceled=true"
 
     });
 
