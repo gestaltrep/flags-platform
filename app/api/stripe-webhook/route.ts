@@ -34,14 +34,14 @@ export async function POST(req: Request) {
 
       console.log("Stripe tickets purchased:", quantity);
 
-      // attempt wallet insert
+      // record purchase
       const walletInsert = await supabase
         .from("wallet_transactions")
         .insert({
           user_id: null,
           event_id: eventId,
           amount: quantity,
-          type: "stake"
+          type: "registration"
         });
 
       if (walletInsert.error) {
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
           });
 
         if (error) {
-          console.error("Ticket insert error:", error);
+          console.error("Ticket code insert error:", error);
         }
 
       }
