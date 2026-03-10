@@ -5,23 +5,53 @@ import { useState } from "react";
 export default function Register() {
 
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   async function buyTickets() {
 
-    const res = await fetch("/api/create-checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        quantity: quantity,
-        userId: "test-user"
-      })
-    });
+    try {
 
-    const data = await res.json();
+      setLoading(true);
 
-    window.location.href = data.url;
+      const res = await fetch("/api/create-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          quantity: quantity,
+          userId: "test-user"
+        })
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Server error:", text);
+        alert("Checkout failed. Check console for details.");
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data.url) {
+        console.error("Missing checkout URL:", data);
+        alert("Checkout session failed.");
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = data.url;
+
+    } catch (err) {
+
+      console.error("Checkout error:", err);
+      alert("Error connecting to checkout.");
+
+    } finally {
+      setLoading(false);
+    }
+
   }
 
   return (
@@ -44,9 +74,10 @@ export default function Register() {
 
       <button
         onClick={buyTickets}
+        disabled={loading}
         style={{fontSize:20,padding:"12px 20px"}}
       >
-        Buy Tickets
+        {loading ? "Creating Checkout..." : "Buy Tickets"}
       </button>
 
     </main>
