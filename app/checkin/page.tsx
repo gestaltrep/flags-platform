@@ -1,58 +1,89 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function Checkin() {
-  const [form, setForm] = useState({
-    phone: "",
-    gamerTag: "",
-    team: "",
-    serial: ""
-  });
 
-  async function submit(e: any) {
-    e.preventDefault();
+  const params = useSearchParams();
+  const code = params.get("code");
 
-    await fetch("/api/checkin", {
-      method: "POST",
-      body: JSON.stringify(form)
+  const [phone,setPhone] = useState("");
+  const [team,setTeam] = useState("black");
+  const [tag,setTag] = useState("");
+  const [serial,setSerial] = useState("");
+
+  async function submit(){
+
+    const res = await fetch("/api/checkin",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        code: code,
+        phone: phone,
+        team: team,
+        tag: tag,
+        serial: serial
+      })
     });
 
-    alert("Check-in complete!");
+    const data = await res.json();
+
+    if(data.success){
+      alert("Check-in complete");
+    }else{
+      alert(data.message || "Check-in failed");
+    }
+
   }
 
-  return (
-    <main style={{maxWidth:600, margin:"40px auto"}}>
+  return(
+
+    <main style={{maxWidth:600,margin:"40px auto"}}>
+
       <h1>Event Check-In</h1>
 
-      <form onSubmit={submit}>
+      <p>Ticket Code: {code}</p>
 
-        <input
-          placeholder="Phone Number"
-          onChange={(e)=>setForm({...form, phone:e.target.value})}
-        />
+      <input
+        placeholder="Phone Number"
+        value={phone}
+        onChange={e=>setPhone(e.target.value)}
+      />
 
-        <input
-          placeholder="Gamer Tag"
-          onChange={(e)=>setForm({...form, gamerTag:e.target.value})}
-        />
+      <br/><br/>
 
-        <select
-          onChange={(e)=>setForm({...form, team:e.target.value})}
-        >
-          <option value="">Select Team</option>
-          <option value="black">Black</option>
-          <option value="white">White</option>
-        </select>
+      <input
+        placeholder="Gamer Tag"
+        value={tag}
+        onChange={e=>setTag(e.target.value)}
+      />
 
-        <input
-          placeholder="Ticket Serial Number"
-          onChange={(e)=>setForm({...form, serial:e.target.value})}
-        />
+      <br/><br/>
 
-        <button type="submit">Check In</button>
+      <input
+        placeholder="Flag Serial"
+        value={serial}
+        onChange={e=>setSerial(e.target.value)}
+      />
 
-      </form>
+      <br/><br/>
+
+      <select value={team} onChange={e=>setTeam(e.target.value)}>
+        <option value="black">Black</option>
+        <option value="white">White</option>
+      </select>
+
+      <br/><br/>
+
+      <button onClick={submit}>
+        Check In
+      </button>
+
     </main>
+
   );
+
 }

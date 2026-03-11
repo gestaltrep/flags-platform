@@ -8,6 +8,8 @@ export async function POST(req: Request) {
 
     const { code, phone, team, tag, serial } = body;
 
+    console.log("CHECKIN START", body);
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -15,27 +17,37 @@ export async function POST(req: Request) {
 
     const eventId = "d61cd74b-a259-4c80-b280-446850b4723b";
 
-    console.log("CHECKIN START", body);
+    // ------------------------------------------------
+    // 1 VERIFY TICKET
+    // ------------------------------------------------
 
-    // verify ticket
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
       .select("*")
       .eq("code", code)
       .single();
 
-    if (ticketError) {
+    if (ticketError || !ticket) {
       console.error("Ticket lookup error", ticketError);
-      return Response.json({ success: false, message: "Ticket lookup failed" });
+      return Response.json({
+        success: false,
+        message: "Invalid ticket code"
+      });
     }
 
-    if (!ticket || ticket.claimed) {
-      return Response.json({ success: false, message: "Invalid ticket" });
+    if (ticket.claimed) {
+      return Response.json({
+        success: false,
+        message: "Ticket already used"
+      });
     }
 
     console.log("Ticket valid");
 
-    // mark ticket used
+    // ------------------------------------------------
+    // 2 MARK TICKET CLAIMED
+    // ------------------------------------------------
+
     const { error: claimError } = await supabase
       .from("ticket_codes")
       .update({ claimed: true })
@@ -43,28 +55,60 @@ export async function POST(req: Request) {
 
     if (claimError) {
       console.error("Ticket update error", claimError);
-      return Response.json({ success: false, message: "Ticket update failed" });
+      return Response.json({
+        success: false,
+        message: "Ticket update failed"
+      });
     }
 
     console.log("Ticket claimed");
 
-    // create user
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .insert({
-        phone: phone
-      })
-      .select()
-      .single();
+    // ------------------------------------------------
+    // 3 FIND EXISTING USER
+    // ------------------------------------------------
 
-    if (userError) {
-      console.error("User insert error", userError);
-      return Response.json({ success: false, message: "User creation failed" });
+    let { data: user } = await supabase
+      .from("users")
+      .select("*")
+      .eq("phone", phone)
+      .maybeSingle();
+
+    // ------------------------------------------------
+    // 4 CREATE USER IF NEEDED
+    // ------------------------------------------------
+
+    if (!user) {
+
+      const { data: newUser, error: userError } = await supabase
+        .from("users")
+        .insert({
+          phone: phone
+        })
+        .select()
+        .single();
+
+      if (userError) {
+        console.error("User insert error", userError);
+        return Response.json({
+          success: false,
+          message: "User creation failed"
+        });
+      }
+
+      user = newUser;
+
+      console.log("User created");
+
+    } else {
+
+      console.log("Existing user reused");
+
     }
 
-    console.log("User created", user);
+    // ------------------------------------------------
+    // 5 CREATE PLAYER
+    // ------------------------------------------------
 
-    // create player
     const { data: player, error: playerError } = await supabase
       .from("players")
       .insert({
@@ -80,12 +124,18 @@ export async function POST(req: Request) {
 
     if (playerError) {
       console.error("Player insert error", playerError);
-      return Response.json({ success: false, message: "Player creation failed" });
+      return Response.json({
+        success: false,
+        message: "Player creation failed"
+      });
     }
 
-    console.log("Player created", player);
+    console.log("Player created", player.id);
 
-    // assign flag
+    // ------------------------------------------------
+    // 6 ASSIGN FLAG
+    // ------------------------------------------------
+
     const { error: flagError } = await supabase
       .from("flags")
       .update({
@@ -97,7 +147,10 @@ export async function POST(req: Request) {
 
     if (flagError) {
       console.error("Flag update error", flagError);
-      return Response.json({ success: false, message: "Flag assignment failed" });
+      return Response.json({
+        success: false,
+        message: "Flag assignment failed"
+      });
     }
 
     console.log("Flag assigned");
@@ -108,7 +161,10 @@ export async function POST(req: Request) {
 
     console.error("CHECKIN ERROR", err);
 
-    return Response.json({ success: false });
+    return Response.json({
+      success: false,
+      message: "Server error"
+    });
 
   }
 
