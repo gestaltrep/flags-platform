@@ -1,11 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export const dynamic = "force-dynamic";
-
-export default function Checkin() {
+function CheckinForm() {
 
   const params = useSearchParams();
   const code = params.get("code");
@@ -86,6 +85,16 @@ export default function Checkin() {
 
     </main>
 
+  );
+
+}
+
+export default function CheckinPage() {
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckinForm />
+    </Suspense>
   );
 
 }
