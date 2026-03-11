@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function Dashboard() {
 
@@ -41,7 +41,7 @@ export default function Dashboard() {
 
           <h2>{ticket.code}</h2>
 
-          <QRCode
+          <QRCodeCanvas
             value={`https://flags-platform.vercel.app/checkin?code=${ticket.code}`}
             size={180}
           />
