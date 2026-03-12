@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const eventId = "d61cd74b-a259-4c80-b280-446850b4723b";
 
     // ------------------------------------------------
-    // 1 VERIFY TICKET
+    // VERIFY TICKET
     // ------------------------------------------------
 
     const { data: ticket, error: ticketError } = await supabase
@@ -28,10 +28,9 @@ export async function POST(req: Request) {
       .single();
 
     if (ticketError || !ticket) {
-      console.error("Ticket lookup error", ticketError);
       return Response.json({
         success: false,
-        message: "Invalid ticket code"
+        message: "Invalid ticket"
       });
     }
 
@@ -42,29 +41,17 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("Ticket valid");
-
     // ------------------------------------------------
-    // 2 MARK TICKET CLAIMED
+    // MARK TICKET CLAIMED
     // ------------------------------------------------
 
-    const { error: claimError } = await supabase
+    await supabase
       .from("ticket_codes")
       .update({ claimed: true })
       .eq("id", ticket.id);
 
-    if (claimError) {
-      console.error("Ticket update error", claimError);
-      return Response.json({
-        success: false,
-        message: "Ticket update failed"
-      });
-    }
-
-    console.log("Ticket claimed");
-
     // ------------------------------------------------
-    // 3 FIND EXISTING USER
+    // FIND EXISTING USER
     // ------------------------------------------------
 
     let { data: user } = await supabase
@@ -74,7 +61,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     // ------------------------------------------------
-    // 4 CREATE USER IF NEEDED
+    // CREATE USER IF NEEDED
     // ------------------------------------------------
 
     if (!user) {
@@ -88,7 +75,7 @@ export async function POST(req: Request) {
         .single();
 
       if (userError) {
-        console.error("User insert error", userError);
+        console.error("User creation failed", userError);
         return Response.json({
           success: false,
           message: "User creation failed"
@@ -97,21 +84,18 @@ export async function POST(req: Request) {
 
       user = newUser;
 
-      console.log("User created");
-
-    } else {
-
-      console.log("Existing user reused");
-
     }
 
+    console.log("Using user", user.id);
+
     // ------------------------------------------------
-    // 5 CREATE PLAYER
+    // CREATE PLAYER (USE SAME ID AS USER)
     // ------------------------------------------------
 
     const { data: player, error: playerError } = await supabase
       .from("players")
       .insert({
+        id: user.id,
         phone: phone,
         gamer_tag: tag,
         team: team,
@@ -133,7 +117,7 @@ export async function POST(req: Request) {
     console.log("Player created", player.id);
 
     // ------------------------------------------------
-    // 6 ASSIGN FLAG
+    // ASSIGN FLAG
     // ------------------------------------------------
 
     const { error: flagError } = await supabase
