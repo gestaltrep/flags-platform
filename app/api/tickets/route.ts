@@ -1,6 +1,14 @@
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 export async function GET() {
+
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_id")?.value;
+
+  if (!userId) {
+    return Response.json([]);
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,11 +17,9 @@ export async function GET() {
 
   const { data } = await supabase
     .from("ticket_codes")
-    .select("*")
-    .eq("claimed", false)
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .select("code")
+    .eq("buyer_user_id", userId);
 
-  return Response.json(data);
+  return Response.json(data || []);
 
 }

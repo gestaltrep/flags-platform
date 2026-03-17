@@ -1,65 +1,240 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+
+  const [open,setOpen] = useState(false);
+
+  const [name,setName] = useState("");
+  const [phone,setPhone] = useState("");
+
+  const [step,setStep] = useState("form");
+  const [code,setCode] = useState("");
+
+  async function sendVerification(){
+
+    if(!name || !phone){
+      alert("Please enter name and phone number");
+      return;
+    }
+
+    try{
+
+      await fetch("/api/send-code",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          name,
+          phone
+        })
+      });
+
+      setStep("verify");
+
+    }catch(err){
+
+      console.error("verification failed",err);
+
+    }
+
+  }
+
+  async function verifyCode(){
+
+    try{
+
+      const res = await fetch("/api/verify-code",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          phone,
+          code
+        })
+      });
+
+      const data = await res.json();
+
+      if(data.success){
+
+        alert("Verification successful");
+
+        setOpen(false);
+
+      }else{
+
+        alert("Invalid code");
+
+      }
+
+    }catch(err){
+
+      console.error("verification error",err);
+
+    }
+
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+
+    <>
+
+      {/* HERO SECTION */}
+
+      <div className="hero">
+
+        <img
+          src="/poster-image.png"
+          className="facility-image"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="event-info">
+
+          <div className="event-date">May 30</div>
+
+          <div className="event-time">5 PM – 5 AM</div>
+
+          <div className="event-location">Immokalee, FL</div>
+
+          <button
+            className="cta-button"
+            onClick={()=>setOpen(true)}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            REQUEST PARTICIPATION
+          </button>
+
         </div>
-      </main>
-    </div>
+
+      </div>
+
+
+      {/* SIGNUP MODAL */}
+
+      {open && (
+
+        <div className="signup-overlay">
+
+          <div className="signup-modal">
+
+            <div className="signup-header">
+
+              <img
+                src="/logo.png"
+                className="signup-logo"
+              />
+
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+              />
+
+            </div>
+
+
+            {/* STEP 1 — FORM */}
+
+            {step === "form" && (
+
+              <>
+
+                <div className="signup-title">
+                  Participant Registration
+                </div>
+
+                <input
+                  placeholder="Name"
+                  className="signup-input"
+                  value={name}
+                  onChange={(e)=>setName(e.target.value)}
+                />
+
+                <input
+                  placeholder="Phone Number"
+                  className="signup-input"
+                  value={phone}
+                  onChange={(e)=>setPhone(e.target.value)}
+                />
+
+                <div className="signup-checkbox">
+
+                  <input type="checkbox"/>
+
+                  <span>
+                    I agree to the <a href="/terms">Terms & Conditions</a>
+                  </span>
+
+                </div>
+
+                <div className="signup-checkbox">
+
+                  <input type="checkbox"/>
+
+                  <span>
+                    I agree to the <a href="/privacy">Privacy Policy</a>
+                  </span>
+
+                </div>
+
+                <button
+                  className="signup-submit"
+                  onClick={sendVerification}
+                >
+                  SEND VERIFICATION CODE
+                </button>
+
+              </>
+
+            )}
+
+
+            {/* STEP 2 — CODE ENTRY */}
+
+            {step === "verify" && (
+
+              <>
+
+                <div className="signup-title">
+                  Enter Verification Code
+                </div>
+
+                <input
+                  placeholder="6 digit code"
+                  className="signup-input"
+                  value={code}
+                  onChange={(e)=>setCode(e.target.value)}
+                />
+
+                <button
+                  className="signup-submit"
+                  onClick={verifyCode}
+                >
+                  VERIFY
+                </button>
+
+              </>
+
+            )}
+
+
+            <button
+              className="signup-close"
+              onClick={()=>setOpen(false)}
+            >
+              CANCEL
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </>
+
   );
+
 }

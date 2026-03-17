@@ -24,6 +24,8 @@ export async function POST(req: Request) {
       const session: any = event.data.object;
 
       const quantity = parseInt(session.metadata?.quantity || "1");
+      const userId = session.metadata?.user_id;
+      const vip = session.metadata?.vip === "true";
 
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,42 +34,34 @@ export async function POST(req: Request) {
 
       const eventId = "d61cd74b-a259-4c80-b280-446850b4723b";
 
-      console.log("Stripe tickets purchased:", quantity);
+      console.log("Stripe purchase:", { quantity, userId, vip });
 
-      // record purchase
-      const walletInsert = await supabase
+      // record wallet transaction
+      await supabase
         .from("wallet_transactions")
         .insert({
-          user_id: null,
+          user_id: userId,
           event_id: eventId,
           amount: quantity,
           type: "registration"
         });
 
-      if (walletInsert.error) {
-        console.error("Wallet insert error:", walletInsert.error);
-      }
-
-      // generate ticket codes
       for (let i = 0; i < quantity; i++) {
 
         const code = crypto.randomBytes(3).toString("hex").toUpperCase();
 
-        const { error } = await supabase
+        await supabase
           .from("ticket_codes")
           .insert({
             event_id: eventId,
-            buyer_user_id: null,
-            code: code
+            buyer_user_id: userId,
+            code: code,
+            vip: vip
           });
-
-        if (error) {
-          console.error("Ticket code insert error:", error);
-        }
 
       }
 
-      console.log("Ticket codes generated:", quantity);
+      console.log("Tickets generated:", quantity);
 
     }
 

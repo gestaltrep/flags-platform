@@ -1,58 +1,61 @@
 export default function Privacy() {
   return (
     <main style={{ maxWidth: "800px", margin: "40px auto", padding: "20px", lineHeight: "1.6" }}>
-      <h1>Privacy Policy</h1>
 
+      <h1>Privacy Policy</h1>
       <p>Last Updated: March 2026</p>
 
       <h2>Overview</h2>
+
       <p>
-        This Privacy Policy describes how the Flags Platform (“we”, “our”, “us”) collects,
-        uses, and protects your personal information when you register for or participate
-        in a Flags event.
+        This Privacy Policy describes how Signo Research Group ("we", "our", "us")
+        collects and uses personal information when individuals register
+        for participation in an interactive event experience operated
+        through this website.
       </p>
 
       <h2>Information We Collect</h2>
-      <p>When you create an account or participate in the event, we may collect:</p>
+
+      <p>When registering for the event platform we may collect:</p>
 
       <ul>
         <li>Name</li>
         <li>Phone number</li>
-        <li>Gamer tag</li>
-        <li>Ticket serial number</li>
-        <li>Event participation data</li>
+        <li>User alias or gamer tag</li>
+        <li>Ticket or participation identifier</li>
+        <li>Event interaction data</li>
       </ul>
 
-      <h2>How We Use Your Information</h2>
+      <h2>How Information Is Used</h2>
 
-      <p>Your information is used only for:</p>
+      <p>Information is used only for purposes related to the event platform:</p>
 
       <ul>
         <li>Account creation and verification</li>
-        <li>Event registration and participation</li>
-        <li>Sending SMS messages related to the event</li>
-        <li>Game updates and event notifications</li>
+        <li>Event participation management</li>
+        <li>Event notifications and updates</li>
+        <li>Participant check-in and coordination</li>
       </ul>
 
       <h2>SMS Messaging</h2>
 
       <p>
-        By providing your phone number and registering for the event, you consent
-        to receive SMS messages related to the Flags event.
+        If you provide your phone number during registration, you consent
+        to receive SMS messages from Signo Research Group related to account
+        verification and participation in the event experience.
       </p>
 
       <p>These messages may include:</p>
 
       <ul>
         <li>Account verification codes</li>
-        <li>Event notifications</li>
-        <li>Gameplay announcements</li>
-        <li>Check-in instructions</li>
+        <li>Event participation instructions</li>
+        <li>Event updates</li>
+        <li>Check-in notifications</li>
       </ul>
 
       <p>
-        Message frequency varies. Message and data rates may apply depending on
-        your mobile carrier.
+        Message frequency varies. Message and data rates may apply.
       </p>
 
       <p>
@@ -63,32 +66,31 @@ export default function Privacy() {
       <h2>Information Sharing</h2>
 
       <p>
-        We do not sell, rent, or share your personal information with third
-        parties for marketing purposes.
+        We do not sell or rent personal information to third parties.
       </p>
 
       <p>
-        Your information may only be shared with trusted service providers
-        necessary to operate the event platform, including:
+        Information may be processed by infrastructure providers required
+        to operate the platform including:
       </p>
 
       <ul>
-        <li>Twilio (SMS messaging)</li>
-        <li>Supabase (secure database infrastructure)</li>
+        <li>Twilio (SMS messaging infrastructure)</li>
+        <li>Supabase (database infrastructure)</li>
       </ul>
 
       <h2>Data Security</h2>
 
       <p>
-        We take reasonable steps to protect your personal information using
-        secure cloud infrastructure and encrypted communications.
+        Reasonable safeguards are used to protect personal information
+        including encrypted communications and secure cloud infrastructure.
       </p>
 
       <h2>Contact</h2>
 
       <p>
-        If you have questions regarding this Privacy Policy, please contact
-        the event organizers.
+        Questions regarding this Privacy Policy may be directed to
+        Signo Research Group through the website.
       </p>
 
     </main>

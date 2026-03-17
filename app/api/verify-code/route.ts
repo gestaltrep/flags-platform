@@ -1,5 +1,6 @@
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
 
@@ -26,10 +27,17 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  await supabase.from("users").upsert({
-    phone,
-    phone_verified: true
-  });
+  const { data } = await supabase
+    .from("users")
+    .upsert({
+      phone,
+      phone_verified: true
+    })
+    .select()
+    .single();
+
+  const cookieStore = await cookies();
+  cookieStore.set("user_id", data.id);
 
   return Response.json({ success: true });
 

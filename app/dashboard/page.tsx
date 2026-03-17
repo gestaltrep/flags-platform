@@ -1,57 +1,64 @@
-"use client";
+import { cookies } from "next/headers";
+import TerminalClient from "./TerminalClient";
 
-import { useEffect, useState } from "react";
-import { QRCodeCanvas } from "qrcode.react";
+export default async function Dashboard() {
 
-export default function Dashboard() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_id");
 
-  const [tickets, setTickets] = useState([]);
+  if (!userId) {
 
-  useEffect(() => {
+    return (
 
-    async function loadTickets() {
+      <main
+        style={{
+          marginTop:120,
+          marginLeft:120
+        }}
+      >
 
-      const res = await fetch("/api/tickets");
-
-      const data = await res.json();
-
-      setTickets(data);
-
-    }
-
-    loadTickets();
-
-  }, []);
-
-  return (
-
-    <main style={{maxWidth:700,margin:"40px auto"}}>
-
-      <h1>Your Tickets</h1>
-
-      {tickets.map((ticket:any) => (
-
-        <div key={ticket.id}
+        <div
           style={{
-            border:"1px solid #ccc",
-            padding:20,
-            marginBottom:20
+            fontSize:44,
+            letterSpacing:6,
+            marginBottom:40
+          }}
+        >
+          Terminal
+        </div>
+
+        <div
+          style={{
+            fontSize:18,
+            letterSpacing:2,
+            lineHeight:1.6
           }}
         >
 
-          <h2>{ticket.code}</h2>
+          <div>{">"} AUTHENTICATION FAILURE</div>
 
-          <QRCodeCanvas
-            value={`https://flags-platform.vercel.app/checkin?code=${ticket.code}`}
-            size={180}
-          />
+          <br/>
+
+          <div>{">"} UNAUTHORIZED ACCESS</div>
+
+          <br/>
+
+          <div>{">"} PARTICIPANT REGISTRATION REQUIRED</div>
+
+          <div>
+            {">"} REQUEST PARTICIPATION TO OBTAIN TERMINAL ACCESS
+          </div>
+
+          <span className="cursor">_</span>
 
         </div>
 
-      ))}
+      </main>
 
-    </main>
+    );
 
-  );
+  }
+
+  return <TerminalClient />;
 
 }
