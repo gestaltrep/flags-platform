@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 export async function GET() {
-
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_id")?.value;
 
@@ -15,11 +14,16 @@ export async function GET() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("ticket_codes")
-    .select("code")
-    .eq("buyer_user_id", userId);
+    .select("id, code, vip, is_vip, claimed, claimed_at, created_at")
+    .eq("buyer_user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Tickets fetch error:", error);
+    return Response.json([]);
+  }
 
   return Response.json(data || []);
-
 }

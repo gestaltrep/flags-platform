@@ -1,17 +1,23 @@
 export default function Privacy() {
   return (
-    <main style={{ maxWidth: "800px", margin: "40px auto", padding: "20px", lineHeight: "1.6" }}>
-
+    <main
+      style={{
+        maxWidth: "800px",
+        margin: "40px auto",
+        padding: "20px",
+        lineHeight: "1.6",
+      }}
+    >
       <h1>Privacy Policy</h1>
       <p>Last Updated: March 2026</p>
 
       <h2>Overview</h2>
 
       <p>
-        This Privacy Policy describes how Signo Research Group ("we", "our", "us")
-        collects and uses personal information when individuals register
-        for participation in an interactive event experience operated
-        through this website.
+        This Privacy Policy describes how Signo Research Group ("we", "our",
+        "us") collects and uses personal information when individuals register
+        for participation in an interactive event experience operated through
+        this website.
       </p>
 
       <h2>Information We Collect</h2>
@@ -32,7 +38,9 @@ export default function Privacy() {
 
       <ul>
         <li>Account creation and verification</li>
+        <li>Participant registration confirmation</li>
         <li>Event participation management</li>
+        <li>Event participation instructions</li>
         <li>Event notifications and updates</li>
         <li>Participant check-in and coordination</li>
       </ul>
@@ -40,38 +48,41 @@ export default function Privacy() {
       <h2>SMS Messaging</h2>
 
       <p>
-        If you provide your phone number during registration, you consent
-        to receive SMS messages from Signo Research Group related to account
-        verification and participation in the event experience.
+        If you provide your phone number and check the SMS consent box during
+        registration, you consent to receive SMS messages from Signo Research
+        Group related to account verification, participant registration, event
+        participation instructions, check-in reminders, and event updates.
       </p>
 
       <p>These messages may include:</p>
 
       <ul>
         <li>Account verification codes</li>
+        <li>Participant registration confirmations</li>
         <li>Event participation instructions</li>
+        <li>Check-in reminders and notifications</li>
         <li>Event updates</li>
-        <li>Check-in notifications</li>
       </ul>
 
-      <p>
-        Message frequency varies. Message and data rates may apply.
-      </p>
+      <p>Message frequency varies. Message and data rates may apply.</p>
 
       <p>
-        You may opt out of SMS messages at any time by replying <b>STOP</b>.
-        For assistance reply <b>HELP</b>.
+        You may opt out of SMS messages at any time by replying <b>STOP</b>. For
+        assistance, reply <b>HELP</b>.
       </p>
 
       <h2>Information Sharing</h2>
 
+      <p>We do not sell or rent personal information to third parties.</p>
+
       <p>
-        We do not sell or rent personal information to third parties.
+        SMS consent is collected directly by Signo Research Group and is not
+        shared with third parties or affiliates for marketing purposes.
       </p>
 
       <p>
-        Information may be processed by infrastructure providers required
-        to operate the platform including:
+        Information may be processed by infrastructure providers required to
+        operate the platform, including:
       </p>
 
       <ul>
@@ -82,17 +93,16 @@ export default function Privacy() {
       <h2>Data Security</h2>
 
       <p>
-        Reasonable safeguards are used to protect personal information
+        Reasonable safeguards are used to protect personal information,
         including encrypted communications and secure cloud infrastructure.
       </p>
 
       <h2>Contact</h2>
 
       <p>
-        Questions regarding this Privacy Policy may be directed to
-        Signo Research Group through the website.
+        Questions regarding this Privacy Policy may be directed to Signo
+        Research Group through the website.
       </p>
-
     </main>
-  )
+  );
 }

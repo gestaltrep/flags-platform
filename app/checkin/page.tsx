@@ -1,100 +1,126 @@
 "use client";
 
-import { Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 
-function CheckinForm() {
+export default function CheckInPage() {
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code") || "";
 
-  const params = useSearchParams();
-  const code = params.get("code");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
 
-  const [phone,setPhone] = useState("");
-  const [team,setTeam] = useState("black");
-  const [tag,setTag] = useState("");
-  const [serial,setSerial] = useState("");
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 900);
+    }
 
-  async function submit(){
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    const res = await fetch("/api/checkin",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
+  async function completeCheckIn() {
+    if (!code) {
+      setStatus("error");
+      setMessage("No token code provided.");
+      return;
+    }
+
+    setStatus("loading");
+    setMessage("");
+
+    const res = await fetch("/api/scan-ticket", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      body:JSON.stringify({
-        code: code,
-        phone: phone,
-        team: team,
-        tag: tag,
-        serial: serial
-      })
+      body: JSON.stringify({ code }),
     });
 
     const data = await res.json();
 
-    if(data.success){
-      alert("Check-in complete");
-    }else{
-      alert(data.message || "Check-in failed");
+    if (!res.ok) {
+      setStatus("error");
+      setMessage(data.message || "Check-in failed.");
+      return;
     }
 
+    setStatus("success");
+    setMessage(data.message || "Entry confirmed.");
   }
 
-  return(
-
-    <main style={{maxWidth:600,margin:"40px auto"}}>
-
-      <h1>Event Check-In</h1>
-
-      <p>Ticket Code: {code}</p>
-
-      <input
-        placeholder="Phone Number"
-        value={phone}
-        onChange={e=>setPhone(e.target.value)}
-      />
-
-      <br/><br/>
-
-      <input
-        placeholder="Gamer Tag"
-        value={tag}
-        onChange={e=>setTag(e.target.value)}
-      />
-
-      <br/><br/>
-
-      <input
-        placeholder="Flag Serial"
-        value={serial}
-        onChange={e=>setSerial(e.target.value)}
-      />
-
-      <br/><br/>
-
-      <select value={team} onChange={e=>setTeam(e.target.value)}>
-        <option value="black">Black</option>
-        <option value="white">White</option>
-      </select>
-
-      <br/><br/>
-
-      <button onClick={submit}>
-        Check In
-      </button>
-
-    </main>
-
-  );
-
-}
-
-export default function CheckinPage() {
-
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CheckinForm />
-    </Suspense>
-  );
+    <main
+      style={{
+        maxWidth: 760,
+        margin: isMobile ? "28px auto" : "80px auto",
+        padding: isMobile ? 16 : 20,
+        color: "white",
+        fontFamily: '"Courier New", monospace',
+        letterSpacing: 2,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 28,
+          marginBottom: 24,
+          letterSpacing: isMobile ? 4 : 6,
+          wordBreak: "break-word",
+        }}
+      >
+        Check-In Terminal
+      </div>
 
+      <div
+        style={{
+          border: "1px solid #666",
+          padding: isMobile ? 18 : 24,
+        }}
+      >
+        <div style={{ marginBottom: 12 }}>{">"} TOKEN CODE</div>
+
+        <div
+          style={{
+            fontSize: isMobile ? 26 : 22,
+            marginBottom: 24,
+            wordBreak: "break-word",
+            lineHeight: 1.3,
+          }}
+        >
+          {code || "NO CODE DETECTED"}
+        </div>
+
+        <button
+          onClick={completeCheckIn}
+          disabled={!code || status === "loading"}
+          style={{
+            border: "1px solid white",
+            background: "black",
+            color: "white",
+            padding: "14px 24px",
+            fontSize: isMobile ? 15 : 16,
+            cursor: "pointer",
+            width: isMobile ? "100%" : "auto",
+          }}
+        >
+          {status === "loading" ? "PROCESSING..." : "COMPLETE CHECK-IN"}
+        </button>
+
+        {message && (
+          <div
+            style={{
+              marginTop: 24,
+              color: status === "success" ? "white" : "#bbb",
+              fontSize: isMobile ? 14 : 16,
+              lineHeight: 1.6,
+            }}
+          >
+            {">"} {message}
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }

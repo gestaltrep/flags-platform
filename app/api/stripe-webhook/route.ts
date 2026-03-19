@@ -6,10 +6,14 @@ import crypto from "crypto";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
+
+function makeCode() {
+  return crypto.randomBytes(3).toString("hex").toUpperCase();
+}
+
 export async function POST(req: Request) {
-
   try {
-
     const body = await req.text();
     const signature = req.headers.get("stripe-signature")!;
 
@@ -19,60 +23,92 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
-    if (event.type === "checkout.session.completed") {
+    console.log("WEBHOOK EVENT TYPE:", event.type);
 
-      const session: any = event.data.object;
-
-      const quantity = parseInt(session.metadata?.quantity || "1");
-      const userId = session.metadata?.user_id;
-      const vip = session.metadata?.vip === "true";
-
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-
-      const eventId = "d61cd74b-a259-4c80-b280-446850b4723b";
-
-      console.log("Stripe purchase:", { quantity, userId, vip });
-
-      // record wallet transaction
-      await supabase
-        .from("wallet_transactions")
-        .insert({
-          user_id: userId,
-          event_id: eventId,
-          amount: quantity,
-          type: "registration"
-        });
-
-      for (let i = 0; i < quantity; i++) {
-
-        const code = crypto.randomBytes(3).toString("hex").toUpperCase();
-
-        await supabase
-          .from("ticket_codes")
-          .insert({
-            event_id: eventId,
-            buyer_user_id: userId,
-            code: code,
-            vip: vip
-          });
-
-      }
-
-      console.log("Tickets generated:", quantity);
-
+    if (event.type !== "checkout.session.completed") {
+      return new Response("ok");
     }
 
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    console.log("WEBHOOK SESSION ID:", session.id);
+    console.log("WEBHOOK METADATA:", session.metadata);
+
+    const userId = session.metadata?.user_id;
+    const quantity = parseInt(session.metadata?.quantity || "1", 10);
+    const isVip = session.metadata?.is_vip === "true";
+    const eventId = session.metadata?.event_id || EVENT_ID;
+
+    console.log("PARSED VALUES:", {
+      userId,
+      quantity,
+      isVip,
+      eventId,
+    });
+
+    if (!userId) {
+      console.error("Missing user_id in metadata");
+      return new Response("Missing user_id", { status: 400 });
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: existingTransaction } = await supabase
+      .from("wallet_transactions")
+      .select("id")
+      .eq("stripe_session_id", session.id)
+      .maybeSingle();
+
+    if (existingTransaction) {
+      console.log("Webhook already processed for session:", session.id);
+      return new Response("ok");
+    }
+
+    const { error: walletError } = await supabase
+      .from("wallet_transactions")
+      .insert({
+        user_id: userId,
+        event_id: eventId,
+        amount: quantity,
+        type: isVip ? "vip_registration" : "registration",
+        stripe_session_id: session.id,
+      });
+
+    if (walletError) {
+      console.error("Wallet insert error:", walletError);
+      return new Response("Wallet insert failed", { status: 500 });
+    }
+
+    const rows = Array.from({ length: quantity }).map(() => ({
+      event_id: eventId,
+      buyer_user_id: userId,
+      code: makeCode(),
+      is_vip: isVip,
+      vip: isVip,
+      claimed: false,
+      claimed_by_user: null,
+      claimed_at: null,
+    }));
+
+    console.log("ROWS TO INSERT:", rows);
+
+    const { error: ticketError } = await supabase
+      .from("ticket_codes")
+      .insert(rows);
+
+    if (ticketError) {
+      console.error("Ticket insert error:", ticketError);
+      return new Response("Ticket insert failed", { status: 500 });
+    }
+
+    console.log("Webhook completed successfully");
+
     return new Response("ok");
-
   } catch (err) {
-
     console.error("Webhook error:", err);
-
     return new Response("Webhook error", { status: 500 });
-
   }
-
 }

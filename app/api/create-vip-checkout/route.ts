@@ -6,47 +6,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
-function buildGeneralAdmissionLineItems(quantity: number, sold: number) {
-  const tiers = [
-    { cap: 333, price: 3500, name: "Tier 1 Token" },
-    { cap: 666, price: 5000, name: "Tier 2 Token" },
-    { cap: 1000, price: 6500, name: "Tier 3 Token" },
-  ];
-
-  let remaining = quantity;
-  let position = sold;
-
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-
-  for (const tier of tiers) {
-    if (remaining <= 0) break;
-    if (position >= tier.cap) continue;
-
-    const availableInTier = tier.cap - position;
-    const take = Math.min(remaining, availableInTier);
-
-    lineItems.push({
-      quantity: take,
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: tier.name,
-        },
-        unit_amount: tier.price,
-      },
-    });
-
-    remaining -= take;
-    position += take;
-  }
-
-  if (remaining > 0) {
-    throw new Error("General admission sold out");
-  }
-
-  return lineItems;
-}
-
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
@@ -56,7 +15,7 @@ export async function POST(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const quantity = Math.max(1, Math.min(10, Number(body.quantity || 1)));
 
     const supabase = createClient(
@@ -68,34 +27,44 @@ export async function POST(req: Request) {
       .from("ticket_codes")
       .select("*", { count: "exact", head: true })
       .eq("event_id", EVENT_ID)
-      .eq("is_vip", false)
+      .eq("is_vip", true)
       .not("buyer_user_id", "is", null);
 
-    const sold = count ?? 0;
-    const remaining = 1000 - sold;
+    const vipSold = count ?? 0;
+    const remaining = 150 - vipSold;
 
     if (remaining <= 0) {
-      return Response.json({ error: "General admission sold out" }, { status: 400 });
+      return Response.json({ error: "VIP sold out" }, { status: 400 });
     }
 
     if (quantity > remaining) {
       return Response.json(
-        { error: `Only ${remaining} general admission tokens remain.` },
+        { error: `Only ${remaining} VIP tokens remain.` },
         { status: 400 }
       );
     }
 
-    const lineItems = buildGeneralAdmissionLineItems(quantity, sold);
     const origin = new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
-      line_items: lineItems,
+      line_items: [
+        {
+          quantity,
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "VIP Token",
+            },
+            unit_amount: 10000,
+          },
+        },
+      ],
       metadata: {
         user_id: userId,
         quantity: String(quantity),
-        is_vip: "false",
+        is_vip: "true",
         event_id: EVENT_ID,
       },
       success_url: `${origin}/dashboard?purchase=success`,
@@ -104,7 +73,7 @@ export async function POST(req: Request) {
 
     return Response.json({ url: session.url });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
-    return Response.json({ error: "Checkout creation failed" }, { status: 500 });
+    console.error("VIP checkout error:", error);
+    return Response.json({ error: "VIP checkout creation failed" }, { status: 500 });
   }
 }
