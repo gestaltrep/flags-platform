@@ -89,7 +89,7 @@ export default function SignupPage() {
 
         <input
           id="phone"
-          placeholder="Phone Number"
+          placeholder="Phone Number (e.g. +12395551234)"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           style={{
@@ -153,11 +153,8 @@ export default function SignupPage() {
             }}
           />
           <span>
-            I agree to receive SMS messages from Signo Research Group related to
-            account verification, participant registration, event participation
-            instructions, check-in reminders, and event updates. Message
-            frequency varies. Message and data rates may apply. Reply STOP to
-            opt out and HELP for help.
+            I agree to receive SMS messages from Signo Research Group as described
+            above.
           </span>
         </label>
 
@@ -179,7 +176,7 @@ export default function SignupPage() {
             fontFamily: '"Courier New", monospace',
           }}
         >
-          Send Code
+          Send Verification Code
         </button>
 
         <div style={{ marginBottom: 18 }}>
