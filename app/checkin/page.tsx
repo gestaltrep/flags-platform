@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 export default function CheckInPage() {
-  const searchParams = useSearchParams();
-  const code = searchParams.get("code") || "";
-
+  const [code, setCode] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [isMobile, setIsMobile] = useState(false);
@@ -18,6 +15,10 @@ export default function CheckInPage() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
+
+    const params = new URLSearchParams(window.location.search);
+    setCode(params.get("code") || "");
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -31,24 +32,29 @@ export default function CheckInPage() {
     setStatus("loading");
     setMessage("");
 
-    const res = await fetch("/api/scan-ticket", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ code }),
-    });
+    try {
+      const res = await fetch("/api/scan-ticket", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setStatus("error");
+        setMessage(data.message || "Check-in failed.");
+        return;
+      }
+
+      setStatus("success");
+      setMessage(data.message || "Entry confirmed.");
+    } catch (error) {
       setStatus("error");
-      setMessage(data.message || "Check-in failed.");
-      return;
+      setMessage("Check-in failed.");
     }
-
-    setStatus("success");
-    setMessage(data.message || "Entry confirmed.");
   }
 
   return (
@@ -101,8 +107,10 @@ export default function CheckInPage() {
             color: "white",
             padding: "14px 24px",
             fontSize: isMobile ? 15 : 16,
-            cursor: "pointer",
+            cursor: !code || status === "loading" ? "default" : "pointer",
             width: isMobile ? "100%" : "auto",
+            opacity: !code || status === "loading" ? 0.7 : 1,
+            fontFamily: '"Courier New", monospace',
           }}
         >
           {status === "loading" ? "PROCESSING..." : "COMPLETE CHECK-IN"}
