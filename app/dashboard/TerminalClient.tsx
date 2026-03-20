@@ -243,27 +243,28 @@ export default function TerminalClient() {
     lineHeight: 1.02,
     padding: "14px 20px",
     fontSize: 14,
-    letterSpacing: 3.2,
+    letterSpacing: 3.4,
     whiteSpace: "nowrap",
-    fontFamily: '"Courier New", monospace',
+    fontFamily: "Arial, Helvetica, sans-serif",
     fontWeight: 700,
     textTransform: "uppercase",
   };
 
   const modalArrowButtonStyle: React.CSSProperties = {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     padding: 0,
-    fontSize: 13,
+    fontSize: 12,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    fontFamily: "Arial, Helvetica, sans-serif",
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
-    width: 72,
-    height: 40,
+    width: 76,
+    height: 36,
     border: "1px solid #666",
     display: "flex",
     alignItems: "center",
@@ -737,10 +738,11 @@ export default function TerminalClient() {
                   lineHeight: 1.08,
                   padding: "14px 18px",
                   fontSize: 14,
-                  letterSpacing: 3.2,
+                  letterSpacing: 3.4,
                   whiteSpace: "nowrap",
-                  fontFamily: '"Courier New", monospace',
+                  fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 700,
+                  textTransform: "uppercase",
                 }}
                 onClick={() => setPurchaseOpen(true)}
               >
@@ -759,10 +761,11 @@ export default function TerminalClient() {
                   lineHeight: 1.08,
                   padding: "14px 18px",
                   fontSize: 14,
-                  letterSpacing: 3.2,
+                  letterSpacing: 3.4,
                   whiteSpace: "nowrap",
-                  fontFamily: '"Courier New", monospace',
+                  fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 700,
+                  textTransform: "uppercase",
                 }}
                 onClick={() => setVipOpen(true)}
               >
@@ -793,8 +796,8 @@ export default function TerminalClient() {
               style={{
                 fontSize: 11,
                 letterSpacing: 2,
-                lineHeight: 1.68,
-                marginBottom: 14,
+                lineHeight: 1.72,
+                marginBottom: 24,
               }}
             >
               <div>{">"} CURRENT TIER: TIER {tier} ACTIVE</div>
@@ -805,7 +808,7 @@ export default function TerminalClient() {
               style={{
                 fontSize: 12,
                 letterSpacing: 3,
-                marginBottom: 7,
+                marginBottom: 10,
               }}
             >
               QUANTITY
@@ -816,8 +819,8 @@ export default function TerminalClient() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                marginBottom: 15,
+                gap: 10,
+                marginBottom: 22,
               }}
             >
               <button
@@ -849,18 +852,18 @@ export default function TerminalClient() {
               className="cta-button"
               style={{
                 width: "100%",
-                marginTop: 2,
+                marginTop: 8,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 54,
+                minHeight: 56,
                 lineHeight: 1.02,
                 color: "white",
                 fontSize: 14,
                 fontWeight: 700,
-                letterSpacing: 3.2,
+                letterSpacing: 3.4,
                 whiteSpace: "nowrap",
-                fontFamily: '"Courier New", monospace',
+                fontFamily: "Arial, Helvetica, sans-serif",
                 textTransform: "uppercase",
               }}
               onClick={generateTokens}
@@ -901,8 +904,8 @@ export default function TerminalClient() {
               style={{
                 fontSize: 11,
                 letterSpacing: 2,
-                lineHeight: 1.68,
-                marginBottom: 14,
+                lineHeight: 1.72,
+                marginBottom: 24,
               }}
             >
               <div>{">"} VIP CHANNEL ACTIVE</div>
@@ -915,7 +918,7 @@ export default function TerminalClient() {
               style={{
                 fontSize: 12,
                 letterSpacing: 3,
-                marginBottom: 7,
+                marginBottom: 10,
               }}
             >
               QUANTITY
@@ -926,8 +929,8 @@ export default function TerminalClient() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                marginBottom: 15,
+                gap: 10,
+                marginBottom: 22,
               }}
             >
               <button
@@ -959,18 +962,18 @@ export default function TerminalClient() {
               className="cta-button"
               style={{
                 width: "100%",
-                marginTop: 2,
+                marginTop: 8,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 54,
+                minHeight: 56,
                 lineHeight: 1.02,
                 color: "white",
                 fontSize: 14,
                 fontWeight: 700,
-                letterSpacing: 3.2,
+                letterSpacing: 3.4,
                 whiteSpace: "nowrap",
-                fontFamily: '"Courier New", monospace',
+                fontFamily: "Arial, Helvetica, sans-serif",
                 textTransform: "uppercase",
               }}
               onClick={generateVipTokens}
