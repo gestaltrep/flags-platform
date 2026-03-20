@@ -102,11 +102,13 @@ export default function Home() {
           </div>
         </div>
 
-        <img
-          src="/poster-image.png"
-          className="home-mobile-poster"
-          alt="Event site"
-        />
+        <div className="home-mobile-poster-wrap">
+          <img
+            src="/poster-image.png"
+            className="home-mobile-poster"
+            alt="Event site"
+          />
+        </div>
 
         <div className="home-mobile-cta-wrap">
           <button

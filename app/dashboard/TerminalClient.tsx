@@ -242,12 +242,34 @@ export default function TerminalClient() {
     textAlign: "center",
     lineHeight: 1.02,
     padding: "14px 20px",
-    fontSize: 13,
-    letterSpacing: 3.4,
+    fontSize: 14,
+    letterSpacing: 3.2,
     whiteSpace: "nowrap",
-    fontFamily: "Arial, Helvetica, sans-serif",
+    fontFamily: '"Courier New", monospace',
     fontWeight: 700,
     textTransform: "uppercase",
+  };
+
+  const modalArrowButtonStyle: React.CSSProperties = {
+    width: 40,
+    height: 40,
+    padding: 0,
+    fontSize: 13,
+    lineHeight: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  const modalQuantityBoxStyle: React.CSSProperties = {
+    width: 72,
+    height: 40,
+    border: "1px solid #666",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 15,
+    letterSpacing: 2,
   };
 
   return (
@@ -445,6 +467,7 @@ export default function TerminalClient() {
                   letterSpacing: 2,
                   lineHeight: 1.8,
                   marginBottom: 18,
+                  color: "#c8c8c8",
                 }}
               >
                 <div>{">"} TOKENS REGISTERED TO USER</div>
@@ -500,6 +523,7 @@ export default function TerminalClient() {
                           marginTop: 10,
                           fontSize: 11,
                           letterSpacing: 2,
+                          color: "#b8b8b8",
                         }}
                       >
                         TOKEN CODE
@@ -672,6 +696,7 @@ export default function TerminalClient() {
                         marginTop: 12,
                         fontSize: 11,
                         letterSpacing: 2,
+                        color: "#b8b8b8",
                       }}
                     >
                       TOKEN CODE
@@ -709,11 +734,13 @@ export default function TerminalClient() {
                   alignItems: "center",
                   justifyContent: "center",
                   textAlign: "center",
-                  lineHeight: 1.15,
+                  lineHeight: 1.08,
                   padding: "14px 18px",
-                  fontSize: 15,
-                  letterSpacing: 4,
+                  fontSize: 14,
+                  letterSpacing: 3.2,
                   whiteSpace: "nowrap",
+                  fontFamily: '"Courier New", monospace',
+                  fontWeight: 700,
                 }}
                 onClick={() => setPurchaseOpen(true)}
               >
@@ -729,11 +756,13 @@ export default function TerminalClient() {
                   alignItems: "center",
                   justifyContent: "center",
                   textAlign: "center",
-                  lineHeight: 1.15,
+                  lineHeight: 1.08,
                   padding: "14px 18px",
-                  fontSize: 15,
-                  letterSpacing: 4,
+                  fontSize: 14,
+                  letterSpacing: 3.2,
                   whiteSpace: "nowrap",
+                  fontFamily: '"Courier New", monospace',
+                  fontWeight: 700,
                 }}
                 onClick={() => setVipOpen(true)}
               >
@@ -746,13 +775,7 @@ export default function TerminalClient() {
 
       {purchaseOpen && (
         <div className="signup-overlay">
-          <div
-            className="signup-modal"
-            style={{
-              width: isMobile ? "100%" : 430,
-              maxWidth: "100%",
-            }}
-          >
+          <div className="signup-modal">
             <div className="signup-header signup-header-home">
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
@@ -768,7 +791,7 @@ export default function TerminalClient() {
 
             <div
               style={{
-                fontSize: isMobile ? 11 : 11,
+                fontSize: 11,
                 letterSpacing: 2,
                 lineHeight: 1.68,
                 marginBottom: 14,
@@ -780,7 +803,7 @@ export default function TerminalClient() {
 
             <div
               style={{
-                fontSize: isMobile ? 12 : 12,
+                fontSize: 12,
                 letterSpacing: 3,
                 marginBottom: 7,
               }}
@@ -793,36 +816,23 @@ export default function TerminalClient() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 9,
+                gap: 8,
                 marginBottom: 15,
               }}
             >
               <button
                 className="cta-button"
-                style={{ width: 44, height: 44, padding: 0, fontSize: 14 }}
+                style={modalArrowButtonStyle}
                 onClick={decGa}
               >
                 ▼
               </button>
 
-              <div
-                style={{
-                  width: 76,
-                  height: 44,
-                  border: "1px solid #666",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 16,
-                  letterSpacing: 2,
-                }}
-              >
-                {gaQuantity}
-              </div>
+              <div style={modalQuantityBoxStyle}>{gaQuantity}</div>
 
               <button
                 className="cta-button"
-                style={{ width: 44, height: 44, padding: 0, fontSize: 14 }}
+                style={modalArrowButtonStyle}
                 onClick={incGa}
               >
                 ▲
@@ -846,11 +856,11 @@ export default function TerminalClient() {
                 minHeight: 54,
                 lineHeight: 1.02,
                 color: "white",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 700,
-                letterSpacing: 3.4,
+                letterSpacing: 3.2,
                 whiteSpace: "nowrap",
-                fontFamily: "Arial, Helvetica, sans-serif",
+                fontFamily: '"Courier New", monospace',
                 textTransform: "uppercase",
               }}
               onClick={generateTokens}
@@ -873,13 +883,7 @@ export default function TerminalClient() {
 
       {vipOpen && (
         <div className="signup-overlay">
-          <div
-            className="signup-modal"
-            style={{
-              width: isMobile ? "100%" : 430,
-              maxWidth: "100%",
-            }}
-          >
+          <div className="signup-modal">
             <div className="signup-header signup-header-home">
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
@@ -895,7 +899,7 @@ export default function TerminalClient() {
 
             <div
               style={{
-                fontSize: isMobile ? 11 : 11,
+                fontSize: 11,
                 letterSpacing: 2,
                 lineHeight: 1.68,
                 marginBottom: 14,
@@ -909,7 +913,7 @@ export default function TerminalClient() {
 
             <div
               style={{
-                fontSize: isMobile ? 12 : 12,
+                fontSize: 12,
                 letterSpacing: 3,
                 marginBottom: 7,
               }}
@@ -922,36 +926,23 @@ export default function TerminalClient() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 9,
+                gap: 8,
                 marginBottom: 15,
               }}
             >
               <button
                 className="cta-button"
-                style={{ width: 44, height: 44, padding: 0, fontSize: 14 }}
+                style={modalArrowButtonStyle}
                 onClick={decVip}
               >
                 ▼
               </button>
 
-              <div
-                style={{
-                  width: 76,
-                  height: 44,
-                  border: "1px solid #666",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 16,
-                  letterSpacing: 2,
-                }}
-              >
-                {vipQuantity}
-              </div>
+              <div style={modalQuantityBoxStyle}>{vipQuantity}</div>
 
               <button
                 className="cta-button"
-                style={{ width: 44, height: 44, padding: 0, fontSize: 14 }}
+                style={modalArrowButtonStyle}
                 onClick={incVip}
               >
                 ▲
@@ -975,11 +966,11 @@ export default function TerminalClient() {
                 minHeight: 54,
                 lineHeight: 1.02,
                 color: "white",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 700,
-                letterSpacing: 3.4,
+                letterSpacing: 3.2,
                 whiteSpace: "nowrap",
-                fontFamily: "Arial, Helvetica, sans-serif",
+                fontFamily: '"Courier New", monospace',
                 textTransform: "uppercase",
               }}
               onClick={generateVipTokens}
