@@ -136,10 +136,10 @@ body::before {
 
 .home-desktop-grid {
   display: grid;
-  grid-template-columns: 528px 320px;
+  grid-template-columns: 528px 348px;
   gap: 118px;
   align-items: center;
-  max-width: 1060px;
+  max-width: 1088px;
 }
 
 .home-poster-wrap {
@@ -155,34 +155,34 @@ body::before {
 }
 
 .home-desktop-info {
-  width: 320px;
+  width: 348px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   line-height: 1;
-  transform: translateY(-30px);
+  transform: translateY(-14px);
 }
 
 .home-date-desktop {
-  font-size: 60px;
+  font-size: 66px;
   letter-spacing: 6px;
   line-height: 1;
-  margin-bottom: 38px;
+  margin-bottom: 46px;
   font-weight: 400;
 }
 
 .home-time-desktop {
-  font-size: 23px;
+  font-size: 26px;
   letter-spacing: 5px;
-  line-height: 1.04;
-  margin-bottom: 24px;
+  line-height: 1.05;
+  margin-bottom: 28px;
 }
 
 .home-location-desktop {
-  font-size: 24px;
-  letter-spacing: 2.5px;
-  line-height: 1.04;
-  margin-bottom: 42px;
+  font-size: 27px;
+  letter-spacing: 2.8px;
+  line-height: 1.05;
+  margin-bottom: 52px;
   white-space: nowrap;
 }
 
@@ -266,9 +266,9 @@ body::before {
   background: black;
   color: white;
   padding: 14px 20px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 3.4px;
+  letter-spacing: 3.6px;
   line-height: 1.02;
   text-align: center;
   cursor: pointer;
@@ -287,10 +287,10 @@ body::before {
 }
 
 .modal-primary-button {
-  margin-top: 18px;
-  min-height: 58px;
-  font-size: 14px;
-  letter-spacing: 3.4px;
+  margin-top: 12px;
+  min-height: 54px;
+  font-size: 13px;
+  letter-spacing: 3.6px;
 }
 
 /* MODALS */
@@ -307,12 +307,12 @@ body::before {
 }
 
 .signup-modal {
-  width: 448px;
+  width: 570px;
   max-width: 100%;
-  min-height: 620px;
+  min-height: 0;
   background: black;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  padding: 0 38px 24px 38px;
+  padding: 0 50px 22px 50px;
   display: flex;
   flex-direction: column;
 }
@@ -321,24 +321,24 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  min-height: 112px;
+  gap: 18px;
+  min-height: 114px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.62);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .signup-header-home {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .signup-logo {
-  width: 42px;
+  width: 44px;
   height: auto;
   display: block;
 }
 
 .signup-group-name {
-  height: 40px;
+  height: 44px;
   width: auto;
   display: block;
 }
@@ -350,7 +350,7 @@ body::before {
 
 .signup-title-large {
   font-size: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
   white-space: nowrap;
 }
 
@@ -363,7 +363,7 @@ body::before {
   font-family: "Courier New", monospace;
   font-size: 15px;
   outline: none;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .signup-input::placeholder {
@@ -382,7 +382,7 @@ body::before {
   font-size: 12px;
   line-height: 1.38;
   color: #d8d8d8;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .signup-checkbox input {
@@ -398,7 +398,7 @@ body::before {
 }
 
 .signup-help-text {
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 11px;
   line-height: 1.25;
   color: #bdbdbd;
@@ -406,8 +406,7 @@ body::before {
 }
 
 .signup-close {
-  margin-top: auto;
-  padding-top: 22px;
+  margin-top: 14px;
   background: none;
   border: none;
   color: #9a9a9a;
@@ -448,8 +447,8 @@ body::before {
 
   .cta-button {
     min-height: 58px;
-    font-size: 14px;
-    letter-spacing: 3.2px;
+    font-size: 13px;
+    letter-spacing: 3.4px;
     padding: 14px 18px;
     white-space: nowrap;
     font-family: Arial, Helvetica, sans-serif;
@@ -468,7 +467,7 @@ body::before {
   }
 
   .signup-header {
-    min-height: 96px;
+    min-height: 100px;
     gap: 14px;
     margin-bottom: 18px;
   }
@@ -489,19 +488,19 @@ body::before {
   .signup-title-large {
     font-size: 16px;
     letter-spacing: 1px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     white-space: nowrap;
   }
 
   .signup-input {
     font-size: 16px;
     padding: 14px 14px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
   .signup-checkbox {
     font-size: 11px;
-    margin-bottom: 10px;
+    margin-bottom: 9px;
     align-items: center;
     gap: 9px;
   }
@@ -514,13 +513,12 @@ body::before {
 
   .modal-primary-button {
     min-height: 56px;
-    font-size: 14px;
-    letter-spacing: 3.2px;
+    font-size: 13px;
+    letter-spacing: 3.4px;
   }
 
   .signup-close {
-    margin-top: 16px;
-    padding-top: 0;
+    margin-top: 14px;
     font-size: 12px;
   }
 }

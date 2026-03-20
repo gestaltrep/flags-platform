@@ -242,8 +242,8 @@ export default function TerminalClient() {
     textAlign: "center",
     lineHeight: 1.02,
     padding: "14px 20px",
-    fontSize: 14,
-    letterSpacing: 3.4,
+    fontSize: 13,
+    letterSpacing: 3.6,
     whiteSpace: "nowrap",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontWeight: 700,
@@ -251,10 +251,10 @@ export default function TerminalClient() {
   };
 
   const modalArrowButtonStyle: React.CSSProperties = {
-    width: 36,
-    height: 36,
+    width: 30,
+    height: 30,
     padding: 0,
-    fontSize: 12,
+    fontSize: 10,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
@@ -263,13 +263,13 @@ export default function TerminalClient() {
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
-    width: 76,
-    height: 36,
+    width: 64,
+    height: 30,
     border: "1px solid #666",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: 15,
+    fontSize: 14,
     letterSpacing: 2,
   };
 
@@ -737,8 +737,8 @@ export default function TerminalClient() {
                   textAlign: "center",
                   lineHeight: 1.08,
                   padding: "14px 18px",
-                  fontSize: 14,
-                  letterSpacing: 3.4,
+                  fontSize: 13,
+                  letterSpacing: 3.6,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 700,
@@ -760,8 +760,8 @@ export default function TerminalClient() {
                   textAlign: "center",
                   lineHeight: 1.08,
                   padding: "14px 18px",
-                  fontSize: 14,
-                  letterSpacing: 3.4,
+                  fontSize: 13,
+                  letterSpacing: 3.6,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 700,
@@ -797,7 +797,7 @@ export default function TerminalClient() {
                 fontSize: 11,
                 letterSpacing: 2,
                 lineHeight: 1.72,
-                marginBottom: 24,
+                marginBottom: 18,
               }}
             >
               <div>{">"} CURRENT TIER: TIER {tier} ACTIVE</div>
@@ -820,7 +820,7 @@ export default function TerminalClient() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 10,
-                marginBottom: 22,
+                marginBottom: 18,
               }}
             >
               <button
@@ -851,17 +851,18 @@ export default function TerminalClient() {
             <button
               className="cta-button"
               style={{
-                width: "100%",
-                marginTop: 8,
+                width: "82%",
+                alignSelf: "center",
+                marginTop: 4,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 56,
+                minHeight: 54,
                 lineHeight: 1.02,
                 color: "white",
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 700,
-                letterSpacing: 3.4,
+                letterSpacing: 3.6,
                 whiteSpace: "nowrap",
                 fontFamily: "Arial, Helvetica, sans-serif",
                 textTransform: "uppercase",
@@ -905,7 +906,7 @@ export default function TerminalClient() {
                 fontSize: 11,
                 letterSpacing: 2,
                 lineHeight: 1.72,
-                marginBottom: 24,
+                marginBottom: 18,
               }}
             >
               <div>{">"} VIP CHANNEL ACTIVE</div>
@@ -930,7 +931,7 @@ export default function TerminalClient() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 10,
-                marginBottom: 22,
+                marginBottom: 18,
               }}
             >
               <button
@@ -961,17 +962,18 @@ export default function TerminalClient() {
             <button
               className="cta-button"
               style={{
-                width: "100%",
-                marginTop: 8,
+                width: "82%",
+                alignSelf: "center",
+                marginTop: 4,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 56,
+                minHeight: 54,
                 lineHeight: 1.02,
                 color: "white",
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 700,
-                letterSpacing: 3.4,
+                letterSpacing: 3.6,
                 whiteSpace: "nowrap",
                 fontFamily: "Arial, Helvetica, sans-serif",
                 textTransform: "uppercase",

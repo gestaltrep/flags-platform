@@ -83,7 +83,7 @@ export default function Home() {
                 setOpen(true);
               }}
               style={{
-                width: 272,
+                width: 352,
                 maxWidth: "100%",
               }}
             >
@@ -175,6 +175,10 @@ export default function Home() {
                 <button
                   className="cta-button modal-primary-button"
                   onClick={sendVerification}
+                  style={{
+                    width: "84%",
+                    alignSelf: "center",
+                  }}
                 >
                   REQUEST
                 </button>
@@ -199,6 +203,10 @@ export default function Home() {
                 <button
                   className="cta-button modal-primary-button"
                   onClick={verifyCode}
+                  style={{
+                    width: "84%",
+                    alignSelf: "center",
+                  }}
                 >
                   VERIFY
                 </button>
