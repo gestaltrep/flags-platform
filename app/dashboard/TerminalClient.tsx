@@ -242,8 +242,8 @@ export default function TerminalClient() {
     textAlign: "center",
     lineHeight: 1.02,
     padding: "14px 20px",
-    fontSize: 13,
-    letterSpacing: 3.6,
+    fontSize: 14,
+    letterSpacing: 3.2,
     whiteSpace: "nowrap",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontWeight: 700,
@@ -251,25 +251,26 @@ export default function TerminalClient() {
   };
 
   const modalArrowButtonStyle: React.CSSProperties = {
-    width: 30,
-    height: 30,
+    width: isMobile ? 40 : 34,
+    height: isMobile ? 40 : 34,
     padding: 0,
-    fontSize: 10,
+    fontSize: isMobile ? 12 : 10,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontFamily: "Arial, Helvetica, sans-serif",
+    fontWeight: 700,
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
-    width: 64,
-    height: 30,
+    width: isMobile ? 86 : 78,
+    height: isMobile ? 40 : 34,
     border: "1px solid #666",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: 14,
+    fontSize: isMobile ? 16 : 14,
     letterSpacing: 2,
   };
 
@@ -737,12 +738,11 @@ export default function TerminalClient() {
                   textAlign: "center",
                   lineHeight: 1.08,
                   padding: "14px 18px",
-                  fontSize: 13,
-                  letterSpacing: 3.6,
+                  fontSize: 14,
+                  letterSpacing: 3.2,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 700,
-                  textTransform: "uppercase",
                 }}
                 onClick={() => setPurchaseOpen(true)}
               >
@@ -760,12 +760,11 @@ export default function TerminalClient() {
                   textAlign: "center",
                   lineHeight: 1.08,
                   padding: "14px 18px",
-                  fontSize: 13,
-                  letterSpacing: 3.6,
+                  fontSize: 14,
+                  letterSpacing: 3.2,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 700,
-                  textTransform: "uppercase",
                 }}
                 onClick={() => setVipOpen(true)}
               >
@@ -778,7 +777,7 @@ export default function TerminalClient() {
 
       {purchaseOpen && (
         <div className="signup-overlay">
-          <div className="signup-modal">
+          <div className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}>
             <div className="signup-header signup-header-home">
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
@@ -792,37 +791,14 @@ export default function TerminalClient() {
               Generate Tokens
             </div>
 
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: 2,
-                lineHeight: 1.72,
-                marginBottom: 18,
-              }}
-            >
+            <div className="modal-status-copy">
               <div>{">"} CURRENT TIER: TIER {tier} ACTIVE</div>
               <div>{">"} TOKEN GENERATION CHANNEL OPEN</div>
             </div>
 
-            <div
-              style={{
-                fontSize: 12,
-                letterSpacing: 3,
-                marginBottom: 10,
-              }}
-            >
-              QUANTITY
-            </div>
+            <div className="modal-quantity-label">QUANTITY</div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                marginBottom: 18,
-              }}
-            >
+            <div className="modal-quantity-row">
               <button
                 className="cta-button"
                 style={modalArrowButtonStyle}
@@ -843,34 +819,30 @@ export default function TerminalClient() {
             </div>
 
             {checkoutMessage && (
-              <div style={{ fontSize: 13, marginBottom: 12 }}>
-                {checkoutMessage}
-              </div>
+              <div className="modal-checkout-message">{checkoutMessage}</div>
             )}
 
-            <button
-              className="cta-button"
-              style={{
-                width: "82%",
-                alignSelf: "center",
-                marginTop: 4,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: 54,
-                lineHeight: 1.02,
-                color: "white",
-                fontSize: 13,
-                fontWeight: 700,
-                letterSpacing: 3.6,
-                whiteSpace: "nowrap",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                textTransform: "uppercase",
-              }}
-              onClick={generateTokens}
-            >
-              GENERATE
-            </button>
+            <div className="signup-generate-button-wrap">
+              <button
+                className="cta-button"
+                style={{
+                  width: isMobile ? "100%" : 326,
+                  maxWidth: "100%",
+                  minHeight: 54,
+                  lineHeight: 1.02,
+                  color: "white",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: 3.4,
+                  whiteSpace: "nowrap",
+                  fontFamily: "Arial, Helvetica, sans-serif",
+                  textTransform: "uppercase",
+                }}
+                onClick={generateTokens}
+              >
+                GENERATE
+              </button>
+            </div>
 
             <button
               className="signup-close"
@@ -887,7 +859,7 @@ export default function TerminalClient() {
 
       {vipOpen && (
         <div className="signup-overlay">
-          <div className="signup-modal">
+          <div className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}>
             <div className="signup-header signup-header-home">
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
@@ -901,39 +873,14 @@ export default function TerminalClient() {
               Generate VIP Tokens
             </div>
 
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: 2,
-                lineHeight: 1.72,
-                marginBottom: 18,
-              }}
-            >
+            <div className="modal-status-copy">
               <div>{">"} VIP CHANNEL ACTIVE</div>
-              <div>
-                {">"} REMAINING VIP ALLOCATION: {Math.max(0, 150 - vipSold)}
-              </div>
+              <div>{">"} REMAINING VIP ALLOCATION: {Math.max(0, 150 - vipSold)}</div>
             </div>
 
-            <div
-              style={{
-                fontSize: 12,
-                letterSpacing: 3,
-                marginBottom: 10,
-              }}
-            >
-              QUANTITY
-            </div>
+            <div className="modal-quantity-label">QUANTITY</div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                marginBottom: 18,
-              }}
-            >
+            <div className="modal-quantity-row">
               <button
                 className="cta-button"
                 style={modalArrowButtonStyle}
@@ -954,34 +901,30 @@ export default function TerminalClient() {
             </div>
 
             {checkoutMessage && (
-              <div style={{ fontSize: 13, marginBottom: 12 }}>
-                {checkoutMessage}
-              </div>
+              <div className="modal-checkout-message">{checkoutMessage}</div>
             )}
 
-            <button
-              className="cta-button"
-              style={{
-                width: "82%",
-                alignSelf: "center",
-                marginTop: 4,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: 54,
-                lineHeight: 1.02,
-                color: "white",
-                fontSize: 13,
-                fontWeight: 700,
-                letterSpacing: 3.6,
-                whiteSpace: "nowrap",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                textTransform: "uppercase",
-              }}
-              onClick={generateVipTokens}
-            >
-              GENERATE
-            </button>
+            <div className="signup-generate-button-wrap">
+              <button
+                className="cta-button"
+                style={{
+                  width: isMobile ? "100%" : 326,
+                  maxWidth: "100%",
+                  minHeight: 54,
+                  lineHeight: 1.02,
+                  color: "white",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: 3.4,
+                  whiteSpace: "nowrap",
+                  fontFamily: "Arial, Helvetica, sans-serif",
+                  textTransform: "uppercase",
+                }}
+                onClick={generateVipTokens}
+              >
+                GENERATE
+              </button>
+            </div>
 
             <button
               className="signup-close"
