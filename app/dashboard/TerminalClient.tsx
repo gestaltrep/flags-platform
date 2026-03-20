@@ -251,10 +251,11 @@ export default function TerminalClient() {
   };
 
   const modalArrowButtonStyle: React.CSSProperties = {
-    width: isMobile ? 40 : 34,
-    height: isMobile ? 40 : 34,
+    width: isMobile ? 40 : 28,
+    height: isMobile ? 40 : 28,
+    minHeight: isMobile ? 40 : 28,
     padding: 0,
-    fontSize: isMobile ? 12 : 10,
+    fontSize: isMobile ? 12 : 8,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
@@ -264,13 +265,13 @@ export default function TerminalClient() {
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
-    width: isMobile ? 86 : 78,
-    height: isMobile ? 40 : 34,
+    width: isMobile ? 86 : 72,
+    height: isMobile ? 40 : 28,
     border: "1px solid #666",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: isMobile ? 16 : 14,
+    fontSize: isMobile ? 16 : 13,
     letterSpacing: 2,
   };
 
@@ -826,7 +827,7 @@ export default function TerminalClient() {
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : 326,
+                  width: isMobile ? "100%" : 300,
                   maxWidth: "100%",
                   minHeight: 54,
                   lineHeight: 1.02,
@@ -908,7 +909,7 @@ export default function TerminalClient() {
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : 326,
+                  width: isMobile ? "100%" : 300,
                   maxWidth: "100%",
                   minHeight: 54,
                   lineHeight: 1.02,

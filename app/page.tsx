@@ -128,7 +128,7 @@ export default function Home() {
 
       {open && (
         <div className="signup-overlay">
-          <div className="signup-modal">
+          <div className="signup-modal signup-modal-request">
             <div className="signup-header signup-header-home">
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
@@ -172,16 +172,14 @@ export default function Home() {
                   </span>
                 </label>
 
-                <button
-                  className="cta-button modal-primary-button"
-                  onClick={sendVerification}
-                  style={{
-                    width: "84%",
-                    alignSelf: "center",
-                  }}
-                >
-                  REQUEST
-                </button>
+                <div className="signup-request-button-wrap">
+                  <button
+                    className="cta-button modal-primary-button"
+                    onClick={sendVerification}
+                  >
+                    REQUEST
+                  </button>
+                </div>
 
                 <div className="signup-help-text">This sends SMS code.</div>
               </>
@@ -200,16 +198,14 @@ export default function Home() {
                   onChange={(e) => setCode(e.target.value)}
                 />
 
-                <button
-                  className="cta-button modal-primary-button"
-                  onClick={verifyCode}
-                  style={{
-                    width: "84%",
-                    alignSelf: "center",
-                  }}
-                >
-                  VERIFY
-                </button>
+                <div className="signup-request-button-wrap">
+                  <button
+                    className="cta-button modal-primary-button"
+                    onClick={verifyCode}
+                  >
+                    VERIFY
+                  </button>
+                </div>
               </>
             )}
 
