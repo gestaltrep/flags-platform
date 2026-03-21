@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  const hideNavLinks =
+    pathname === "/signup" ||
+    pathname === "/privacy" ||
+    pathname === "/terms";
+
   return (
     <>
       <div className="navbar desktop-navbar">
@@ -20,15 +28,17 @@ export default function Navbar() {
           />
         </div>
 
-        <div className="nav-right">
-          <Link href="/" className="nav-link">
-            Home
-          </Link>
+        {!hideNavLinks && (
+          <div className="nav-right">
+            <Link href="/" className="nav-link">
+              Home
+            </Link>
 
-          <Link href="/dashboard" className="nav-link">
-            Terminal
-          </Link>
-        </div>
+            <Link href="/dashboard" className="nav-link">
+              Terminal
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="navbar-mobile">
@@ -38,15 +48,17 @@ export default function Navbar() {
           className="navbar-mobile-logo"
         />
 
-        <div className="navbar-mobile-links">
-          <Link href="/" className="navbar-mobile-link">
-            Home
-          </Link>
+        {!hideNavLinks && (
+          <div className="navbar-mobile-links">
+            <Link href="/" className="navbar-mobile-link">
+              Home
+            </Link>
 
-          <Link href="/dashboard" className="navbar-mobile-link">
-            Terminal
-          </Link>
-        </div>
+            <Link href="/dashboard" className="navbar-mobile-link">
+              Terminal
+            </Link>
+          </div>
+        )}
       </div>
     </>
   );
