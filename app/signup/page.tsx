@@ -116,13 +116,15 @@ export default function SignupPage() {
           <p style={{ marginBottom: 12 }}>
             By checking the box below and submitting your phone number, you
             agree to receive SMS messages from <b>Signo Research Group</b>{" "}
-            related to account verification, participant registration, event
-            participation instructions, check-in reminders, and event updates.
+            related to account verification, participant registration
+            confirmation, event participation instructions, check-in reminders,
+            and event updates related to your participation.
           </p>
 
           <p style={{ marginBottom: 12 }}>
-            Message frequency varies. Message and data rates may apply. Reply{" "}
-            <b>STOP</b> to opt out. Reply <b>HELP</b> for help.
+            Message frequency varies by user activity and event status. Message
+            and data rates may apply. Reply <b>STOP</b> to opt out. Reply{" "}
+            <b>HELP</b> for help.
           </p>
 
           <p style={{ marginBottom: 0 }}>
@@ -153,8 +155,8 @@ export default function SignupPage() {
             }}
           />
           <span>
-            I agree to receive SMS messages from Signo Research Group as described
-            above.
+            I agree to receive SMS messages from Signo Research Group as
+            described above.
           </span>
         </label>
 
@@ -254,11 +256,7 @@ export default function SignupPage() {
           Create Account
         </button>
 
-        {message && (
-          <p style={{ marginTop: 20, fontSize: 16 }}>
-            {message}
-          </p>
-        )}
+        {message && <p style={{ marginTop: 20, fontSize: 16 }}>{message}</p>}
       </div>
     </main>
   );

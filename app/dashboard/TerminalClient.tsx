@@ -255,30 +255,48 @@ export default function TerminalClient() {
     height: isMobile ? 40 : 28,
     minHeight: isMobile ? 40 : 28,
     padding: 0,
-    fontSize: isMobile ? 12 : 8,
+    fontSize: isMobile ? 14 : 10,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontWeight: 700,
+    letterSpacing: 0,
+    textTransform: "none",
+    textIndent: 0,
+    border: "1px solid white",
+    background: "black",
+    color: "white",
+    boxShadow: "none",
+    appearance: "none",
+    WebkitAppearance: "none",
+    borderRadius: 0,
+    flexShrink: 0,
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
     width: isMobile ? 86 : 72,
     height: isMobile ? 40 : 28,
-    border: "1px solid #666",
+    borderTop: "1px solid white",
+    borderBottom: "1px solid white",
+    borderLeft: "none",
+    borderRight: "none",
+    background: "black",
+    color: "white",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: isMobile ? 16 : 13,
     letterSpacing: 2,
+    boxShadow: "none",
+    flexShrink: 0,
   };
 
   return (
     <main
       style={{
-        marginTop: isMobile ? 34 : 120,
+        marginTop: isMobile ? 34 : 72,
         marginLeft: isMobile ? 20 : 120,
         marginRight: isMobile ? 20 : 40,
         marginBottom: 60,
@@ -793,8 +811,18 @@ export default function TerminalClient() {
             </div>
 
             <div className="modal-status-copy">
-              <div>{">"} CURRENT TIER: TIER {tier} ACTIVE</div>
-              <div>{">"} TOKEN GENERATION CHANNEL OPEN</div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">
+                  CURRENT TIER: TIER 1 ACTIVE
+                </span>
+              </div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">
+                  TOKEN GENERATION CHANNEL OPEN
+                </span>
+              </div>
             </div>
 
             <div className="modal-quantity-label">QUANTITY</div>
@@ -805,7 +833,7 @@ export default function TerminalClient() {
                 style={modalArrowButtonStyle}
                 onClick={decGa}
               >
-                ▼
+                <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
               </button>
 
               <div style={modalQuantityBoxStyle}>{gaQuantity}</div>
@@ -815,7 +843,7 @@ export default function TerminalClient() {
                 style={modalArrowButtonStyle}
                 onClick={incGa}
               >
-                ▲
+                <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
               </button>
             </div>
 
@@ -832,9 +860,9 @@ export default function TerminalClient() {
                   minHeight: 54,
                   lineHeight: 1.02,
                   color: "white",
-                  fontSize: 13,
+                  fontSize: isMobile ? 13 : 17,
                   fontWeight: 700,
-                  letterSpacing: 3.4,
+                  letterSpacing: isMobile ? 3.4 : 4.8,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
@@ -875,8 +903,16 @@ export default function TerminalClient() {
             </div>
 
             <div className="modal-status-copy">
-              <div>{">"} VIP CHANNEL ACTIVE</div>
-              <div>{">"} REMAINING VIP ALLOCATION: {Math.max(0, 150 - vipSold)}</div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">VIP CHANNEL ACTIVE</span>
+              </div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">
+                  REMAINING VIP ALLOCATION: {Math.max(0, 150 - vipSold)}
+                </span>
+              </div>
             </div>
 
             <div className="modal-quantity-label">QUANTITY</div>
@@ -887,7 +923,7 @@ export default function TerminalClient() {
                 style={modalArrowButtonStyle}
                 onClick={decVip}
               >
-                ▼
+                <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
               </button>
 
               <div style={modalQuantityBoxStyle}>{vipQuantity}</div>
@@ -897,7 +933,7 @@ export default function TerminalClient() {
                 style={modalArrowButtonStyle}
                 onClick={incVip}
               >
-                ▲
+                <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
               </button>
             </div>
 
@@ -914,9 +950,9 @@ export default function TerminalClient() {
                   minHeight: 54,
                   lineHeight: 1.02,
                   color: "white",
-                  fontSize: 13,
+                  fontSize: isMobile ? 13 : 17,
                   fontWeight: 700,
-                  letterSpacing: 3.4,
+                  letterSpacing: isMobile ? 3.4 : 4.8,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
