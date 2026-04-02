@@ -1,6 +1,8 @@
 /* RESET */
 
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -8,14 +10,49 @@
 
 html,
 body {
+  width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   background: black;
   color: white;
   font-family: "Courier New", monospace;
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+img,
+picture,
+svg,
+canvas,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* SCREEN EFFECTS */
@@ -94,6 +131,7 @@ body::before {
   font-size: 16px;
   letter-spacing: 2px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .navbar-mobile {
@@ -126,15 +164,19 @@ body::before {
   font-size: 16px;
   letter-spacing: 3px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* HOME PAGE */
 
 .home-desktop {
   display: block;
+  width: -moz-fit-content;
+  width: fit-content;
+  max-width: calc(100vw - 80px);
   margin-top: 74px;
-  margin-left: 84px;
-  margin-right: 40px;
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 34px;
 }
 
@@ -143,7 +185,9 @@ body::before {
   grid-template-columns: 528px 320px;
   gap: 118px;
   align-items: center;
-  max-width: 1060px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .home-poster-wrap {
@@ -173,6 +217,7 @@ body::before {
   line-height: 1;
   margin-bottom: 42px;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .home-time-desktop {
@@ -180,6 +225,7 @@ body::before {
   letter-spacing: 5px;
   line-height: 1.06;
   margin-bottom: 28px;
+  white-space: nowrap;
 }
 
 .home-location-desktop {
@@ -263,6 +309,55 @@ body::before {
   margin-top: 14px;
 }
 
+/* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */
+/* Leaves larger desktops untouched */
+
+@media (min-width: 1100px) and (max-width: 1599px) {
+  .home-desktop {
+    margin-top: 62px;
+    max-width: calc(100vw - 64px);
+  }
+
+  .home-desktop-grid {
+    grid-template-columns: 590px 350px;
+    gap: 92px;
+  }
+
+  .home-poster-wrap {
+    width: 590px;
+  }
+
+  .home-poster-image {
+    width: 590px;
+  }
+
+  .home-desktop-info {
+    width: 350px;
+    transform: translateY(-6px);
+  }
+
+  .home-date-desktop {
+    font-size: 72px;
+    margin-bottom: 38px;
+  }
+
+  .home-time-desktop {
+    font-size: 26px;
+    margin-bottom: 26px;
+  }
+
+  .home-location-desktop {
+    font-size: 27px;
+    margin-bottom: 42px;
+  }
+
+  .home-desktop .cta-button {
+    min-height: 64px;
+    font-size: 14px;
+    letter-spacing: 3.6px;
+  }
+}
+
 /* BUTTONS */
 
 .cta-button {
@@ -285,6 +380,9 @@ body::before {
   justify-content: center;
   transition: none;
   white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
 }
 
 .cta-button:hover {
@@ -313,6 +411,9 @@ body::before {
 
 .signup-modal {
   max-width: 100%;
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
   background: black;
   border: 1px solid rgba(255, 255, 255, 0.22);
   display: flex;
@@ -330,6 +431,11 @@ body::before {
   width: 354px;
   min-height: 502px;
   padding: 0 24px 22px 24px;
+}
+
+.send-token-modal.signup-modal-ticket {
+  min-height: auto;
+  padding-bottom: 18px;
 }
 
 .signup-header {
@@ -366,6 +472,7 @@ body::before {
 
 .signup-title {
   display: block;
+  width: -moz-fit-content;
   width: fit-content;
   max-width: 100%;
   margin-left: auto;
@@ -400,6 +507,7 @@ body::before {
   font-size: 16px;
   outline: none;
   margin-bottom: 16px;
+  border-radius: 0;
 }
 
 .signup-input::placeholder {
@@ -474,6 +582,8 @@ body::before {
   font-family: "Courier New", monospace;
   font-size: 13px;
   align-self: center;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .signup-submit {
@@ -485,6 +595,9 @@ body::before {
   cursor: pointer;
   color: white;
   font-family: "Courier New", monospace;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
 }
 
 .modal-status-copy {
@@ -579,6 +692,11 @@ body::before {
     justify-content: center;
   }
 
+  .signup-modal {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+  }
+
   .signup-modal-request {
     width: min(100%, 418px);
     min-height: 548px;
@@ -612,6 +730,7 @@ body::before {
   }
 
   .signup-title {
+    width: -moz-fit-content;
     width: fit-content;
     max-width: 100%;
     margin-left: auto;

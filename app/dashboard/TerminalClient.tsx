@@ -12,6 +12,7 @@ type Ticket = {
   claimed?: boolean;
   claimed_at?: string | null;
   created_at?: string;
+  can_send?: boolean;
 };
 
 export default function TerminalClient() {
@@ -38,6 +39,11 @@ export default function TerminalClient() {
   const [checkoutMessage, setCheckoutMessage] = useState("");
   const [viewportWidth, setViewportWidth] = useState(1400);
 
+  const [sendPhones, setSendPhones] = useState<Record<string, string>>({});
+  const [sendMessages, setSendMessages] = useState<Record<string, string>>({});
+  const [sendingTicketId, setSendingTicketId] = useState<string | null>(null);
+  const [sendModalTicket, setSendModalTicket] = useState<Ticket | null>(null);
+
   const timeoutIdsRef = useRef<number[]>([]);
 
   const bootScript = [
@@ -60,6 +66,13 @@ export default function TerminalClient() {
   }, []);
 
   const isMobile = viewportWidth < 900;
+
+  // Compact desktop / laptop band only.
+  // Leaves larger desktops using your original fixed layout.
+  const isCompactDesktop = !isMobile && viewportWidth >= 1180 && viewportWidth <= 1550;
+
+  const isDesktopEmptyWallet =
+    !isMobile && showEntrySection && !loadingTickets && tickets.length === 0;
 
   async function loadTickets() {
     try {
@@ -104,14 +117,16 @@ export default function TerminalClient() {
     loadTickets();
     loadTier();
 
+    const lineDelay = isMobile ? 360 : 450;
+
     bootScript.forEach((line, index) => {
       const id = window.setTimeout(() => {
         setTerminalLines((prev) => [...prev, line]);
-      }, index * 450);
+      }, index * lineDelay);
       timeoutIdsRef.current.push(id);
     });
 
-    const bootDoneTime = bootScript.length * 450;
+    const bootDoneTime = bootScript.length * lineDelay;
 
     timeoutIdsRef.current.push(
       window.setTimeout(() => {
@@ -122,13 +137,13 @@ export default function TerminalClient() {
     timeoutIdsRef.current.push(
       window.setTimeout(() => {
         setShowEntrySection(true);
-      }, bootDoneTime + (isMobile ? 260 : 560))
+      }, bootDoneTime + (isMobile ? 180 : 560))
     );
 
     timeoutIdsRef.current.push(
       window.setTimeout(() => {
         setShowButtons(true);
-      }, bootDoneTime + (isMobile ? 520 : 900))
+      }, bootDoneTime + (isMobile ? 340 : 900))
     );
   }
 
@@ -230,20 +245,170 @@ export default function TerminalClient() {
     }
   }
 
+  function setSendPhone(ticketId: string, value: string) {
+    setSendPhones((prev) => ({
+      ...prev,
+      [ticketId]: value,
+    }));
+  }
+
+  function openSendModal(ticket: Ticket) {
+    if (!ticket.id) return;
+    setSendMessages((prev) => ({
+      ...prev,
+      [ticket.id!]: "",
+    }));
+    setSendModalTicket(ticket);
+  }
+
+  function closeSendModal() {
+    setSendModalTicket(null);
+  }
+
+  async function sendToken(ticketId: string) {
+    const phone = (sendPhones[ticketId] || "").trim();
+
+    if (!phone) {
+      setSendMessages((prev) => ({
+        ...prev,
+        [ticketId]: "Enter a phone number.",
+      }));
+      return;
+    }
+
+    setSendingTicketId(ticketId);
+    setSendMessages((prev) => ({
+      ...prev,
+      [ticketId]: "",
+    }));
+
+    try {
+      const res = await fetch("/api/send-token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ticketId,
+          phone,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setSendMessages((prev) => ({
+          ...prev,
+          [ticketId]: data.error || "Send failed.",
+        }));
+        return;
+      }
+
+      setSendMessages((prev) => ({
+        ...prev,
+        [ticketId]: data.message || "Token sent.",
+      }));
+
+      setSendPhones((prev) => ({
+        ...prev,
+        [ticketId]: "",
+      }));
+
+      await loadTickets();
+      setSendModalTicket(null);
+    } catch (err) {
+      console.error("Send token failed", err);
+      setSendMessages((prev) => ({
+        ...prev,
+        [ticketId]: "Send failed.",
+      }));
+    } finally {
+      setSendingTicketId(null);
+    }
+  }
+
   const qrBase =
     process.env.NEXT_PUBLIC_QR_BASE_URL || window.location.origin;
 
+  const desktopOuterWidth = isCompactDesktop ? 1032 : undefined;
+  const desktopLeftWidth = isCompactDesktop ? 520 : 460;
+  const desktopGap = isCompactDesktop ? 92 : 80;
+  const desktopRightWidth = isCompactDesktop ? 420 : 360;
+
+  const desktopMainStyle: React.CSSProperties = isMobile
+    ? {
+        marginTop: 26,
+        marginLeft: 20,
+        marginRight: 20,
+        marginBottom: 60,
+      }
+    : isCompactDesktop
+    ? {
+        marginTop: 72,
+        marginLeft: "auto",
+        marginRight: "auto",
+        marginBottom: 60,
+        width: desktopOuterWidth,
+        maxWidth: "calc(100vw - 80px)",
+      }
+    : {
+        marginTop: 72,
+        marginLeft: 120,
+        marginRight: 40,
+        marginBottom: 60,
+      };
+
+  const desktopTitleSize = isCompactDesktop ? 34 : 30;
+  const desktopEntryTitleSize = isCompactDesktop ? 30 : 26;
+  const desktopBoxPadding = isCompactDesktop ? 22 : 20;
+  const desktopBoxFont = isCompactDesktop ? 14 : 13;
+  const desktopBoxMinHeight = isCompactDesktop ? 194 : 178;
+  const desktopProgressWidth = isCompactDesktop ? 336 : 300;
+  const desktopProgressHeight = isCompactDesktop ? 13 : 12;
+  const desktopSmallLabel = isCompactDesktop ? 13 : 12;
+  const desktopCardPadding = isCompactDesktop ? 18 : 16;
+  const desktopCardMetaFont = isCompactDesktop ? 12 : 11;
+  const desktopCardCodeFont = isCompactDesktop ? 17 : 16;
+  const desktopQrSize = isCompactDesktop ? 128 : 120;
+  const desktopButtonHeight = isCompactDesktop ? 64 : 60;
+  const desktopButtonFont = isCompactDesktop ? 15 : 14;
+  const desktopButtonSpacing = isCompactDesktop ? 3.5 : 3.2;
+  const desktopEntryGridMaxWidth = isCompactDesktop ? 456 : 420;
+  const desktopEntryMinCard = isCompactDesktop ? 195 : 180;
+
+  const desktopGenerateModalStyle: React.CSSProperties =
+    !isMobile && isCompactDesktop
+      ? {
+          width: 430,
+          minHeight: 548,
+          padding: "0 30px 24px 30px",
+        }
+      : {};
+
+  const desktopSendModalStyle: React.CSSProperties =
+    !isMobile && isCompactDesktop
+      ? {
+          width: 448,
+          maxWidth: "92vw",
+        }
+      : !isMobile
+      ? {
+          width: 400,
+          maxWidth: "92vw",
+        }
+      : {};
+
   const actionButtonStyle: React.CSSProperties = {
     width: "100%",
-    minHeight: 60,
+    minHeight: isMobile ? 60 : desktopButtonHeight,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
     lineHeight: 1.02,
     padding: "14px 20px",
-    fontSize: 14,
-    letterSpacing: 3.2,
+    fontSize: isMobile ? 14 : desktopButtonFont,
+    letterSpacing: isMobile ? 3.2 : desktopButtonSpacing,
     whiteSpace: "nowrap",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontWeight: 700,
@@ -251,11 +416,11 @@ export default function TerminalClient() {
   };
 
   const modalArrowButtonStyle: React.CSSProperties = {
-    width: isMobile ? 40 : 28,
-    height: isMobile ? 40 : 28,
-    minHeight: isMobile ? 40 : 28,
+    width: isMobile ? 40 : isCompactDesktop ? 32 : 28,
+    height: isMobile ? 40 : isCompactDesktop ? 32 : 28,
+    minHeight: isMobile ? 40 : isCompactDesktop ? 32 : 28,
     padding: 0,
-    fontSize: isMobile ? 14 : 10,
+    fontSize: isMobile ? 14 : isCompactDesktop ? 11 : 10,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
@@ -276,8 +441,8 @@ export default function TerminalClient() {
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
-    width: isMobile ? 86 : 72,
-    height: isMobile ? 40 : 28,
+    width: isMobile ? 86 : isCompactDesktop ? 82 : 72,
+    height: isMobile ? 40 : isCompactDesktop ? 32 : 28,
     borderTop: "1px solid white",
     borderBottom: "1px solid white",
     borderLeft: "none",
@@ -287,34 +452,302 @@ export default function TerminalClient() {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: isMobile ? 16 : 13,
+    fontSize: isMobile ? 16 : isCompactDesktop ? 14 : 13,
     letterSpacing: 2,
     boxShadow: "none",
     flexShrink: 0,
   };
 
+  const sendInputStyle: React.CSSProperties = {
+    width: "100%",
+    background: "black",
+    border: "1px solid rgba(255,255,255,0.22)",
+    color: "white",
+    padding: isMobile ? "14px 14px" : isCompactDesktop ? "13px 14px" : "12px 14px",
+    fontFamily: '"Courier New", monospace',
+    fontSize: isMobile ? 15 : isCompactDesktop ? 15 : 14,
+    letterSpacing: 1.2,
+    outline: "none",
+  };
+
+  const sendButtonStyle: React.CSSProperties = {
+    width: "100%",
+    minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
+    border: "1px solid white",
+    background: "black",
+    color: "white",
+    padding: "12px 16px",
+    fontSize: isMobile ? 13 : isCompactDesktop ? 17 : 16,
+    fontWeight: 700,
+    letterSpacing: isMobile ? 3.2 : isCompactDesktop ? 4.4 : 4.2,
+    lineHeight: 1,
+    textAlign: "center",
+    cursor: "pointer",
+    fontFamily: "Arial, Helvetica, sans-serif",
+    textTransform: "uppercase",
+    whiteSpace: "nowrap",
+  };
+
+  const sendTriggerStyle: React.CSSProperties = {
+    width: "100%",
+    minHeight: isMobile ? 38 : isCompactDesktop ? 38 : 36,
+    border: "1px solid white",
+    background: "black",
+    color: "white",
+    padding: isMobile ? "9px 10px" : "8px 10px",
+    fontSize: isMobile ? 11 : isCompactDesktop ? 12 : 11,
+    fontWeight: 700,
+    letterSpacing: isMobile ? 2.1 : isCompactDesktop ? 2.2 : 2,
+    lineHeight: 1,
+    textAlign: "center",
+    cursor: "pointer",
+    fontFamily: "Arial, Helvetica, sans-serif",
+    textTransform: "uppercase",
+    whiteSpace: "nowrap",
+    marginTop: 12,
+  };
+
+  const mobileModalInnerStyle: React.CSSProperties = isMobile
+    ? {
+        width: "84%",
+        maxWidth: 292,
+        alignSelf: "center",
+      }
+    : {};
+
+  const mobileGenerateModalStyle: React.CSSProperties = isMobile
+    ? {
+        width: "calc(100vw - 32px)",
+        maxWidth: 370,
+        minHeight: 468,
+        paddingTop: 0,
+        paddingBottom: 18,
+      }
+    : desktopGenerateModalStyle;
+
+  const mobileSendModalStyle: React.CSSProperties = isMobile
+    ? {
+        width: "calc(100vw - 32px)",
+        maxWidth: 370,
+        minHeight: "auto",
+        paddingTop: 0,
+        paddingBottom: 18,
+      }
+    : desktopSendModalStyle;
+
+  const mobileHeaderStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        paddingTop: 18,
+        paddingBottom: 14,
+        marginBottom: 18,
+      }
+    : isCompactDesktop
+    ? {
+        marginBottom: 28,
+      }
+    : {};
+
+  const mobileGenerateTitleStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        textAlign: "center",
+        fontSize: 19,
+        letterSpacing: 2.8,
+        marginBottom: 12,
+      }
+    : isCompactDesktop
+    ? {
+        fontSize: 22,
+        marginBottom: 18,
+      }
+    : {};
+
+  const mobileStatusCopyStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        marginBottom: 22,
+        fontSize: 11,
+        lineHeight: 1.42,
+      }
+    : isCompactDesktop
+    ? {
+        marginBottom: 26,
+        fontSize: 15,
+        lineHeight: 1.9,
+      }
+    : {};
+
+  const mobileTierVisualWrapStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        marginBottom: 30,
+      }
+    : {};
+
+  const mobileTierLabelStyle: React.CSSProperties = isMobile
+    ? {
+        fontSize: 10,
+        letterSpacing: 2,
+        marginBottom: 8,
+      }
+    : {};
+
+  const mobileTierTrackStyle: React.CSSProperties = isMobile
+    ? {
+        position: "relative",
+        width: "100%",
+        height: 10,
+        background: "#222",
+      }
+    : {};
+
+  const mobileVipTrackStyle: React.CSSProperties = isMobile
+    ? {
+        position: "relative",
+        width: "100%",
+        height: 10,
+        background: "#222",
+      }
+    : {};
+
+  const mobileQuantityLabelStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        marginBottom: 14,
+        fontSize: 12,
+        letterSpacing: 2.4,
+      }
+    : isCompactDesktop
+    ? {
+        marginBottom: 16,
+        fontSize: 15,
+      }
+    : {};
+
+  const mobileQuantityRowStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        display: "flex",
+        justifyContent: "center",
+        marginBottom: 16,
+      }
+    : isCompactDesktop
+    ? {
+        marginBottom: 18,
+      }
+    : {};
+
+  const mobileGenerateWrapStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        paddingTop: 0,
+        marginTop: "auto",
+      }
+    : isCompactDesktop
+    ? {
+        marginTop: "auto",
+      }
+    : {};
+
+  const mobileGenerateButtonStyle: React.CSSProperties = isMobile
+    ? {
+        minHeight: 52,
+        fontSize: 12,
+        letterSpacing: 3.2,
+      }
+    : isCompactDesktop
+    ? {
+        minHeight: 58,
+        fontSize: 18,
+        letterSpacing: 4.6,
+      }
+    : {};
+
+  const mobileCancelStyle: React.CSSProperties = isMobile
+    ? {
+        alignSelf: "center",
+        marginTop: 10,
+        fontSize: 11,
+        letterSpacing: 2.8,
+      }
+    : isCompactDesktop
+    ? {
+        marginTop: 14,
+        fontSize: 14,
+      }
+    : {};
+
+  const mobileEntryCardGridStyle: React.CSSProperties = isMobile
+    ? {
+        display: "grid",
+        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        gap: 12,
+        marginBottom: 18,
+        alignItems: "start",
+      }
+    : {
+        display: "grid",
+        gridTemplateColumns: "1fr",
+        gap: 12,
+        marginBottom: 18,
+      };
+
+  const mobileEntryCardStyle: React.CSSProperties = isMobile
+    ? {
+        border: "1px solid #555",
+        padding: 10,
+        width: "100%",
+        maxWidth: 182,
+        justifySelf: "center",
+      }
+    : {
+        border: "1px solid #555",
+        padding: 10,
+      };
+
+  const mobileSendTokenCardStyle: React.CSSProperties = isMobile
+    ? {
+        width: 160,
+        maxWidth: "100%",
+        alignSelf: "center",
+        border: "1px solid #555",
+        padding: 10,
+        marginBottom: 10,
+      }
+    : isCompactDesktop
+    ? {
+        border: "1px solid #555",
+        padding: 14,
+        width: 178,
+        alignSelf: "center",
+        marginBottom: 14,
+      }
+    : {
+        border: "1px solid #555",
+        padding: 12,
+        width: 160,
+        alignSelf: "center",
+        marginBottom: 10,
+      };
+
   return (
-    <main
-      style={{
-        marginTop: isMobile ? 34 : 72,
-        marginLeft: isMobile ? 20 : 120,
-        marginRight: isMobile ? 20 : 40,
-        marginBottom: 60,
-      }}
-    >
+    <main style={desktopMainStyle}>
       {!isMobile ? (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "460px 1fr",
-            gap: 80,
+            gridTemplateColumns: `${desktopLeftWidth}px ${desktopRightWidth}px`,
+            gap: desktopGap,
             alignItems: "start",
+            width: isCompactDesktop ? desktopOuterWidth : undefined,
+            maxWidth: "100%",
           }}
         >
           <div>
             <div
               style={{
-                fontSize: 30,
+                fontSize: desktopTitleSize,
                 letterSpacing: 6,
                 marginBottom: 24,
               }}
@@ -325,12 +758,12 @@ export default function TerminalClient() {
             <div
               style={{
                 border: "1px solid #888",
-                padding: 20,
-                width: 460,
-                fontSize: 13,
+                padding: desktopBoxPadding,
+                width: desktopLeftWidth,
+                fontSize: desktopBoxFont,
                 letterSpacing: 1.4,
                 lineHeight: 1.7,
-                minHeight: 178,
+                minHeight: desktopBoxMinHeight,
               }}
             >
               {terminalLines.map((line, i) => (
@@ -345,13 +778,13 @@ export default function TerminalClient() {
                 style={{
                   border: "1px solid #888",
                   borderTop: "none",
-                  padding: 20,
-                  width: 460,
+                  padding: desktopBoxPadding,
+                  width: desktopLeftWidth,
                 }}
               >
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: desktopSmallLabel,
                     marginBottom: 12,
                     letterSpacing: 2,
                   }}
@@ -361,11 +794,11 @@ export default function TerminalClient() {
 
                 <div
                   style={{
-                    width: 300,
+                    width: desktopProgressWidth,
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr 1fr",
                     textAlign: "center",
-                    fontSize: 12,
+                    fontSize: desktopSmallLabel,
                     marginBottom: 8,
                   }}
                 >
@@ -377,8 +810,8 @@ export default function TerminalClient() {
                 <div
                   style={{
                     position: "relative",
-                    width: 300,
-                    height: 12,
+                    width: desktopProgressWidth,
+                    height: desktopProgressHeight,
                     background: "#222",
                     marginBottom: 24,
                   }}
@@ -418,7 +851,7 @@ export default function TerminalClient() {
 
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: desktopSmallLabel,
                     marginBottom: 8,
                     letterSpacing: 2,
                   }}
@@ -429,8 +862,8 @@ export default function TerminalClient() {
                 <div
                   style={{
                     position: "relative",
-                    width: 300,
-                    height: 12,
+                    width: desktopProgressWidth,
+                    height: desktopProgressHeight,
                     background: "#222",
                   }}
                 >
@@ -449,7 +882,7 @@ export default function TerminalClient() {
           <div>
             <div
               style={{
-                fontSize: 26,
+                fontSize: desktopEntryTitleSize,
                 letterSpacing: 6,
                 marginBottom: 16,
               }}
@@ -457,140 +890,159 @@ export default function TerminalClient() {
               Entry Tokens
             </div>
 
-            {!showEntrySection && (
-              <div
-                style={{
-                  fontSize: 14,
-                  letterSpacing: 2,
-                  marginBottom: 18,
-                }}
-              >
-                Loading...
-              </div>
-            )}
-
-            {showEntrySection && !loadingTickets && tickets.length === 0 && (
-              <div
-                style={{
-                  fontSize: 14,
-                  letterSpacing: 2,
-                  marginBottom: 18,
-                }}
-              >
-                {">"} USER HAS NO ENTRY TOKENS
-              </div>
-            )}
-
-            {showEntrySection && tickets.length > 0 && (
-              <div
-                style={{
-                  fontSize: 12,
-                  letterSpacing: 2,
-                  lineHeight: 1.8,
-                  marginBottom: 18,
-                  color: "#c8c8c8",
-                }}
-              >
-                <div>{">"} TOKENS REGISTERED TO USER</div>
-                <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
-              </div>
-            )}
-
-            {showEntrySection && !loadingTickets && tickets.length > 0 && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, minmax(180px, 1fr))",
-                  gap: 18,
-                  maxWidth: 420,
-                  marginBottom: 22,
-                }}
-              >
-                {tickets.map((ticket, index) => {
-                  const isVip = ticket.is_vip || ticket.vip;
-                  const isUsed = !!ticket.claimed;
-
-                  return (
-                    <div
-                      key={ticket.id || index}
-                      style={{
-                        border: "1px solid #555",
-                        padding: 16,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: 12,
-                          fontSize: 11,
-                          letterSpacing: 2,
-                        }}
-                      >
-                        <span>{isVip ? "VIP" : "GA"}</span>
-                        <span style={{ color: isUsed ? "#888" : "#fff" }}>
-                          {isUsed ? "USED" : "ACTIVE"}
-                        </span>
-                      </div>
-
-                      <QRCodeSVG
-                        value={`${qrBase}/checkin?code=${ticket.code}`}
-                        size={120}
-                      />
-
-                      <div
-                        style={{
-                          marginTop: 10,
-                          fontSize: 11,
-                          letterSpacing: 2,
-                          color: "#b8b8b8",
-                        }}
-                      >
-                        TOKEN CODE
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: 16,
-                          letterSpacing: 2,
-                          marginTop: 4,
-                        }}
-                      >
-                        {ticket.code}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {showButtons && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "360px",
-                  gap: 18,
-                  maxWidth: 360,
-                }}
-              >
-                <button
-                  className="cta-button"
-                  style={actionButtonStyle}
-                  onClick={() => setPurchaseOpen(true)}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: isDesktopEmptyWallet ? (isCompactDesktop ? 210 : 190) : undefined,
+              }}
+            >
+              {!showEntrySection && (
+                <div
+                  style={{
+                    fontSize: isCompactDesktop ? 15 : 14,
+                    letterSpacing: 2,
+                    marginBottom: 18,
+                  }}
                 >
-                  GENERATE TOKENS
-                </button>
+                  Loading...
+                </div>
+              )}
 
-                <button
-                  className="cta-button"
-                  style={actionButtonStyle}
-                  onClick={() => setVipOpen(true)}
+              {showEntrySection && !loadingTickets && tickets.length === 0 && (
+                <div
+                  style={{
+                    fontSize: isCompactDesktop ? 15 : 14,
+                    letterSpacing: 2,
+                    marginBottom: 18,
+                  }}
                 >
-                  GENERATE VIP TOKENS
-                </button>
-              </div>
-            )}
+                  {">"} USER HAS NO ENTRY TOKENS
+                </div>
+              )}
+
+              {showEntrySection && tickets.length > 0 && (
+                <div
+                  style={{
+                    fontSize: isCompactDesktop ? 13 : 12,
+                    letterSpacing: 2,
+                    lineHeight: 1.8,
+                    marginBottom: 18,
+                    color: "#c8c8c8",
+                  }}
+                >
+                  <div>{">"} TOKENS REGISTERED TO USER</div>
+                  <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
+                </div>
+              )}
+
+              {showEntrySection && !loadingTickets && tickets.length > 0 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: `repeat(2, minmax(${desktopEntryMinCard}px, 1fr))`,
+                    gap: isCompactDesktop ? 20 : 18,
+                    maxWidth: desktopEntryGridMaxWidth,
+                    marginBottom: 22,
+                  }}
+                >
+                  {tickets.map((ticket, index) => {
+                    const isVip = ticket.is_vip || ticket.vip;
+                    const isUsed = !!ticket.claimed;
+
+                    return (
+                      <div
+                        key={ticket.id || index}
+                        style={{
+                          border: "1px solid #555",
+                          padding: desktopCardPadding,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 12,
+                            fontSize: desktopCardMetaFont,
+                            letterSpacing: 2,
+                          }}
+                        >
+                          <span>{isVip ? "VIP" : "GA"}</span>
+                          <span style={{ color: isUsed ? "#888" : "#fff" }}>
+                            {isUsed ? "USED" : "ACTIVE"}
+                          </span>
+                        </div>
+
+                        <QRCodeSVG
+                          value={`${qrBase}/checkin?code=${ticket.code}`}
+                          size={desktopQrSize}
+                        />
+
+                        <div
+                          style={{
+                            marginTop: 10,
+                            fontSize: desktopCardMetaFont,
+                            letterSpacing: 2,
+                            color: "#b8b8b8",
+                          }}
+                        >
+                          TOKEN CODE
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: desktopCardCodeFont,
+                            letterSpacing: 2,
+                            marginTop: 4,
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {ticket.code}
+                        </div>
+
+                        {ticket.can_send && !isUsed && ticket.id && (
+                          <button
+                            style={sendTriggerStyle}
+                            onClick={() => openSendModal(ticket)}
+                          >
+                            SEND TOKEN
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {showButtons && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: `${desktopRightWidth}px`,
+                    gap: 18,
+                    maxWidth: desktopRightWidth,
+                    marginTop: isDesktopEmptyWallet ? "auto" : 0,
+                  }}
+                >
+                  <button
+                    className="cta-button"
+                    style={actionButtonStyle}
+                    onClick={() => setPurchaseOpen(true)}
+                  >
+                    GENERATE TOKENS
+                  </button>
+
+                  <button
+                    className="cta-button"
+                    style={actionButtonStyle}
+                    onClick={() => setVipOpen(true)}
+                  >
+                    GENERATE VIP TOKENS
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -599,7 +1051,7 @@ export default function TerminalClient() {
             style={{
               fontSize: 28,
               letterSpacing: 4,
-              marginBottom: 20,
+              marginBottom: 16,
             }}
           >
             Terminal
@@ -608,196 +1060,203 @@ export default function TerminalClient() {
           <div
             style={{
               border: "1px solid #888",
-              padding: 16,
-              fontSize: 12,
-              letterSpacing: 1.2,
-              lineHeight: 1.7,
-              marginBottom: 24,
-              minHeight: 160,
+              padding: 14,
+              fontSize: 11,
+              letterSpacing: 1.15,
+              lineHeight: 1.62,
+              marginBottom: 18,
+              minHeight: 146,
             }}
           >
             {terminalLines.map((line, i) => (
-              <div key={i} style={{ marginTop: i === 0 ? 0 : 10 }}>
+              <div key={i} style={{ marginTop: i === 0 ? 0 : 8 }}>
                 {line}
               </div>
             ))}
 
             {!showEntrySection && (
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 10 }}>
                 <span className="cursor">_</span>
               </div>
             )}
           </div>
 
-          {!showEntrySection && (
-            <div
-              style={{
-                fontSize: 13,
-                letterSpacing: 2,
-                marginBottom: 18,
-              }}
-            >
-              Loading...
-            </div>
-          )}
+          {showEntrySection && (
+            <>
+              <div
+                style={{
+                  fontSize: 20,
+                  letterSpacing: 3.2,
+                  marginBottom: 10,
+                }}
+              >
+                Entry Tokens
+              </div>
 
-          {showEntrySection && !loadingTickets && tickets.length === 0 && (
-            <div
-              style={{
-                fontSize: 13,
-                letterSpacing: 2,
-                lineHeight: 1.8,
-                marginBottom: 18,
-              }}
-            >
-              <div>{">"} USER HAS NO ENTRY TOKENS</div>
-            </div>
-          )}
+              {tickets.length > 0 ? (
+                <div
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: 2,
+                    lineHeight: 1.7,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div>{">"} TOKENS REGISTERED TO USER</div>
+                  <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
+                </div>
+              ) : !loadingTickets ? (
+                <div
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: 2,
+                    lineHeight: 1.7,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div>{">"} USER HAS NO ENTRY TOKENS</div>
+                </div>
+              ) : null}
 
-          {showEntrySection && tickets.length > 0 && (
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: 2,
-                lineHeight: 1.8,
-                marginBottom: 18,
-              }}
-            >
-              <div>{">"} TOKENS REGISTERED TO USER</div>
-              <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
-            </div>
-          )}
+              {!loadingTickets && tickets.length > 0 && (
+                <div style={mobileEntryCardGridStyle}>
+                  {tickets.map((ticket, index) => {
+                    const isVip = ticket.is_vip || ticket.vip;
+                    const isUsed = !!ticket.claimed;
 
-          {showEntrySection && !loadingTickets && tickets.length > 0 && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr",
-                gap: 16,
-                marginBottom: 22,
-              }}
-            >
-              {tickets.map((ticket, index) => {
-                const isVip = ticket.is_vip || ticket.vip;
-                const isUsed = !!ticket.claimed;
+                    return (
+                      <div
+                        key={ticket.id || index}
+                        style={mobileEntryCardStyle}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 8,
+                            fontSize: 10,
+                            letterSpacing: 1.8,
+                          }}
+                        >
+                          <span>{isVip ? "VIP" : "GA"}</span>
+                          <span style={{ color: isUsed ? "#888" : "#fff" }}>
+                            {isUsed ? "USED" : "ACTIVE"}
+                          </span>
+                        </div>
 
-                return (
-                  <div
-                    key={ticket.id || index}
+                        <div style={{ display: "flex", justifyContent: "center" }}>
+                          <QRCodeSVG
+                            value={`${qrBase}/checkin?code=${ticket.code}`}
+                            size={110}
+                          />
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 8,
+                            fontSize: 9,
+                            letterSpacing: 1.8,
+                            color: "#b8b8b8",
+                          }}
+                        >
+                          TOKEN CODE
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 13,
+                            letterSpacing: 1.6,
+                            marginTop: 4,
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {ticket.code}
+                        </div>
+
+                        {ticket.can_send && !isUsed && ticket.id && (
+                          <button
+                            style={sendTriggerStyle}
+                            onClick={() => openSendModal(ticket)}
+                          >
+                            SEND TOKEN
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {showButtons && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr",
+                    gap: 14,
+                  }}
+                >
+                  <button
+                    className="cta-button"
                     style={{
-                      border: "1px solid #555",
-                      padding: 16,
+                      width: "100%",
+                      minHeight: 58,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      lineHeight: 1.08,
+                      padding: "12px 16px",
+                      fontSize: 13,
+                      letterSpacing: 3,
+                      whiteSpace: "nowrap",
+                      fontFamily: "Arial, Helvetica, sans-serif",
+                      fontWeight: 700,
                     }}
+                    onClick={() => setPurchaseOpen(true)}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 12,
-                        fontSize: 11,
-                        letterSpacing: 2,
-                      }}
-                    >
-                      <span>{isVip ? "VIP" : "GA"}</span>
-                      <span style={{ color: isUsed ? "#888" : "#fff" }}>
-                        {isUsed ? "USED" : "ACTIVE"}
-                      </span>
-                    </div>
+                    GENERATE TOKENS
+                  </button>
 
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <QRCodeSVG
-                        value={`${qrBase}/checkin?code=${ticket.code}`}
-                        size={180}
-                      />
-                    </div>
-
-                    <div
-                      style={{
-                        marginTop: 12,
-                        fontSize: 11,
-                        letterSpacing: 2,
-                        color: "#b8b8b8",
-                      }}
-                    >
-                      TOKEN CODE
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: 18,
-                        letterSpacing: 2,
-                        marginTop: 6,
-                      }}
-                    >
-                      {ticket.code}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {showButtons && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr",
-                gap: 16,
-              }}
-            >
-              <button
-                className="cta-button"
-                style={{
-                  width: "100%",
-                  minHeight: 64,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  lineHeight: 1.08,
-                  padding: "14px 18px",
-                  fontSize: 14,
-                  letterSpacing: 3.2,
-                  whiteSpace: "nowrap",
-                  fontFamily: "Arial, Helvetica, sans-serif",
-                  fontWeight: 700,
-                }}
-                onClick={() => setPurchaseOpen(true)}
-              >
-                GENERATE TOKENS
-              </button>
-
-              <button
-                className="cta-button"
-                style={{
-                  width: "100%",
-                  minHeight: 64,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  lineHeight: 1.08,
-                  padding: "14px 18px",
-                  fontSize: 14,
-                  letterSpacing: 3.2,
-                  whiteSpace: "nowrap",
-                  fontFamily: "Arial, Helvetica, sans-serif",
-                  fontWeight: 700,
-                }}
-                onClick={() => setVipOpen(true)}
-              >
-                GENERATE VIP TOKENS
-              </button>
-            </div>
+                  <button
+                    className="cta-button"
+                    style={{
+                      width: "100%",
+                      minHeight: 58,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      lineHeight: 1.08,
+                      padding: "12px 16px",
+                      fontSize: 13,
+                      letterSpacing: 3,
+                      whiteSpace: "nowrap",
+                      fontFamily: "Arial, Helvetica, sans-serif",
+                      fontWeight: 700,
+                    }}
+                    onClick={() => setVipOpen(true)}
+                  >
+                    GENERATE VIP TOKENS
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
 
       {purchaseOpen && (
         <div className="signup-overlay">
-          <div className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}>
-            <div className="signup-header signup-header-home">
+          <div
+            className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
+            style={{
+              ...mobileGenerateModalStyle,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
                 src="/group-name.png"
@@ -806,15 +1265,18 @@ export default function TerminalClient() {
               />
             </div>
 
-            <div className="signup-title signup-title-large">
+            <div
+              className="signup-title signup-title-large"
+              style={mobileGenerateTitleStyle}
+            >
               Generate Tokens
             </div>
 
-            <div className="modal-status-copy">
+            <div className="modal-status-copy" style={mobileStatusCopyStyle}>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
-                  CURRENT TIER: TIER 1 ACTIVE
+                  CURRENT TIER: TIER {tier} ACTIVE
                 </span>
               </div>
               <div className="modal-status-line">
@@ -825,9 +1287,60 @@ export default function TerminalClient() {
               </div>
             </div>
 
-            <div className="modal-quantity-label">QUANTITY</div>
+            {isMobile && (
+              <div style={mobileTierVisualWrapStyle}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    textAlign: "center",
+                    ...mobileTierLabelStyle,
+                  }}
+                >
+                  <div style={{ color: tierColor(1) }}>TIER 1</div>
+                  <div style={{ color: tierColor(2) }}>TIER 2</div>
+                  <div style={{ color: tierColor(3) }}>TIER 3</div>
+                </div>
 
-            <div className="modal-quantity-row">
+                <div style={mobileTierTrackStyle}>
+                  <div
+                    style={{
+                      width: `${tierProgressPercent()}%`,
+                      height: "100%",
+                      background: "white",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "33.3333%",
+                      top: 0,
+                      bottom: 0,
+                      width: 1,
+                      background: "#888",
+                      transform: "translateX(-0.5px)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "66.6666%",
+                      top: 0,
+                      bottom: 0,
+                      width: 1,
+                      background: "#888",
+                      transform: "translateX(-0.5px)",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="modal-quantity-label" style={mobileQuantityLabelStyle}>
+              QUANTITY
+            </div>
+
+            <div className="modal-quantity-row" style={mobileQuantityRowStyle}>
               <button
                 className="cta-button"
                 style={modalArrowButtonStyle}
@@ -851,21 +1364,25 @@ export default function TerminalClient() {
               <div className="modal-checkout-message">{checkoutMessage}</div>
             )}
 
-            <div className="signup-generate-button-wrap">
+            <div
+              className="signup-generate-button-wrap"
+              style={mobileGenerateWrapStyle}
+            >
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : 300,
+                  width: isMobile ? "100%" : isCompactDesktop ? 340 : 300,
                   maxWidth: "100%",
-                  minHeight: 54,
+                  minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
                   lineHeight: 1.02,
                   color: "white",
-                  fontSize: isMobile ? 13 : 17,
+                  fontSize: isMobile ? 13 : isCompactDesktop ? 18 : 17,
                   fontWeight: 700,
-                  letterSpacing: isMobile ? 3.4 : 4.8,
+                  letterSpacing: isMobile ? 3.4 : isCompactDesktop ? 4.8 : 4.8,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
+                  ...mobileGenerateButtonStyle,
                 }}
                 onClick={generateTokens}
               >
@@ -875,6 +1392,7 @@ export default function TerminalClient() {
 
             <button
               className="signup-close"
+              style={mobileCancelStyle}
               onClick={() => {
                 setCheckoutMessage("");
                 setPurchaseOpen(false);
@@ -888,8 +1406,15 @@ export default function TerminalClient() {
 
       {vipOpen && (
         <div className="signup-overlay">
-          <div className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}>
-            <div className="signup-header signup-header-home">
+          <div
+            className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
+            style={{
+              ...mobileGenerateModalStyle,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
                 src="/group-name.png"
@@ -898,11 +1423,14 @@ export default function TerminalClient() {
               />
             </div>
 
-            <div className="signup-title signup-title-large">
+            <div
+              className="signup-title signup-title-large"
+              style={mobileGenerateTitleStyle}
+            >
               Generate VIP Tokens
             </div>
 
-            <div className="modal-status-copy">
+            <div className="modal-status-copy" style={mobileStatusCopyStyle}>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">VIP CHANNEL ACTIVE</span>
@@ -915,9 +1443,26 @@ export default function TerminalClient() {
               </div>
             </div>
 
-            <div className="modal-quantity-label">QUANTITY</div>
+            {isMobile && (
+              <div style={mobileTierVisualWrapStyle}>
+                <div style={mobileTierLabelStyle}>VIP ALLOCATION</div>
+                <div style={mobileVipTrackStyle}>
+                  <div
+                    style={{
+                      width: `${vipProgressPercent()}%`,
+                      height: "100%",
+                      background: "white",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
-            <div className="modal-quantity-row">
+            <div className="modal-quantity-label" style={mobileQuantityLabelStyle}>
+              QUANTITY
+            </div>
+
+            <div className="modal-quantity-row" style={mobileQuantityRowStyle}>
               <button
                 className="cta-button"
                 style={modalArrowButtonStyle}
@@ -941,21 +1486,25 @@ export default function TerminalClient() {
               <div className="modal-checkout-message">{checkoutMessage}</div>
             )}
 
-            <div className="signup-generate-button-wrap">
+            <div
+              className="signup-generate-button-wrap"
+              style={mobileGenerateWrapStyle}
+            >
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : 300,
+                  width: isMobile ? "100%" : isCompactDesktop ? 340 : 300,
                   maxWidth: "100%",
-                  minHeight: 54,
+                  minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
                   lineHeight: 1.02,
                   color: "white",
-                  fontSize: isMobile ? 13 : 17,
+                  fontSize: isMobile ? 13 : isCompactDesktop ? 18 : 17,
                   fontWeight: 700,
-                  letterSpacing: isMobile ? 3.4 : 4.8,
+                  letterSpacing: isMobile ? 3.4 : isCompactDesktop ? 4.8 : 4.8,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
+                  ...mobileGenerateButtonStyle,
                 }}
                 onClick={generateVipTokens}
               >
@@ -965,10 +1514,158 @@ export default function TerminalClient() {
 
             <button
               className="signup-close"
+              style={mobileCancelStyle}
               onClick={() => {
                 setCheckoutMessage("");
                 setVipOpen(false);
               }}
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {sendModalTicket && sendModalTicket.id && (
+        <div className="signup-overlay">
+          <div
+            className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"} send-token-modal`}
+            style={mobileSendModalStyle}
+          >
+            <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
+              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+                alt="Signo Research Group"
+              />
+            </div>
+
+            <div
+              className="signup-title signup-title-large"
+              style={mobileGenerateTitleStyle}
+            >
+              Send Token
+            </div>
+
+            <div
+              className="modal-status-copy"
+              style={{
+                ...mobileStatusCopyStyle,
+                marginBottom: isCompactDesktop && !isMobile ? 14 : 12,
+              }}
+            >
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">
+                  TRANSMIT THIS TOKEN BY ENTERING THE RECIPIENT&apos;S PHONE NUMBER.
+                </span>
+              </div>
+            </div>
+
+            <div style={mobileSendTokenCardStyle}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 8,
+                  fontSize: isMobile ? 10 : isCompactDesktop ? 11 : 10,
+                  letterSpacing: 1.8,
+                }}
+              >
+                <span>
+                  {sendModalTicket.is_vip || sendModalTicket.vip ? "VIP" : "GA"}
+                </span>
+                <span style={{ color: "#fff" }}>ACTIVE</span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <QRCodeSVG
+                  value={`${qrBase}/checkin?code=${sendModalTicket.code}`}
+                  size={isMobile ? 104 : isCompactDesktop ? 118 : 104}
+                />
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: isMobile ? 9 : isCompactDesktop ? 10 : 9,
+                  letterSpacing: 1.8,
+                  color: "#b8b8b8",
+                }}
+              >
+                TOKEN CODE
+              </div>
+
+              <div
+                style={{
+                  fontSize: isMobile ? 13 : isCompactDesktop ? 15 : 14,
+                  letterSpacing: 1.6,
+                  marginTop: 4,
+                  wordBreak: "break-word",
+                }}
+              >
+                {sendModalTicket.code}
+              </div>
+            </div>
+
+            <input
+              value={sendPhones[sendModalTicket.id] || ""}
+              onChange={(e) => setSendPhone(sendModalTicket.id!, e.target.value)}
+              placeholder="RECIPIENT PHONE"
+              style={{
+                ...sendInputStyle,
+                ...mobileModalInnerStyle,
+                padding: isMobile ? "13px 13px" : isCompactDesktop ? "12px 13px" : "10px 12px",
+                fontSize: isMobile ? 14 : isCompactDesktop ? 14 : 13,
+              }}
+            />
+
+            {sendMessages[sendModalTicket.id] ? (
+              <div
+                style={{
+                  ...mobileModalInnerStyle,
+                  marginTop: 10,
+                  fontSize: isMobile ? 11 : isCompactDesktop ? 12 : 11,
+                  letterSpacing: 1.4,
+                  lineHeight: 1.45,
+                  color: "#c8c8c8",
+                  textAlign: "center",
+                }}
+              >
+                {sendMessages[sendModalTicket.id]}
+              </div>
+            ) : null}
+
+            <div
+              className="signup-generate-button-wrap"
+              style={{ ...mobileGenerateWrapStyle, paddingTop: 10 }}
+            >
+              <button
+                style={{
+                  ...sendButtonStyle,
+                  ...(isMobile
+                    ? {
+                        minHeight: 52,
+                        fontSize: 12,
+                        letterSpacing: 3,
+                      }
+                    : {}),
+                }}
+                onClick={() => sendToken(sendModalTicket.id!)}
+                disabled={sendingTicketId === sendModalTicket.id}
+              >
+                {sendingTicketId === sendModalTicket.id
+                  ? "SENDING..."
+                  : "SEND TOKEN"}
+              </button>
+            </div>
+
+            <button
+              className="signup-close"
+              style={mobileCancelStyle}
+              onClick={closeSendModal}
             >
               CANCEL
             </button>

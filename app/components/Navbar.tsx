@@ -6,20 +6,23 @@ import { usePathname } from "next/navigation";
 export default function Navbar() {
   const pathname = usePathname();
 
+  const hideNavbarCompletely =
+    pathname === "/claim-token" || pathname === "/checkin";
+
   const hideNavLinks =
     pathname === "/signup" ||
     pathname === "/privacy" ||
     pathname === "/terms";
 
+  if (hideNavbarCompletely) {
+    return null;
+  }
+
   return (
     <>
       <div className="navbar desktop-navbar">
         <div className="nav-left">
-          <img
-            src="/logo.png"
-            className="nav-logo"
-            alt="Signo logo"
-          />
+          <img src="/logo.png" className="nav-logo" alt="Signo logo" />
 
           <img
             src="/group-name.png"

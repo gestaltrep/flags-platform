@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -86,7 +86,15 @@ export async function POST(req: Request) {
     }
 
     const lineItems = buildGeneralAdmissionLineItems(quantity, sold);
-    const origin = new URL(req.url).origin;
+
+    const h = await headers();
+    const forwardedProto = h.get("x-forwarded-proto");
+    const forwardedHost = h.get("x-forwarded-host");
+
+    const origin =
+      forwardedProto && forwardedHost
+        ? `${forwardedProto}://${forwardedHost}`
+        : new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",

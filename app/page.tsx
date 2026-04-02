@@ -8,32 +8,88 @@ export default function Home() {
   const [phone, setPhone] = useState("");
   const [step, setStep] = useState<"form" | "verify">("form");
   const [code, setCode] = useState("");
+  const [termsChecked, setTermsChecked] = useState(false);
+  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function sendVerification() {
-    if (!name || !phone) {
-      alert("Please enter name and phone number");
+    setMessage("");
+
+    if (!name.trim()) {
+      setMessage("Please enter your name.");
       return;
     }
 
+    if (!phone.trim()) {
+      setMessage("Please enter your phone number.");
+      return;
+    }
+
+    if (!termsChecked) {
+      setMessage("Please agree to the Terms & Conditions.");
+      return;
+    }
+
+    if (!privacyChecked) {
+      setMessage("Please agree to the Privacy Policy.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await fetch("/api/send-code", {
+      const res = await fetch("/api/send-code", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          phone,
+          name: name.trim(),
+          phone: phone.trim(),
         }),
       });
 
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok || !data?.success) {
+        const raw = String(data?.error || "").toLowerCase();
+
+        if (raw.includes("invalid parameter")) {
+          setMessage("SMS is not available right now.");
+        } else if (raw.includes("invalid") && raw.includes("phone")) {
+          setMessage("This phone number isn't valid.");
+        } else {
+          setMessage("We couldn't send your code. Please try again.");
+        }
+        return;
+      }
+
       setStep("verify");
+      setMessage("");
     } catch (err) {
       console.error("verification failed", err);
+      setMessage("We couldn't send your code. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
   async function verifyCode() {
+    setMessage("");
+
+    if (!code.trim()) {
+      setMessage("Please enter the verification code.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const res = await fetch("/api/verify-code", {
         method: "POST",
@@ -41,23 +97,60 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone,
-          code,
+          phone: phone.trim(),
+          code: code.trim(),
+          name: name.trim(),
         }),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        alert("Verification successful");
-        setOpen(false);
-      } else {
-        alert("Invalid code");
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
       }
+
+      if (!res.ok || !data?.success) {
+        const raw = String(data?.error || "").toLowerCase();
+
+        if (raw.includes("expired")) {
+          setMessage("That code has expired.");
+        } else if (raw.includes("incorrect") || raw.includes("invalid")) {
+          setMessage("That code is incorrect.");
+        } else {
+          setMessage("We couldn't verify your code. Please try again.");
+        }
+        return;
+      }
+
+      setOpen(false);
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error("verification error", err);
+      setMessage("We couldn't sign you in. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
+
+  const messageSlot = (
+    <div
+      style={{
+        minHeight: 42,
+        marginTop: 22,
+        marginBottom: 6,
+        fontSize: 12,
+        lineHeight: 1.5,
+        color: "#c8c8c8",
+        textAlign: "center",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+      }}
+    >
+      {message ? <span>{message}</span> : null}
+    </div>
+  );
 
   return (
     <>
@@ -80,6 +173,7 @@ export default function Home() {
               className="cta-button"
               onClick={() => {
                 setStep("form");
+                setMessage("");
                 setOpen(true);
               }}
               style={{
@@ -115,6 +209,7 @@ export default function Home() {
             className="cta-button"
             onClick={() => {
               setStep("form");
+              setMessage("");
               setOpen(true);
             }}
             style={{
@@ -159,25 +254,50 @@ export default function Home() {
                 />
 
                 <label className="signup-checkbox">
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={termsChecked}
+                    onChange={(e) => setTermsChecked(e.target.checked)}
+                    style={{
+                      WebkitAppearance: "checkbox",
+                      appearance: "auto",
+                      accentColor: "#9ca3af",
+                      backgroundColor: "transparent",
+                      border: "1px solid rgba(255,255,255,0.8)",
+                    }}
+                  />
                   <span>
                     I agree to the <a href="/terms">Terms &amp; Conditions</a>
                   </span>
                 </label>
 
                 <label className="signup-checkbox">
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={privacyChecked}
+                    onChange={(e) => setPrivacyChecked(e.target.checked)}
+                    style={{
+                      WebkitAppearance: "checkbox",
+                      appearance: "auto",
+                      accentColor: "#9ca3af",
+                      backgroundColor: "transparent",
+                      border: "1px solid rgba(255,255,255,0.8)",
+                    }}
+                  />
                   <span>
                     I agree to the <a href="/privacy">Privacy Policy</a>
                   </span>
                 </label>
 
+                {messageSlot}
+
                 <div className="signup-request-button-wrap">
                   <button
                     className="cta-button modal-primary-button"
                     onClick={sendVerification}
+                    disabled={loading}
                   >
-                    REQUEST
+                    {loading ? "SENDING..." : "REQUEST"}
                   </button>
                 </div>
 
@@ -198,12 +318,15 @@ export default function Home() {
                   onChange={(e) => setCode(e.target.value)}
                 />
 
+                {messageSlot}
+
                 <div className="signup-request-button-wrap">
                   <button
                     className="cta-button modal-primary-button"
                     onClick={verifyCode}
+                    disabled={loading}
                   >
-                    VERIFY
+                    {loading ? "VERIFYING..." : "VERIFY"}
                   </button>
                 </div>
               </>
