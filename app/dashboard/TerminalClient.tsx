@@ -409,10 +409,7 @@ export default function TerminalClient() {
   const desktopEntryGridMaxWidth = isCompactDesktop ? 456 : 420;
   const desktopEntryMinCard = isCompactDesktop ? 195 : 180;
 
-  const desktopGenerateModalStyle: React.CSSProperties = {
-    width: 388,
-    maxWidth: "92vw",
-  };
+  const desktopGenerateModalStyle: React.CSSProperties = {};
   const desktopSendModalStyle: React.CSSProperties = {
     width: 400,
     maxWidth: "92vw",
