@@ -135,21 +135,45 @@ export async function POST(req: Request) {
     let smsWarning: string | null = null;
 
     try {
-      const twilio = Twilio(
-        process.env.TWILIO_ACCOUNT_SID!,
-        process.env.TWILIO_AUTH_TOKEN!
-      );
+      const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+      const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioMessagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+      const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+      if (!twilioAccountSid || !twilioAuthToken) {
+        throw new Error("Missing TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN.");
+      }
+
+      if (!twilioMessagingServiceSid && !twilioPhoneNumber) {
+        throw new Error(
+          "Missing TWILIO_MESSAGING_SERVICE_SID and TWILIO_PHONE_NUMBER. At least one sender configuration is required."
+        );
+      }
+
+      const twilio = Twilio(twilioAccountSid, twilioAuthToken);
 
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
       const claimUrl = `${baseUrl}/claim-token?ticket=${ticket.id}`;
 
-      await twilio.messages.create({
-        from: process.env.TWILIO_PHONE_NUMBER!,
+      const messagePayload: {
+        to: string;
+        body: string;
+        from?: string;
+        messagingServiceSid?: string;
+      } = {
         to: phone,
         body:
           `A token has been transmitted to you.\n` +
           `Claim it here: ${claimUrl}`,
-      });
+      };
+
+      if (twilioMessagingServiceSid) {
+        messagePayload.messagingServiceSid = twilioMessagingServiceSid;
+      } else {
+        messagePayload.from = twilioPhoneNumber!;
+      }
+
+      await twilio.messages.create(messagePayload);
     } catch (smsErr) {
       console.error("Send token SMS error:", smsErr);
       smsWarning = " Token assigned, but SMS delivery failed.";
