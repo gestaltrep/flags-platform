@@ -71,17 +71,38 @@ export default function ClaimTokenPage() {
   );
 
   function validatePhoneStep() {
-    if (!ticketId) return "This claim link is missing a token.";
-    if (!phone.trim()) return "Please enter your phone number.";
-    if (!termsChecked) return "Please agree to the Terms & Conditions.";
-    if (!privacyChecked) return "Please agree to the Privacy Policy.";
+    if (!ticketId) {
+      return "Missing token.";
+    }
+
+    if (!phone.trim()) {
+      return "Enter your phone number.";
+    }
+
+    if (!termsChecked) {
+      return "Agree to Terms & Conditions.";
+    }
+
+    if (!privacyChecked) {
+      return "Agree to Privacy Policy.";
+    }
+
     return "";
   }
 
   function validateCodeStep() {
-    if (!ticketId) return "This claim link is missing a token.";
-    if (!phone.trim()) return "Please enter your phone number.";
-    if (!code.trim()) return "Please enter the verification code.";
+    if (!ticketId) {
+      return "Missing token.";
+    }
+
+    if (!phone.trim()) {
+      return "Enter your phone number.";
+    }
+
+    if (!code.trim()) {
+      return "Enter verification code.";
+    }
+
     return "";
   }
 
@@ -112,14 +133,14 @@ export default function ClaimTokenPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setMessage(data.error || "We couldn't send your code.");
+        setMessage(data.error || "Couldn't send code.");
         return;
       }
 
       setStep("code");
       setMessage("VERIFICATION CODE TRANSMITTED.");
     } catch {
-      setMessage("We couldn't send your code.");
+      setMessage("Couldn't send code.");
     } finally {
       setLoading(false);
     }
@@ -158,7 +179,7 @@ export default function ClaimTokenPage() {
       }
 
       setStep("success");
-      setMessage("TOKEN CLAIMED. REDIRECTING TO TERMINAL...");
+      setMessage("TOKEN CLAIMED. REDIRECTING...");
       window.location.href = "/dashboard";
     } catch {
       setMessage("Verification failed.");
@@ -235,7 +256,13 @@ export default function ClaimTokenPage() {
         justifyContent: "center",
       }}
     >
-      <div className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}>
+      <div
+        className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
+        style={{
+          padding: 0,
+          width: isMobile ? "100%" : undefined,
+        }}
+      >
         <div
           className="signup-header signup-header-home"
           style={{
@@ -255,7 +282,7 @@ export default function ClaimTokenPage() {
         <div
           style={{
             width: "calc(100% - 48px)",
-            margin: `0 auto ${isMobile ? 14 : 20}px auto`,
+            margin: isMobile ? "0 auto 14px auto" : "0 auto 20px auto",
             borderBottom: "1px solid rgba(255, 255, 255, 0.62)",
           }}
         />
@@ -274,6 +301,9 @@ export default function ClaimTokenPage() {
             style={{
               marginTop: isMobile ? 2 : 12,
               marginBottom: isMobile ? 20 : 30,
+              fontSize: isMobile ? 19 : undefined,
+              letterSpacing: isMobile ? 2.8 : undefined,
+              lineHeight: isMobile ? 1 : undefined,
             }}
           >
             Claim Token
@@ -283,6 +313,7 @@ export default function ClaimTokenPage() {
             className="modal-status-copy"
             style={{
               marginBottom: isMobile ? 12 : 10,
+              fontSize: 14,
               lineHeight: isMobile ? 1.6 : 1.5,
             }}
           >
@@ -306,7 +337,13 @@ export default function ClaimTokenPage() {
                 />
                 <span style={checkboxTextStyle}>
                   I agree to the{" "}
-                  <a href="/terms" style={{ color: "white", textDecoration: "underline" }}>
+                  <a
+                    href="/terms"
+                    style={{
+                      color: "white",
+                      textDecoration: "underline",
+                    }}
+                  >
                     Terms &amp; Conditions
                   </a>
                   .
@@ -323,7 +360,13 @@ export default function ClaimTokenPage() {
                 />
                 <span style={checkboxTextStyle}>
                   I agree to the{" "}
-                  <a href="/privacy" style={{ color: "white", textDecoration: "underline" }}>
+                  <a
+                    href="/privacy"
+                    style={{
+                      color: "white",
+                      textDecoration: "underline",
+                    }}
+                  >
                     Privacy Policy
                   </a>
                   .
@@ -335,7 +378,11 @@ export default function ClaimTokenPage() {
           {step === "phone" && (
             <form
               onSubmit={sendCode}
-              style={{ display: "flex", flexDirection: "column", flex: 1 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+              }}
             >
               <div style={formInnerOffsetStyle}>
                 <div style={fieldWrapStyle}>
@@ -359,7 +406,11 @@ export default function ClaimTokenPage() {
           {step === "code" && (
             <form
               onSubmit={verifyAndClaim}
-              style={{ display: "flex", flexDirection: "column", flex: 1 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+              }}
             >
               <div style={formInnerOffsetStyle}>
                 <div style={fieldWrapStyle}>

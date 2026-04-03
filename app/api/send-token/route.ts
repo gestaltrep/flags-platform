@@ -13,12 +13,28 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const ticketId = String(body.ticketId || "").trim();
-    const phone = normalizeUSPhone(String(body.phone || ""));
 
-    if (!ticketId || !phone) {
+    const ticketId = String(body.ticketId || "").trim();
+    const rawPhone = String(body.phone || "");
+    const phone = normalizeUSPhone(rawPhone);
+
+    if (!ticketId) {
       return Response.json(
-        { success: false, error: "Ticket and recipient phone are required." },
+        { success: false, error: "Token not found." },
+        { status: 400 }
+      );
+    }
+
+    if (!rawPhone.trim()) {
+      return Response.json(
+        { success: false, error: "Enter a phone number." },
+        { status: 400 }
+      );
+    }
+
+    if (!phone) {
+      return Response.json(
+        { success: false, error: "Enter a valid phone number." },
         { status: 400 }
       );
     }
@@ -43,7 +59,7 @@ export async function POST(req: Request) {
 
     if (normalizeUSPhone(sender.phone || "") === phone) {
       return Response.json(
-        { success: false, error: "Use a different phone number for the recipient." },
+        { success: false, error: "Enter a different phone number." },
         { status: 400 }
       );
     }
@@ -55,7 +71,10 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (ticketError || !ticket) {
-      return Response.json({ success: false, error: "Token not found." }, { status: 404 });
+      return Response.json(
+        { success: false, error: "Token not found." },
+        { status: 404 }
+      );
     }
 
     if (ticket.buyer_user_id !== senderUserId) {
@@ -79,47 +98,51 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: existingPending } = await supabase
+    const { data: existingPending, error: existingPendingError } = await supabase
       .from("pending_token_transfers")
       .select("id, recipient_phone")
       .eq("ticket_code_id", ticket.id)
       .eq("status", "pending")
       .maybeSingle();
 
+    if (existingPendingError) {
+      console.error("Pending transfer lookup error:", existingPendingError);
+      return Response.json(
+        { success: false, error: "Could not verify transfer state." },
+        { status: 500 }
+      );
+    }
+
     if (existingPending?.id) {
       return Response.json(
-        {
-          success: false,
-          error: "This token already has a pending transfer.",
-        },
+        { success: false, error: "This token already has a pending transfer." },
         { status: 409 }
       );
     }
 
-    const { data: pendingTransfer, error: pendingInsertError } = await supabase
+    const { error: pendingInsertError } = await supabase
       .from("pending_token_transfers")
       .insert({
         ticket_code_id: ticket.id,
         sender_user_id: senderUserId,
         recipient_phone: phone,
         status: "pending",
-      })
-      .select("id")
-      .single();
+      });
 
-    if (pendingInsertError || !pendingTransfer?.id) {
+    if (pendingInsertError) {
+      console.error("Pending transfer insert error:", pendingInsertError);
       return Response.json(
         { success: false, error: "Could not start transfer." },
         { status: 500 }
       );
     }
 
-    let smsWarning: string | null = null;
-
     try {
       const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
       const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-      const twilioMessagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+      const twilioMessagingServiceSid =
+        process.env.TWILIO_MESSAGING_SERVICE_SID ||
+        process.env.TWILIO_MESSAGING_SERVICE;
       const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
       if (!twilioAccountSid || !twilioAuthToken) {
@@ -128,7 +151,7 @@ export async function POST(req: Request) {
 
       if (!twilioMessagingServiceSid && !twilioPhoneNumber) {
         throw new Error(
-          "Missing TWILIO_MESSAGING_SERVICE_SID and TWILIO_PHONE_NUMBER."
+          "Missing TWILIO_MESSAGING_SERVICE_SID / TWILIO_MESSAGING_SERVICE and TWILIO_PHONE_NUMBER."
         );
       }
 
@@ -146,7 +169,7 @@ export async function POST(req: Request) {
         to: phone,
         body:
           `A token has been transmitted to you.\n\n` +
-          `Claim your token:\n${claimUrl}`,
+          `Claim your token here:\n${claimUrl}`,
       };
 
       if (twilioMessagingServiceSid) {
@@ -158,12 +181,18 @@ export async function POST(req: Request) {
       await twilio.messages.create(messagePayload);
     } catch (smsErr) {
       console.error("Send token SMS error:", smsErr);
-      smsWarning = " Transfer started, but SMS delivery failed.";
+      return Response.json(
+        {
+          success: false,
+          error: "Transfer started, but SMS delivery failed.",
+        },
+        { status: 502 }
+      );
     }
 
     return Response.json({
       success: true,
-      message: `Token ${ticket.code} transfer started successfully.${smsWarning || ""}`,
+      message: "Transfer started.",
     });
   } catch (err) {
     console.error("Send token error:", err);

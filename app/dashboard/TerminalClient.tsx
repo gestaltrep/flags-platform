@@ -306,11 +306,6 @@ export default function TerminalClient() {
         return;
       }
 
-      setSendMessages((prev) => ({
-        ...prev,
-        [ticketId]: data.message || "Transfer started.",
-      }));
-
       setSendPhones((prev) => ({
         ...prev,
         [ticketId]: "",
@@ -352,11 +347,6 @@ export default function TerminalClient() {
         }));
         return;
       }
-
-      setSendMessages((prev) => ({
-        ...prev,
-        [ticketId]: "",
-      }));
 
       await loadTickets();
     } catch (err) {
@@ -428,7 +418,6 @@ export default function TerminalClient() {
         }
       : {};
 
-  // Smaller than before so it fits desktop height better.
   const desktopSendModalStyle: React.CSSProperties =
     !isMobile && isCompactDesktop
       ? {
@@ -507,23 +496,23 @@ export default function TerminalClient() {
     background: "black",
     border: "1px solid rgba(255,255,255,0.22)",
     color: "white",
-    padding: isMobile ? "13px 14px" : isCompactDesktop ? "11px 13px" : "10px 12px",
+    padding: isMobile ? "14px 14px" : isCompactDesktop ? "13px 14px" : "12px 14px",
     fontFamily: '"Courier New", monospace',
-    fontSize: isMobile ? 15 : isCompactDesktop ? 14 : 13,
+    fontSize: isMobile ? 15 : isCompactDesktop ? 15 : 14,
     letterSpacing: 1.2,
     outline: "none",
   };
 
   const sendButtonStyle: React.CSSProperties = {
     width: "100%",
-    minHeight: isMobile ? 52 : isCompactDesktop ? 54 : 52,
+    minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
     border: "1px solid white",
     background: "black",
     color: "white",
     padding: "12px 16px",
-    fontSize: isMobile ? 13 : isCompactDesktop ? 16 : 15,
+    fontSize: isMobile ? 13 : isCompactDesktop ? 17 : 16,
     fontWeight: 700,
-    letterSpacing: isMobile ? 3.2 : isCompactDesktop ? 4.2 : 4.0,
+    letterSpacing: isMobile ? 3.2 : isCompactDesktop ? 4.4 : 4.2,
     lineHeight: 1,
     textAlign: "center",
     cursor: "pointer",
@@ -553,7 +542,7 @@ export default function TerminalClient() {
 
   const cancelTriggerStyle: React.CSSProperties = {
     ...sendTriggerStyle,
-    marginTop: 10,
+    marginTop: 12,
   };
 
   const pendingInfoStyle: React.CSSProperties = {
@@ -595,17 +584,15 @@ export default function TerminalClient() {
   const mobileHeaderStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
-        paddingTop: 16,
-        paddingBottom: 12,
-        marginBottom: 14,
+        paddingTop: 18,
+        paddingBottom: 14,
+        marginBottom: 18,
       }
     : isCompactDesktop
     ? {
-        marginBottom: 18,
+        marginBottom: 28,
       }
-    : {
-        marginBottom: 16,
-      };
+    : {};
 
   const mobileGenerateTitleStyle: React.CSSProperties = isMobile
     ? {
@@ -617,31 +604,25 @@ export default function TerminalClient() {
       }
     : isCompactDesktop
     ? {
-        fontSize: 21,
-        marginBottom: 14,
+        fontSize: 22,
+        marginBottom: 18,
       }
-    : {
-        marginBottom: 14,
-      };
+    : {};
 
   const mobileStatusCopyStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
-        marginBottom: 16,
+        marginBottom: 22,
         fontSize: 11,
         lineHeight: 1.42,
       }
     : isCompactDesktop
     ? {
-        marginBottom: 16,
-        fontSize: 13,
-        lineHeight: 1.65,
+        marginBottom: 26,
+        fontSize: 15,
+        lineHeight: 1.9,
       }
-    : {
-        marginBottom: 14,
-        fontSize: 13,
-        lineHeight: 1.6,
-      };
+    : {};
 
   const mobileTierVisualWrapStyle: React.CSSProperties = isMobile
     ? {
@@ -685,8 +666,8 @@ export default function TerminalClient() {
       }
     : isCompactDesktop
     ? {
-        marginBottom: 14,
-        fontSize: 14,
+        marginBottom: 16,
+        fontSize: 15,
       }
     : {};
 
@@ -699,7 +680,7 @@ export default function TerminalClient() {
       }
     : isCompactDesktop
     ? {
-        marginBottom: 16,
+        marginBottom: 18,
       }
     : {};
 
@@ -723,9 +704,9 @@ export default function TerminalClient() {
       }
     : isCompactDesktop
     ? {
-        minHeight: 56,
-        fontSize: 17,
-        letterSpacing: 4.4,
+        minHeight: 58,
+        fontSize: 18,
+        letterSpacing: 4.6,
       }
     : {};
 
@@ -738,12 +719,10 @@ export default function TerminalClient() {
       }
     : isCompactDesktop
     ? {
-        marginTop: 10,
-        fontSize: 13,
+        marginTop: 14,
+        fontSize: 14,
       }
-    : {
-        marginTop: 10,
-      };
+    : {};
 
   const mobileEntryCardGridStyle: React.CSSProperties = isMobile
     ? {
@@ -780,22 +759,22 @@ export default function TerminalClient() {
         alignSelf: "center",
         border: "1px solid #555",
         padding: 10,
-        marginBottom: 8,
+        marginBottom: 10,
       }
     : isCompactDesktop
     ? {
         border: "1px solid #555",
-        padding: 12,
-        width: 170,
+        padding: 14,
+        width: 178,
         alignSelf: "center",
-        marginBottom: 10,
+        marginBottom: 14,
       }
     : {
         border: "1px solid #555",
-        padding: 11,
-        width: 158,
+        padding: 12,
+        width: 160,
         alignSelf: "center",
-        marginBottom: 8,
+        marginBottom: 10,
       };
 
   return (
@@ -1016,7 +995,7 @@ export default function TerminalClient() {
                   {tickets.map((ticket, index) => {
                     const isVip = ticket.is_vip || ticket.vip;
                     const isUsed = !!ticket.claimed;
-                    const isPending = !!ticket.pending_transfer_id;
+                    const isPending = !!ticket.can_cancel;
 
                     return (
                       <div
@@ -1037,7 +1016,7 @@ export default function TerminalClient() {
                           }}
                         >
                           <span>{isVip ? "VIP" : "GA"}</span>
-                          <span style={{ color: isUsed ? "#888" : isPending ? "#c8c8c8" : "#fff" }}>
+                          <span style={{ color: isUsed ? "#888" : "#fff" }}>
                             {isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
                           </span>
                         </div>
@@ -1069,12 +1048,9 @@ export default function TerminalClient() {
                           {ticket.code}
                         </div>
 
-                        {isPending && (
+                        {isPending && ticket.pending_recipient_phone && (
                           <div style={pendingInfoStyle}>
-                            <div>{">"} TRANSFER PENDING</div>
-                            {ticket.pending_recipient_phone ? (
-                              <div>{">"} {ticket.pending_recipient_phone}</div>
-                            ) : null}
+                            {ticket.pending_recipient_phone}
                           </div>
                         )}
 
@@ -1096,10 +1072,6 @@ export default function TerminalClient() {
                             {cancellingTicketId === ticket.id ? "CANCELLING..." : "CANCEL SEND"}
                           </button>
                         )}
-
-                        {sendMessages[ticket.id || ""] ? (
-                          <div style={pendingInfoStyle}>{sendMessages[ticket.id || ""]}</div>
-                        ) : null}
                       </div>
                     );
                   })}
@@ -1214,7 +1186,7 @@ export default function TerminalClient() {
                   {tickets.map((ticket, index) => {
                     const isVip = ticket.is_vip || ticket.vip;
                     const isUsed = !!ticket.claimed;
-                    const isPending = !!ticket.pending_transfer_id;
+                    const isPending = !!ticket.can_cancel;
 
                     return (
                       <div
@@ -1232,7 +1204,7 @@ export default function TerminalClient() {
                           }}
                         >
                           <span>{isVip ? "VIP" : "GA"}</span>
-                          <span style={{ color: isUsed ? "#888" : isPending ? "#c8c8c8" : "#fff" }}>
+                          <span style={{ color: isUsed ? "#888" : "#fff" }}>
                             {isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
                           </span>
                         </div>
@@ -1266,12 +1238,9 @@ export default function TerminalClient() {
                           {ticket.code}
                         </div>
 
-                        {isPending && (
+                        {isPending && ticket.pending_recipient_phone && (
                           <div style={pendingInfoStyle}>
-                            <div>{">"} TRANSFER PENDING</div>
-                            {ticket.pending_recipient_phone ? (
-                              <div>{">"} {ticket.pending_recipient_phone}</div>
-                            ) : null}
+                            {ticket.pending_recipient_phone}
                           </div>
                         )}
 
@@ -1293,10 +1262,6 @@ export default function TerminalClient() {
                             {cancellingTicketId === ticket.id ? "CANCELLING..." : "CANCEL SEND"}
                           </button>
                         )}
-
-                        {sendMessages[ticket.id || ""] ? (
-                          <div style={pendingInfoStyle}>{sendMessages[ticket.id || ""]}</div>
-                        ) : null}
                       </div>
                     );
                   })}
@@ -1645,10 +1610,7 @@ export default function TerminalClient() {
         <div className="signup-overlay">
           <div
             className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"} send-token-modal`}
-            style={{
-              ...mobileSendModalStyle,
-              paddingBottom: isMobile ? 18 : 14,
-            }}
+            style={mobileSendModalStyle}
           >
             <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
@@ -1670,13 +1632,13 @@ export default function TerminalClient() {
               className="modal-status-copy"
               style={{
                 ...mobileStatusCopyStyle,
-                marginBottom: 10,
+                marginBottom: isCompactDesktop && !isMobile ? 14 : 12,
               }}
             >
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
-                  START A TRANSFER BY ENTERING THE RECIPIENT&apos;S PHONE NUMBER.
+                  TRANSMIT THIS TOKEN BY ENTERING THE RECIPIENT&apos;S PHONE NUMBER.
                 </span>
               </div>
             </div>
@@ -1701,7 +1663,7 @@ export default function TerminalClient() {
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <QRCodeSVG
                   value={`${qrBase}/checkin?code=${sendModalTicket.code}`}
-                  size={isMobile ? 104 : isCompactDesktop ? 112 : 102}
+                  size={isMobile ? 104 : isCompactDesktop ? 118 : 104}
                 />
               </div>
 
@@ -1718,7 +1680,7 @@ export default function TerminalClient() {
 
               <div
                 style={{
-                  fontSize: isMobile ? 13 : isCompactDesktop ? 14 : 13,
+                  fontSize: isMobile ? 13 : isCompactDesktop ? 15 : 14,
                   letterSpacing: 1.6,
                   marginTop: 4,
                   wordBreak: "break-word",
@@ -1735,6 +1697,8 @@ export default function TerminalClient() {
               style={{
                 ...sendInputStyle,
                 ...mobileModalInnerStyle,
+                padding: isMobile ? "13px 13px" : isCompactDesktop ? "12px 13px" : "10px 12px",
+                fontSize: isMobile ? 14 : isCompactDesktop ? 14 : 13,
               }}
             />
 
@@ -1742,10 +1706,10 @@ export default function TerminalClient() {
               <div
                 style={{
                   ...mobileModalInnerStyle,
-                  marginTop: 8,
-                  fontSize: isMobile ? 11 : isCompactDesktop ? 11 : 10,
-                  letterSpacing: 1.3,
-                  lineHeight: 1.4,
+                  marginTop: 10,
+                  fontSize: isMobile ? 11 : isCompactDesktop ? 12 : 11,
+                  letterSpacing: 1.4,
+                  lineHeight: 1.45,
                   color: "#c8c8c8",
                   textAlign: "center",
                 }}
@@ -1756,16 +1720,25 @@ export default function TerminalClient() {
 
             <div
               className="signup-generate-button-wrap"
-              style={{ ...mobileGenerateWrapStyle, paddingTop: 8 }}
+              style={{ ...mobileGenerateWrapStyle, paddingTop: 10 }}
             >
               <button
-                style={sendButtonStyle}
+                style={{
+                  ...sendButtonStyle,
+                  ...(isMobile
+                    ? {
+                        minHeight: 52,
+                        fontSize: 12,
+                        letterSpacing: 3,
+                      }
+                    : {}),
+                }}
                 onClick={() => sendToken(sendModalTicket.id!)}
                 disabled={sendingTicketId === sendModalTicket.id}
               >
                 {sendingTicketId === sendModalTicket.id
-                  ? "STARTING..."
-                  : "START TRANSFER"}
+                  ? "SENDING..."
+                  : "SEND TOKEN"}
               </button>
             </div>
 

@@ -48,125 +48,107 @@ export default function UnauthorizedTerminalClient() {
   const isMobile = viewportWidth < 900;
   const isCompactDesktop = !isMobile && viewportWidth >= 1180 && viewportWidth <= 1550;
 
-  const desktopWrapperStyle: React.CSSProperties = isCompactDesktop
+  const desktopOuterWidth = isCompactDesktop ? 1032 : undefined;
+  const desktopLeftWidth = isCompactDesktop ? 520 : 460;
+  const desktopBoxPadding = isCompactDesktop ? 22 : 20;
+  const desktopBoxFont = isCompactDesktop ? 14 : 13;
+  const desktopBoxMinHeight = isCompactDesktop ? 194 : 178;
+  const desktopTitleSize = isCompactDesktop ? 34 : 30;
+
+  const desktopMainStyle: React.CSSProperties = isCompactDesktop
     ? {
-        display: "block",
         marginTop: 72,
         marginLeft: "auto",
         marginRight: "auto",
         marginBottom: 60,
-        width: 1032,
+        width: desktopOuterWidth,
         maxWidth: "calc(100vw - 80px)",
       }
     : {
-        display: "block",
-        marginTop: 120,
+        marginTop: 72,
         marginLeft: 120,
         marginRight: 40,
         marginBottom: 60,
       };
 
-  const desktopTitleSize = isCompactDesktop ? 46 : 42;
-  const desktopBoxWidth = isCompactDesktop ? 720 : 640;
-  const desktopBoxPadding = isCompactDesktop ? "30px 32px" : "28px 30px";
-  const desktopBoxFontSize = isCompactDesktop ? 18 : 17;
-  const desktopBoxMinHeight = isCompactDesktop ? 248 : 230;
-
   return (
     <>
-      <main className="terminal-unauthorized-desktop" style={desktopWrapperStyle}>
-        <div
-          style={{
-            fontSize: desktopTitleSize,
-            letterSpacing: 6,
-            marginBottom: 28,
-            lineHeight: 1,
-          }}
-        >
-          Terminal
-        </div>
-
-        <div
-          style={{
-            border: "1px solid #666",
-            width: desktopBoxWidth,
-            maxWidth: "100%",
-            padding: desktopBoxPadding,
-            fontSize: desktopBoxFontSize,
-            letterSpacing: 2,
-            lineHeight: 1.85,
-            minHeight: desktopBoxMinHeight,
-          }}
-        >
-          {lines.map((line, i) => (
-            <div key={line} style={{ marginTop: i === 0 ? 0 : 18 }}>
-              {line}
-            </div>
-          ))}
-
-          <div style={{ marginTop: lines.length > 0 ? 22 : 0 }}>
-            <span className="cursor">_</span>
+      {!isMobile ? (
+        <main style={desktopMainStyle}>
+          <div
+            style={{
+              fontSize: desktopTitleSize,
+              letterSpacing: 6,
+              marginBottom: 24,
+            }}
+          >
+            Terminal
           </div>
-        </div>
-      </main>
 
-      <main className="terminal-unauthorized-mobile">
-        <div
-          style={{
-            fontSize: 28,
-            letterSpacing: 4,
-            marginBottom: 20,
-            lineHeight: 1,
-          }}
-        >
-          Terminal
-        </div>
+          <div
+            style={{
+              border: "1px solid #888",
+              padding: desktopBoxPadding,
+              width: desktopLeftWidth,
+              fontSize: desktopBoxFont,
+              letterSpacing: 1.4,
+              lineHeight: 1.7,
+              minHeight: desktopBoxMinHeight,
+            }}
+          >
+            {lines.map((line, i) => (
+              <div key={line} style={{ marginTop: i === 0 ? 0 : 0 }}>
+                {line}
+              </div>
+            ))}
 
-        <div
-          style={{
-            border: "1px solid #666",
-            padding: 18,
-            fontSize: 13,
-            letterSpacing: 1.6,
-            lineHeight: 1.85,
-            minHeight: 196,
-          }}
-        >
-          {lines.map((line, i) => (
-            <div key={line} style={{ marginTop: i === 0 ? 0 : 14 }}>
-              {line}
+            <div style={{ marginTop: 0 }}>
+              <span className="cursor">_</span>
             </div>
-          ))}
-
-          <div style={{ marginTop: lines.length > 0 ? 16 : 0 }}>
-            <span className="cursor">_</span>
           </div>
-        </div>
-      </main>
+        </main>
+      ) : (
+        <main
+          style={{
+            marginTop: 26,
+            marginLeft: 20,
+            marginRight: 20,
+            marginBottom: 60,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 28,
+              letterSpacing: 4,
+              marginBottom: 16,
+            }}
+          >
+            Terminal
+          </div>
 
-      <style>{`
-        .terminal-unauthorized-desktop {
-          display: block;
-        }
+          <div
+            style={{
+              border: "1px solid #888",
+              padding: 14,
+              fontSize: 11,
+              letterSpacing: 1.15,
+              lineHeight: 1.62,
+              marginBottom: 18,
+              minHeight: 146,
+            }}
+          >
+            {lines.map((line, i) => (
+              <div key={line} style={{ marginTop: i === 0 ? 0 : 8 }}>
+                {line}
+              </div>
+            ))}
 
-        .terminal-unauthorized-mobile {
-          display: none;
-          margin-top: 34px;
-          margin-left: 20px;
-          margin-right: 20px;
-          margin-bottom: 60px;
-        }
-
-        @media (max-width: 899px) {
-          .terminal-unauthorized-desktop {
-            display: none !important;
-          }
-
-          .terminal-unauthorized-mobile {
-            display: block !important;
-          }
-        }
-      `}</style>
+            <div style={{ marginTop: 10 }}>
+              <span className="cursor">_</span>
+            </div>
+          </div>
+        </main>
+      )}
     </>
   );
 }
