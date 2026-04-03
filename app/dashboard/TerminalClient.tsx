@@ -409,27 +409,11 @@ export default function TerminalClient() {
   const desktopEntryGridMaxWidth = isCompactDesktop ? 456 : 420;
   const desktopEntryMinCard = isCompactDesktop ? 195 : 180;
 
-  const desktopGenerateModalStyle: React.CSSProperties =
-    !isMobile && isCompactDesktop
-      ? {
-          width: 430,
-          minHeight: 548,
-          padding: "0 30px 24px 30px",
-        }
-      : {};
-
-  const desktopSendModalStyle: React.CSSProperties =
-    !isMobile && isCompactDesktop
-      ? {
-          width: 414,
-          maxWidth: "92vw",
-        }
-      : !isMobile
-      ? {
-          width: 382,
-          maxWidth: "92vw",
-        }
-      : {};
+  const desktopGenerateModalStyle: React.CSSProperties = {};
+  const desktopSendModalStyle: React.CSSProperties = {
+    width: 400,
+    maxWidth: "92vw",
+  };
 
   const actionButtonStyle: React.CSSProperties = {
     width: "100%",
@@ -449,11 +433,11 @@ export default function TerminalClient() {
   };
 
   const modalArrowButtonStyle: React.CSSProperties = {
-    width: isMobile ? 40 : isCompactDesktop ? 32 : 28,
-    height: isMobile ? 40 : isCompactDesktop ? 32 : 28,
-    minHeight: isMobile ? 40 : isCompactDesktop ? 32 : 28,
+    width: isMobile ? 40 : 28,
+    height: isMobile ? 40 : 28,
+    minHeight: isMobile ? 40 : 28,
     padding: 0,
-    fontSize: isMobile ? 14 : isCompactDesktop ? 11 : 10,
+    fontSize: isMobile ? 14 : 10,
     lineHeight: 1,
     display: "flex",
     alignItems: "center",
@@ -474,8 +458,8 @@ export default function TerminalClient() {
   };
 
   const modalQuantityBoxStyle: React.CSSProperties = {
-    width: isMobile ? 86 : isCompactDesktop ? 82 : 72,
-    height: isMobile ? 40 : isCompactDesktop ? 32 : 28,
+    width: isMobile ? 86 : 72,
+    height: isMobile ? 40 : 28,
     borderTop: "1px solid white",
     borderBottom: "1px solid white",
     borderLeft: "none",
@@ -485,7 +469,7 @@ export default function TerminalClient() {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: isMobile ? 16 : isCompactDesktop ? 14 : 13,
+    fontSize: isMobile ? 16 : 13,
     letterSpacing: 2,
     boxShadow: "none",
     flexShrink: 0,
@@ -496,23 +480,23 @@ export default function TerminalClient() {
     background: "black",
     border: "1px solid rgba(255,255,255,0.22)",
     color: "white",
-    padding: isMobile ? "14px 14px" : isCompactDesktop ? "13px 14px" : "12px 14px",
+    padding: isMobile ? "14px 14px" : "12px 14px",
     fontFamily: '"Courier New", monospace',
-    fontSize: isMobile ? 15 : isCompactDesktop ? 15 : 14,
+    fontSize: isMobile ? 15 : 14,
     letterSpacing: 1.2,
     outline: "none",
   };
 
   const sendButtonStyle: React.CSSProperties = {
     width: "100%",
-    minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
+    minHeight: 54,
     border: "1px solid white",
     background: "black",
     color: "white",
     padding: "12px 16px",
-    fontSize: isMobile ? 13 : isCompactDesktop ? 17 : 16,
+    fontSize: isMobile ? 13 : 16,
     fontWeight: 700,
-    letterSpacing: isMobile ? 3.2 : isCompactDesktop ? 4.4 : 4.2,
+    letterSpacing: isMobile ? 3.2 : 4.2,
     lineHeight: 1,
     textAlign: "center",
     cursor: "pointer",
@@ -523,14 +507,14 @@ export default function TerminalClient() {
 
   const sendTriggerStyle: React.CSSProperties = {
     width: "100%",
-    minHeight: isMobile ? 38 : isCompactDesktop ? 38 : 36,
+    minHeight: isMobile ? 38 : 36,
     border: "1px solid white",
     background: "black",
     color: "white",
     padding: isMobile ? "9px 10px" : "8px 10px",
-    fontSize: isMobile ? 11 : isCompactDesktop ? 12 : 11,
+    fontSize: isMobile ? 11 : 11,
     fontWeight: 700,
-    letterSpacing: isMobile ? 2.1 : isCompactDesktop ? 2.2 : 2,
+    letterSpacing: isMobile ? 2.1 : 2,
     lineHeight: 1,
     textAlign: "center",
     cursor: "pointer",
@@ -547,7 +531,7 @@ export default function TerminalClient() {
 
   const pendingInfoStyle: React.CSSProperties = {
     marginTop: 10,
-    fontSize: isMobile ? 9 : isCompactDesktop ? 10 : 9,
+    fontSize: isMobile ? 9 : 9,
     letterSpacing: 1.5,
     lineHeight: 1.5,
     color: "#c8c8c8",
@@ -588,10 +572,6 @@ export default function TerminalClient() {
         paddingBottom: 14,
         marginBottom: 18,
       }
-    : isCompactDesktop
-    ? {
-        marginBottom: 28,
-      }
     : {};
 
   const mobileGenerateTitleStyle: React.CSSProperties = isMobile
@@ -602,11 +582,6 @@ export default function TerminalClient() {
         letterSpacing: 2.8,
         marginBottom: 12,
       }
-    : isCompactDesktop
-    ? {
-        fontSize: 22,
-        marginBottom: 18,
-      }
     : {};
 
   const mobileStatusCopyStyle: React.CSSProperties = isMobile
@@ -615,12 +590,6 @@ export default function TerminalClient() {
         marginBottom: 22,
         fontSize: 11,
         lineHeight: 1.42,
-      }
-    : isCompactDesktop
-    ? {
-        marginBottom: 26,
-        fontSize: 15,
-        lineHeight: 1.9,
       }
     : {};
 
@@ -664,11 +633,6 @@ export default function TerminalClient() {
         fontSize: 12,
         letterSpacing: 2.4,
       }
-    : isCompactDesktop
-    ? {
-        marginBottom: 16,
-        fontSize: 15,
-      }
     : {};
 
   const mobileQuantityRowStyle: React.CSSProperties = isMobile
@@ -678,20 +642,12 @@ export default function TerminalClient() {
         justifyContent: "center",
         marginBottom: 16,
       }
-    : isCompactDesktop
-    ? {
-        marginBottom: 18,
-      }
     : {};
 
   const mobileGenerateWrapStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
         paddingTop: 0,
-        marginTop: "auto",
-      }
-    : isCompactDesktop
-    ? {
         marginTop: "auto",
       }
     : {};
@@ -702,12 +658,6 @@ export default function TerminalClient() {
         fontSize: 12,
         letterSpacing: 3.2,
       }
-    : isCompactDesktop
-    ? {
-        minHeight: 58,
-        fontSize: 18,
-        letterSpacing: 4.6,
-      }
     : {};
 
   const mobileCancelStyle: React.CSSProperties = isMobile
@@ -716,11 +666,6 @@ export default function TerminalClient() {
         marginTop: 10,
         fontSize: 11,
         letterSpacing: 2.8,
-      }
-    : isCompactDesktop
-    ? {
-        marginTop: 14,
-        fontSize: 14,
       }
     : {};
 
@@ -734,9 +679,11 @@ export default function TerminalClient() {
       }
     : {
         display: "grid",
-        gridTemplateColumns: "1fr",
-        gap: 12,
-        marginBottom: 18,
+        gridTemplateColumns: `repeat(2, minmax(${desktopEntryMinCard}px, 1fr))`,
+        gap: isCompactDesktop ? 20 : 18,
+        maxWidth: desktopEntryGridMaxWidth,
+        marginBottom: 22,
+        alignItems: "start",
       };
 
   const mobileEntryCardStyle: React.CSSProperties = isMobile
@@ -746,10 +693,12 @@ export default function TerminalClient() {
         width: "100%",
         maxWidth: 182,
         justifySelf: "center",
+        alignSelf: "start",
       }
     : {
         border: "1px solid #555",
-        padding: 10,
+        padding: desktopCardPadding,
+        alignSelf: "start",
       };
 
   const mobileSendTokenCardStyle: React.CSSProperties = isMobile
@@ -760,14 +709,6 @@ export default function TerminalClient() {
         border: "1px solid #555",
         padding: 10,
         marginBottom: 10,
-      }
-    : isCompactDesktop
-    ? {
-        border: "1px solid #555",
-        padding: 14,
-        width: 178,
-        alignSelf: "center",
-        marginBottom: 14,
       }
     : {
         border: "1px solid #555",
@@ -983,15 +924,7 @@ export default function TerminalClient() {
               )}
 
               {showEntrySection && !loadingTickets && tickets.length > 0 && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `repeat(2, minmax(${desktopEntryMinCard}px, 1fr))`,
-                    gap: isCompactDesktop ? 20 : 18,
-                    maxWidth: desktopEntryGridMaxWidth,
-                    marginBottom: 22,
-                  }}
-                >
+                <div style={mobileEntryCardGridStyle}>
                   {tickets.map((ticket, index) => {
                     const isVip = ticket.is_vip || ticket.vip;
                     const isUsed = !!ticket.claimed;
@@ -1000,10 +933,7 @@ export default function TerminalClient() {
                     return (
                       <div
                         key={ticket.id || index}
-                        style={{
-                          border: "1px solid #555",
-                          padding: desktopCardPadding,
-                        }}
+                        style={mobileEntryCardStyle}
                       >
                         <div
                           style={{
@@ -1451,14 +1381,14 @@ export default function TerminalClient() {
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : isCompactDesktop ? 340 : 300,
+                  width: isMobile ? "100%" : 300,
                   maxWidth: "100%",
-                  minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
+                  minHeight: 54,
                   lineHeight: 1.02,
                   color: "white",
-                  fontSize: isMobile ? 13 : isCompactDesktop ? 18 : 17,
+                  fontSize: isMobile ? 13 : 17,
                   fontWeight: 700,
-                  letterSpacing: isMobile ? 3.4 : isCompactDesktop ? 4.8 : 4.8,
+                  letterSpacing: isMobile ? 3.4 : 4.8,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
@@ -1573,14 +1503,14 @@ export default function TerminalClient() {
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : isCompactDesktop ? 340 : 300,
+                  width: isMobile ? "100%" : 300,
                   maxWidth: "100%",
-                  minHeight: isMobile ? 54 : isCompactDesktop ? 58 : 54,
+                  minHeight: 54,
                   lineHeight: 1.02,
                   color: "white",
-                  fontSize: isMobile ? 13 : isCompactDesktop ? 18 : 17,
+                  fontSize: isMobile ? 13 : 17,
                   fontWeight: 700,
-                  letterSpacing: isMobile ? 3.4 : isCompactDesktop ? 4.8 : 4.8,
+                  letterSpacing: isMobile ? 3.4 : 4.8,
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
@@ -1632,7 +1562,7 @@ export default function TerminalClient() {
               className="modal-status-copy"
               style={{
                 ...mobileStatusCopyStyle,
-                marginBottom: isCompactDesktop && !isMobile ? 14 : 12,
+                marginBottom: 14,
               }}
             >
               <div className="modal-status-line">
@@ -1650,7 +1580,7 @@ export default function TerminalClient() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   marginBottom: 8,
-                  fontSize: isMobile ? 10 : isCompactDesktop ? 11 : 10,
+                  fontSize: 10,
                   letterSpacing: 1.8,
                 }}
               >
@@ -1663,14 +1593,14 @@ export default function TerminalClient() {
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <QRCodeSVG
                   value={`${qrBase}/checkin?code=${sendModalTicket.code}`}
-                  size={isMobile ? 104 : isCompactDesktop ? 118 : 104}
+                  size={isMobile ? 104 : 102}
                 />
               </div>
 
               <div
                 style={{
                   marginTop: 8,
-                  fontSize: isMobile ? 9 : isCompactDesktop ? 10 : 9,
+                  fontSize: 9,
                   letterSpacing: 1.8,
                   color: "#b8b8b8",
                 }}
@@ -1680,7 +1610,7 @@ export default function TerminalClient() {
 
               <div
                 style={{
-                  fontSize: isMobile ? 13 : isCompactDesktop ? 15 : 14,
+                  fontSize: 13,
                   letterSpacing: 1.6,
                   marginTop: 4,
                   wordBreak: "break-word",
@@ -1697,8 +1627,6 @@ export default function TerminalClient() {
               style={{
                 ...sendInputStyle,
                 ...mobileModalInnerStyle,
-                padding: isMobile ? "13px 13px" : isCompactDesktop ? "12px 13px" : "10px 12px",
-                fontSize: isMobile ? 14 : isCompactDesktop ? 14 : 13,
               }}
             />
 
@@ -1707,7 +1635,7 @@ export default function TerminalClient() {
                 style={{
                   ...mobileModalInnerStyle,
                   marginTop: 10,
-                  fontSize: isMobile ? 11 : isCompactDesktop ? 12 : 11,
+                  fontSize: 11,
                   letterSpacing: 1.4,
                   lineHeight: 1.45,
                   color: "#c8c8c8",
