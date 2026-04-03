@@ -376,20 +376,20 @@ export default function TerminalClient() {
         marginBottom: 60,
       }
     : isCompactDesktop
-    ? {
-        marginTop: 72,
-        marginLeft: "auto",
-        marginRight: "auto",
-        marginBottom: 60,
-        width: desktopOuterWidth,
-        maxWidth: "calc(100vw - 80px)",
-      }
-    : {
-        marginTop: 72,
-        marginLeft: 120,
-        marginRight: 40,
-        marginBottom: 60,
-      };
+      ? {
+          marginTop: 72,
+          marginLeft: "auto",
+          marginRight: "auto",
+          marginBottom: 60,
+          width: desktopOuterWidth,
+          maxWidth: "calc(100vw - 80px)",
+        }
+      : {
+          marginTop: 72,
+          marginLeft: 120,
+          marginRight: 40,
+          marginBottom: 60,
+        };
 
   const desktopTitleSize = isCompactDesktop ? 34 : 30;
   const desktopEntryTitleSize = isCompactDesktop ? 30 : 26;
@@ -553,7 +553,7 @@ export default function TerminalClient() {
         paddingTop: 0,
         paddingBottom: 18,
       }
-    : {};
+    : desktopGenerateModalStyle;
 
   const mobileSendModalStyle: React.CSSProperties = isMobile
     ? {
@@ -565,7 +565,8 @@ export default function TerminalClient() {
       }
     : desktopSendModalStyle;
 
-  const mobileHeaderStyle: React.CSSProperties = isMobile
+  // Generate modal styles
+  const generateHeaderStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
         paddingTop: 18,
@@ -574,7 +575,7 @@ export default function TerminalClient() {
       }
     : {};
 
-  const mobileGenerateTitleStyle: React.CSSProperties = isMobile
+  const generateTitleStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
         textAlign: "center",
@@ -584,7 +585,7 @@ export default function TerminalClient() {
       }
     : {};
 
-  const mobileStatusCopyStyle: React.CSSProperties = isMobile
+  const generateStatusCopyStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
         marginBottom: 22,
@@ -592,6 +593,104 @@ export default function TerminalClient() {
         lineHeight: 1.42,
       }
     : {};
+
+  const generateQuantityLabelStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        marginBottom: 14,
+        fontSize: 12,
+        letterSpacing: 2.4,
+      }
+    : {};
+
+  const generateQuantityRowStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        display: "flex",
+        justifyContent: "center",
+        marginBottom: 16,
+      }
+    : {};
+
+  const generateButtonWrapStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        paddingTop: 0,
+        marginTop: "auto",
+      }
+    : {};
+
+  const generateButtonStyle: React.CSSProperties = isMobile
+    ? {
+        minHeight: 52,
+        fontSize: 12,
+        letterSpacing: 3.2,
+      }
+    : {};
+
+  const generateCancelStyle: React.CSSProperties = isMobile
+    ? {
+        alignSelf: "center",
+        marginTop: 10,
+        fontSize: 11,
+        letterSpacing: 2.8,
+      }
+    : {};
+
+  // Send modal styles
+  const sendHeaderStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        paddingTop: 18,
+        paddingBottom: 14,
+        marginBottom: 18,
+      }
+    : {
+        marginBottom: 14,
+      };
+
+  const sendTitleStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        textAlign: "center",
+        fontSize: 19,
+        letterSpacing: 2.8,
+        marginBottom: 12,
+      }
+    : {
+        marginBottom: 12,
+      };
+
+  const sendStatusCopyStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        marginBottom: 22,
+        fontSize: 11,
+        lineHeight: 1.42,
+      }
+    : {
+        marginBottom: 12,
+      };
+
+  const sendButtonWrapStyle: React.CSSProperties = isMobile
+    ? {
+        ...mobileModalInnerStyle,
+        paddingTop: 10,
+      }
+    : {
+        paddingTop: 10,
+      };
+
+  const sendCancelStyle: React.CSSProperties = isMobile
+    ? {
+        alignSelf: "center",
+        marginTop: 10,
+        fontSize: 11,
+        letterSpacing: 2.8,
+      }
+    : {
+        marginTop: 10,
+      };
 
   const mobileTierVisualWrapStyle: React.CSSProperties = isMobile
     ? {
@@ -623,49 +722,6 @@ export default function TerminalClient() {
         width: "100%",
         height: 10,
         background: "#222",
-      }
-    : {};
-
-  const mobileQuantityLabelStyle: React.CSSProperties = isMobile
-    ? {
-        ...mobileModalInnerStyle,
-        marginBottom: 14,
-        fontSize: 12,
-        letterSpacing: 2.4,
-      }
-    : {};
-
-  const mobileQuantityRowStyle: React.CSSProperties = isMobile
-    ? {
-        ...mobileModalInnerStyle,
-        display: "flex",
-        justifyContent: "center",
-        marginBottom: 16,
-      }
-    : {};
-
-  const mobileGenerateWrapStyle: React.CSSProperties = isMobile
-    ? {
-        ...mobileModalInnerStyle,
-        paddingTop: 0,
-        marginTop: "auto",
-      }
-    : {};
-
-  const mobileGenerateButtonStyle: React.CSSProperties = isMobile
-    ? {
-        minHeight: 52,
-        fontSize: 12,
-        letterSpacing: 3.2,
-      }
-    : {};
-
-  const mobileCancelStyle: React.CSSProperties = isMobile
-    ? {
-        alignSelf: "center",
-        marginTop: 10,
-        fontSize: 11,
-        letterSpacing: 2.8,
       }
     : {};
 
@@ -1266,7 +1322,7 @@ export default function TerminalClient() {
               flexDirection: "column",
             }}
           >
-            <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
+            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
                 src="/group-name.png"
@@ -1277,12 +1333,12 @@ export default function TerminalClient() {
 
             <div
               className="signup-title signup-title-large"
-              style={mobileGenerateTitleStyle}
+              style={generateTitleStyle}
             >
               Generate Tokens
             </div>
 
-            <div className="modal-status-copy" style={mobileStatusCopyStyle}>
+            <div className="modal-status-copy" style={generateStatusCopyStyle}>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
@@ -1346,11 +1402,11 @@ export default function TerminalClient() {
               </div>
             )}
 
-            <div className="modal-quantity-label" style={mobileQuantityLabelStyle}>
+            <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
               QUANTITY
             </div>
 
-            <div className="modal-quantity-row" style={mobileQuantityRowStyle}>
+            <div className="modal-quantity-row" style={generateQuantityRowStyle}>
               <button
                 className="cta-button"
                 style={modalArrowButtonStyle}
@@ -1376,7 +1432,7 @@ export default function TerminalClient() {
 
             <div
               className="signup-generate-button-wrap"
-              style={mobileGenerateWrapStyle}
+              style={generateButtonWrapStyle}
             >
               <button
                 className="cta-button"
@@ -1392,7 +1448,7 @@ export default function TerminalClient() {
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
-                  ...mobileGenerateButtonStyle,
+                  ...generateButtonStyle,
                 }}
                 onClick={generateTokens}
               >
@@ -1402,7 +1458,7 @@ export default function TerminalClient() {
 
             <button
               className="signup-close"
-              style={mobileCancelStyle}
+              style={generateCancelStyle}
               onClick={() => {
                 setCheckoutMessage("");
                 setPurchaseOpen(false);
@@ -1424,7 +1480,7 @@ export default function TerminalClient() {
               flexDirection: "column",
             }}
           >
-            <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
+            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
                 src="/group-name.png"
@@ -1435,12 +1491,12 @@ export default function TerminalClient() {
 
             <div
               className="signup-title signup-title-large"
-              style={mobileGenerateTitleStyle}
+              style={generateTitleStyle}
             >
               Generate VIP Tokens
             </div>
 
-            <div className="modal-status-copy" style={mobileStatusCopyStyle}>
+            <div className="modal-status-copy" style={generateStatusCopyStyle}>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">VIP CHANNEL ACTIVE</span>
@@ -1468,11 +1524,11 @@ export default function TerminalClient() {
               </div>
             )}
 
-            <div className="modal-quantity-label" style={mobileQuantityLabelStyle}>
+            <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
               QUANTITY
             </div>
 
-            <div className="modal-quantity-row" style={mobileQuantityRowStyle}>
+            <div className="modal-quantity-row" style={generateQuantityRowStyle}>
               <button
                 className="cta-button"
                 style={modalArrowButtonStyle}
@@ -1498,7 +1554,7 @@ export default function TerminalClient() {
 
             <div
               className="signup-generate-button-wrap"
-              style={mobileGenerateWrapStyle}
+              style={generateButtonWrapStyle}
             >
               <button
                 className="cta-button"
@@ -1514,7 +1570,7 @@ export default function TerminalClient() {
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
-                  ...mobileGenerateButtonStyle,
+                  ...generateButtonStyle,
                 }}
                 onClick={generateVipTokens}
               >
@@ -1524,7 +1580,7 @@ export default function TerminalClient() {
 
             <button
               className="signup-close"
-              style={mobileCancelStyle}
+              style={generateCancelStyle}
               onClick={() => {
                 setCheckoutMessage("");
                 setVipOpen(false);
@@ -1542,7 +1598,7 @@ export default function TerminalClient() {
             className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"} send-token-modal`}
             style={mobileSendModalStyle}
           >
-            <div className="signup-header signup-header-home" style={mobileHeaderStyle}>
+            <div className="signup-header signup-header-home" style={sendHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
                 src="/group-name.png"
@@ -1553,17 +1609,14 @@ export default function TerminalClient() {
 
             <div
               className="signup-title signup-title-large"
-              style={mobileGenerateTitleStyle}
+              style={sendTitleStyle}
             >
               Send Token
             </div>
 
             <div
               className="modal-status-copy"
-              style={{
-                ...mobileStatusCopyStyle,
-                marginBottom: 14,
-              }}
+              style={sendStatusCopyStyle}
             >
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
@@ -1648,7 +1701,7 @@ export default function TerminalClient() {
 
             <div
               className="signup-generate-button-wrap"
-              style={{ ...mobileGenerateWrapStyle, paddingTop: 10 }}
+              style={sendButtonWrapStyle}
             >
               <button
                 style={{
@@ -1672,7 +1725,7 @@ export default function TerminalClient() {
 
             <button
               className="signup-close"
-              style={mobileCancelStyle}
+              style={sendCancelStyle}
               onClick={closeSendModal}
             >
               CANCEL
