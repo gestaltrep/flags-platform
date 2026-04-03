@@ -1,27 +1,28 @@
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
     const { phone, code, name } = await req.json();
 
-    if (!phone || typeof phone !== "string" || !phone.trim()) {
+    const normalizedPhone = normalizeUSPhone(String(phone || ""));
+    const normalizedCode = String(code || "").trim();
+
+    if (!normalizedPhone) {
       return Response.json(
-        { success: false, error: "Phone number is required." },
+        { success: false, error: "This phone number isn't valid." },
         { status: 400 }
       );
     }
 
-    if (!code || typeof code !== "string" || !code.trim()) {
+    if (!normalizedCode) {
       return Response.json(
         { success: false, error: "Please enter the verification code." },
         { status: 400 }
       );
     }
-
-    const normalizedPhone = phone.trim();
-    const normalizedCode = code.trim();
 
     const client = Twilio(
       process.env.TWILIO_ACCOUNT_SID!,

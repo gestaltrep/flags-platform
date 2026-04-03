@@ -1,20 +1,17 @@
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
-
-function normalizePhone(phone: string) {
-  return phone.replace(/[^\d+]/g, "").trim();
-}
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
     const { phone, ticketId } = await req.json();
 
-    const normalizedPhone = normalizePhone(String(phone || ""));
+    const normalizedPhone = normalizeUSPhone(String(phone || ""));
     const normalizedTicketId = String(ticketId || "").trim();
 
     if (!normalizedPhone) {
       return Response.json(
-        { success: false, error: "Please enter your phone number." },
+        { success: false, error: "This phone number isn't valid." },
         { status: 400 }
       );
     }
@@ -33,7 +30,7 @@ export async function POST(req: Request) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
-      .select("id, claimed_by_user, claimed")
+      .select("id, buyer_user_id, claimed, claimed_by_user")
       .eq("id", normalizedTicketId)
       .maybeSingle();
 
@@ -51,28 +48,30 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .select("id, phone")
-      .eq("phone", normalizedPhone)
+    const { data: pendingTransfer, error: transferError } = await supabase
+      .from("pending_token_transfers")
+      .select("id, recipient_phone, status")
+      .eq("ticket_code_id", normalizedTicketId)
+      .eq("status", "pending")
       .maybeSingle();
 
-    if (userError || !user?.id) {
+    if (transferError) {
       return Response.json(
-        {
-          success: false,
-          error: "Enter a different phone number.",
-        },
-        { status: 403 }
+        { success: false, error: "Could not verify transfer state." },
+        { status: 500 }
       );
     }
 
-    if (ticket.claimed_by_user !== user.id) {
+    if (!pendingTransfer) {
       return Response.json(
-        {
-          success: false,
-          error: "Enter a different phone number.",
-        },
+        { success: false, error: "No active transfer exists for this token." },
+        { status: 409 }
+      );
+    }
+
+    if (pendingTransfer.recipient_phone !== normalizedPhone) {
+      return Response.json(
+        { success: false, error: "Enter the phone number the token was sent to." },
         { status: 403 }
       );
     }

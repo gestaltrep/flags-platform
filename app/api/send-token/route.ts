@@ -1,10 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import Twilio from "twilio";
-
-function normalizePhone(phone: string) {
-  return phone.replace(/[^\d+]/g, "").trim();
-}
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +14,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const ticketId = String(body.ticketId || "").trim();
-    const phone = normalizePhone(String(body.phone || ""));
+    const phone = normalizeUSPhone(String(body.phone || ""));
 
     if (!ticketId || !phone) {
       return Response.json(
@@ -44,7 +41,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (normalizePhone(sender.phone) === phone) {
+    if (normalizeUSPhone(sender.phone || "") === phone) {
       return Response.json(
         { success: false, error: "Use a different phone number for the recipient." },
         { status: 400 }
@@ -77,57 +74,42 @@ export async function POST(req: Request) {
 
     if (ticket.claimed_by_user) {
       return Response.json(
-        { success: false, error: "This token has already been assigned." },
+        { success: false, error: "This token has already been claimed." },
         { status: 409 }
       );
     }
 
-    let { data: recipient, error: recipientLookupError } = await supabase
-      .from("users")
-      .select("id, phone")
-      .eq("phone", phone)
+    const { data: existingPending } = await supabase
+      .from("pending_token_transfers")
+      .select("id, recipient_phone")
+      .eq("ticket_code_id", ticket.id)
+      .eq("status", "pending")
       .maybeSingle();
 
-    if (recipientLookupError) {
+    if (existingPending?.id) {
       return Response.json(
-        { success: false, error: "Could not look up recipient." },
-        { status: 500 }
+        {
+          success: false,
+          error: "This token already has a pending transfer.",
+        },
+        { status: 409 }
       );
     }
 
-    if (!recipient) {
-      const { data: newRecipient, error: recipientInsertError } = await supabase
-        .from("users")
-        .insert({
-          phone,
-          phone_verified: false,
-        })
-        .select("id, phone")
-        .single();
-
-      if (recipientInsertError || !newRecipient) {
-        return Response.json(
-          { success: false, error: "Could not create recipient user." },
-          { status: 500 }
-        );
-      }
-
-      recipient = newRecipient;
-    }
-
-    const { error: updateError } = await supabase
-      .from("ticket_codes")
-      .update({
-        claimed_by_user: recipient.id,
+    const { data: pendingTransfer, error: pendingInsertError } = await supabase
+      .from("pending_token_transfers")
+      .insert({
+        ticket_code_id: ticket.id,
+        sender_user_id: senderUserId,
+        recipient_phone: phone,
+        status: "pending",
       })
-      .eq("id", ticket.id)
-      .eq("buyer_user_id", senderUserId)
-      .eq("claimed", false)
-      .is("claimed_by_user", null);
+      .select("id")
+      .single();
 
-    if (updateError) {
+    if (pendingInsertError || !pendingTransfer?.id) {
       return Response.json(
-        { success: false, error: "Could not assign token." },
+        { success: false, error: "Could not start transfer." },
         { status: 500 }
       );
     }
@@ -146,7 +128,7 @@ export async function POST(req: Request) {
 
       if (!twilioMessagingServiceSid && !twilioPhoneNumber) {
         throw new Error(
-          "Missing TWILIO_MESSAGING_SERVICE_SID and TWILIO_PHONE_NUMBER. At least one sender configuration is required."
+          "Missing TWILIO_MESSAGING_SERVICE_SID and TWILIO_PHONE_NUMBER."
         );
       }
 
@@ -163,8 +145,8 @@ export async function POST(req: Request) {
       } = {
         to: phone,
         body:
-          `A token has been transmitted to you.\n` +
-          `Claim it here: ${claimUrl}`,
+          `A token has been transmitted to you.\n\n` +
+          `Claim your token:\n${claimUrl}`,
       };
 
       if (twilioMessagingServiceSid) {
@@ -176,12 +158,12 @@ export async function POST(req: Request) {
       await twilio.messages.create(messagePayload);
     } catch (smsErr) {
       console.error("Send token SMS error:", smsErr);
-      smsWarning = " Token assigned, but SMS delivery failed.";
+      smsWarning = " Transfer started, but SMS delivery failed.";
     }
 
     return Response.json({
       success: true,
-      message: `Token ${ticket.code} assigned successfully.${smsWarning || ""}`,
+      message: `Token ${ticket.code} transfer started successfully.${smsWarning || ""}`,
     });
   } catch (err) {
     console.error("Send token error:", err);

@@ -1,22 +1,19 @@
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-
-function normalizePhone(phone: string) {
-  return phone.replace(/[^\d+]/g, "").trim();
-}
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
     const { phone, code, ticketId } = await req.json();
 
-    const normalizedPhone = normalizePhone(String(phone || ""));
+    const normalizedPhone = normalizeUSPhone(String(phone || ""));
     const normalizedCode = String(code || "").trim();
     const normalizedTicketId = String(ticketId || "").trim();
 
     if (!normalizedPhone) {
       return Response.json(
-        { success: false, error: "Please enter your phone number." },
+        { success: false, error: "This phone number isn't valid." },
         { status: 400 }
       );
     }
@@ -42,7 +39,7 @@ export async function POST(req: Request) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
-      .select("id, claimed_by_user, claimed")
+      .select("id, buyer_user_id, claimed, claimed_by_user")
       .eq("id", normalizedTicketId)
       .maybeSingle();
 
@@ -60,28 +57,23 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .select("id, phone")
-      .eq("phone", normalizedPhone)
+    const { data: pendingTransfer, error: transferError } = await supabase
+      .from("pending_token_transfers")
+      .select("id, recipient_phone, status")
+      .eq("ticket_code_id", normalizedTicketId)
+      .eq("status", "pending")
       .maybeSingle();
 
-    if (userError || !user?.id) {
+    if (transferError || !pendingTransfer) {
       return Response.json(
-        {
-          success: false,
-          error: "Enter a different phone number.",
-        },
-        { status: 403 }
+        { success: false, error: "No active transfer exists for this token." },
+        { status: 409 }
       );
     }
 
-    if (ticket.claimed_by_user !== user.id) {
+    if (pendingTransfer.recipient_phone !== normalizedPhone) {
       return Response.json(
-        {
-          success: false,
-          error: "Enter a different phone number.",
-        },
+        { success: false, error: "Enter the phone number the token was sent to." },
         { status: 403 }
       );
     }
@@ -105,22 +97,82 @@ export async function POST(req: Request) {
       );
     }
 
-    const { error: verifyUserError } = await supabase
-      .from("users")
-      .update({
-        phone_verified: true,
-      })
-      .eq("id", user.id);
+    let userId: string;
 
-    if (verifyUserError) {
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("phone", normalizedPhone)
+      .maybeSingle();
+
+    if (existingUser?.id) {
+      const { data: updatedUser, error: updateUserError } = await supabase
+        .from("users")
+        .update({ phone_verified: true })
+        .eq("id", existingUser.id)
+        .select("id")
+        .single();
+
+      if (updateUserError || !updatedUser?.id) {
+        return Response.json(
+          { success: false, error: "Could not verify recipient." },
+          { status: 500 }
+        );
+      }
+
+      userId = updatedUser.id;
+    } else {
+      const { data: insertedUser, error: insertUserError } = await supabase
+        .from("users")
+        .insert({
+          phone: normalizedPhone,
+          phone_verified: true,
+        })
+        .select("id")
+        .single();
+
+      if (insertUserError || !insertedUser?.id) {
+        return Response.json(
+          { success: false, error: "Could not verify recipient." },
+          { status: 500 }
+        );
+      }
+
+      userId = insertedUser.id;
+    }
+
+    const { error: ticketUpdateError } = await supabase
+      .from("ticket_codes")
+      .update({
+        claimed_by_user: userId,
+      })
+      .eq("id", normalizedTicketId)
+      .eq("claimed", false);
+
+    if (ticketUpdateError) {
       return Response.json(
-        { success: false, error: "Could not verify recipient." },
+        { success: false, error: "Could not finalize token claim." },
+        { status: 500 }
+      );
+    }
+
+    const { error: transferUpdateError } = await supabase
+      .from("pending_token_transfers")
+      .update({
+        status: "accepted",
+        accepted_at: new Date().toISOString(),
+      })
+      .eq("id", pendingTransfer.id);
+
+    if (transferUpdateError) {
+      return Response.json(
+        { success: false, error: "Could not finalize transfer." },
         { status: 500 }
       );
     }
 
     const cookieStore = await cookies();
-    cookieStore.set("user_id", user.id, {
+    cookieStore.set("user_id", userId, {
       httpOnly: false,
       sameSite: "lax",
       path: "/",

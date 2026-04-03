@@ -1,17 +1,18 @@
 import Twilio from "twilio";
+import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
     const { phone } = await req.json();
 
-    if (!phone || typeof phone !== "string" || !phone.trim()) {
+    const normalizedPhone = normalizeUSPhone(String(phone || ""));
+
+    if (!normalizedPhone) {
       return Response.json(
-        { success: false, error: "Phone number is required." },
+        { success: false, error: "This phone number isn't valid." },
         { status: 400 }
       );
     }
-
-    const normalizedPhone = phone.trim();
 
     const client = Twilio(
       process.env.TWILIO_ACCOUNT_SID!,
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     if (
-      raw.includes("invalid") && raw.includes("phone") ||
+      (raw.includes("invalid") && raw.includes("phone")) ||
       raw.includes("not a valid phone number") ||
       code === 21211
     ) {
