@@ -14,7 +14,7 @@ export async function GET() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { data, error } = await supabase
+  const { data: tickets, error: ticketError } = await supabase
     .from("ticket_codes")
     .select(
       "id, code, vip, is_vip, claimed, claimed_at, created_at, buyer_user_id, claimed_by_user"
@@ -24,24 +24,73 @@ export async function GET() {
     )
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Tickets fetch error:", error);
+  if (ticketError) {
+    console.error("Tickets fetch error:", ticketError);
     return Response.json([]);
   }
 
-  const shaped = (data || []).map((ticket) => ({
-    id: ticket.id,
-    code: ticket.code,
-    vip: ticket.vip,
-    is_vip: ticket.is_vip,
-    claimed: ticket.claimed,
-    claimed_at: ticket.claimed_at,
-    created_at: ticket.created_at,
-    can_send:
-      ticket.buyer_user_id === userId &&
-      !ticket.claimed &&
-      !ticket.claimed_by_user,
-  }));
+  const ownedTicketIds = (tickets || [])
+    .filter((t) => t.buyer_user_id === userId)
+    .map((t) => t.id);
+
+  let pendingByTicketId = new Map<
+    string,
+    {
+      id: string;
+      recipient_phone: string;
+      status: string;
+    }
+  >();
+
+  if (ownedTicketIds.length > 0) {
+    const { data: pendingTransfers, error: pendingError } = await supabase
+      .from("pending_token_transfers")
+      .select("id, ticket_code_id, recipient_phone, status")
+      .in("ticket_code_id", ownedTicketIds)
+      .eq("status", "pending");
+
+    if (pendingError) {
+      console.error("Pending transfers fetch error:", pendingError);
+    } else {
+      pendingByTicketId = new Map(
+        (pendingTransfers || []).map((row) => [
+          row.ticket_code_id,
+          {
+            id: row.id,
+            recipient_phone: row.recipient_phone,
+            status: row.status,
+          },
+        ])
+      );
+    }
+  }
+
+  const shaped = (tickets || []).map((ticket) => {
+    const pending = pendingByTicketId.get(ticket.id);
+
+    return {
+      id: ticket.id,
+      code: ticket.code,
+      vip: ticket.vip,
+      is_vip: ticket.is_vip,
+      claimed: ticket.claimed,
+      claimed_at: ticket.claimed_at,
+      created_at: ticket.created_at,
+      pending_transfer_id: pending?.id ?? null,
+      pending_recipient_phone: pending?.recipient_phone ?? null,
+      pending_status: pending?.status ?? null,
+      can_send:
+        ticket.buyer_user_id === userId &&
+        !ticket.claimed &&
+        !ticket.claimed_by_user &&
+        !pending,
+      can_cancel:
+        ticket.buyer_user_id === userId &&
+        !ticket.claimed &&
+        !ticket.claimed_by_user &&
+        !!pending,
+    };
+  });
 
   return Response.json(shaped);
 }
