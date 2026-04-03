@@ -409,7 +409,10 @@ export default function TerminalClient() {
   const desktopEntryGridMaxWidth = isCompactDesktop ? 456 : 420;
   const desktopEntryMinCard = isCompactDesktop ? 195 : 180;
 
-  const desktopGenerateModalStyle: React.CSSProperties = {};
+  const desktopGenerateModalStyle: React.CSSProperties = {
+    width: 388,
+    maxWidth: "92vw",
+  };
   const desktopSendModalStyle: React.CSSProperties = {
     width: 400,
     maxWidth: "92vw",
@@ -572,7 +575,9 @@ export default function TerminalClient() {
         paddingBottom: 14,
         marginBottom: 18,
       }
-    : {};
+    : {
+        marginBottom: 14,
+      };
 
   const mobileGenerateTitleStyle: React.CSSProperties = isMobile
     ? {
@@ -582,7 +587,9 @@ export default function TerminalClient() {
         letterSpacing: 2.8,
         marginBottom: 12,
       }
-    : {};
+    : {
+        marginBottom: 12,
+      };
 
   const mobileStatusCopyStyle: React.CSSProperties = isMobile
     ? {
@@ -591,7 +598,9 @@ export default function TerminalClient() {
         fontSize: 11,
         lineHeight: 1.42,
       }
-    : {};
+    : {
+        marginBottom: 12,
+      };
 
   const mobileTierVisualWrapStyle: React.CSSProperties = isMobile
     ? {
@@ -667,7 +676,9 @@ export default function TerminalClient() {
         fontSize: 11,
         letterSpacing: 2.8,
       }
-    : {};
+    : {
+        marginTop: 10,
+      };
 
   const mobileEntryCardGridStyle: React.CSSProperties = isMobile
     ? {
