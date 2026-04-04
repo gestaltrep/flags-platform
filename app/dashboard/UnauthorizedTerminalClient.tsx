@@ -3,17 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function UnauthorizedTerminalClient() {
-  const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const [showBootBlock, setShowBootBlock] = useState(false);
   const [showFinalBlock, setShowFinalBlock] = useState(false);
-  const [showCursor, setShowCursor] = useState(true);
+  const [showCursor, setShowCursor] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(1400);
   const timeoutsRef = useRef<number[]>([]);
 
-  const bootLines = [
-    "> AUTHENTICATION FAILURE",
-    "> UNAUTHORIZED ACCESS",
-    "> PARTICIPANT REGISTRATION REQUIRED",
-  ];
+  const bootBlock = `> AUTHENTICATION FAILURE
+
+> UNAUTHORIZED ACCESS
+
+> PARTICIPANT REGISTRATION REQUIRED`;
+
+  const finalBlock = `> REQUEST PARTICIPATION TO OBTAIN
+  TERMINAL ACCESS`;
 
   useEffect(() => {
     function handleResize() {
@@ -22,7 +25,6 @@ export default function UnauthorizedTerminalClient() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -30,24 +32,25 @@ export default function UnauthorizedTerminalClient() {
     timeoutsRef.current.forEach((id) => clearTimeout(id));
     timeoutsRef.current = [];
 
-    setTerminalLines([]);
+    setShowBootBlock(false);
     setShowFinalBlock(false);
-    setShowCursor(true);
+    setShowCursor(false);
 
     const lineDelay = 450;
 
-    bootLines.forEach((line, index) => {
-      const id = window.setTimeout(() => {
-        setTerminalLines((prev) => [...prev, line]);
-      }, index * lineDelay);
-      timeoutsRef.current.push(id);
-    });
+    const bootId = window.setTimeout(() => {
+      setShowBootBlock(true);
+    }, lineDelay);
 
-    const finalBlockId = window.setTimeout(() => {
+    const finalId = window.setTimeout(() => {
       setShowFinalBlock(true);
-    }, bootLines.length * lineDelay);
+    }, lineDelay * 4);
 
-    timeoutsRef.current.push(finalBlockId);
+    const cursorId = window.setTimeout(() => {
+      setShowCursor(true);
+    }, lineDelay * 5);
+
+    timeoutsRef.current.push(bootId, finalId, cursorId);
 
     return () => {
       timeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -81,119 +84,88 @@ export default function UnauthorizedTerminalClient() {
         marginBottom: 60,
       };
 
-  const finalBlockStyle: React.CSSProperties = isMobile
+  const terminalTextStyle: React.CSSProperties = isMobile
     ? {
-        marginTop: 12,
+        whiteSpace: "pre-wrap",
+        margin: 0,
+        font: 'inherit',
+        letterSpacing: 1.15,
+        lineHeight: 1.62,
       }
     : {
-        marginTop: 8,
+        whiteSpace: "pre-wrap",
+        margin: 0,
+        font: 'inherit',
+        letterSpacing: 1.4,
+        lineHeight: 1.7,
       };
 
-  const finalFirstLineStyle: React.CSSProperties = isMobile
-    ? {
-        marginTop: 0,
-      }
-    : {};
+  return !isMobile ? (
+    <main style={desktopMainStyle}>
+      <div
+        style={{
+          fontSize: desktopTitleSize,
+          letterSpacing: 6,
+          marginBottom: 24,
+        }}
+      >
+        Terminal
+      </div>
 
-  const finalSecondLineStyle: React.CSSProperties = isMobile
-    ? {
-        paddingLeft: "1.82em",
-        marginTop: 8,
-      }
-    : {
-        paddingLeft: "1.82em",
-      };
+      <div
+        style={{
+          border: "1px solid #888",
+          padding: desktopBoxPadding,
+          width: desktopLeftWidth,
+          fontSize: desktopBoxFont,
+          letterSpacing: 1.4,
+          lineHeight: 1.7,
+          minHeight: desktopBoxMinHeight,
+        }}
+      >
+        {showBootBlock && <pre style={terminalTextStyle}>{bootBlock}</pre>}
+        {showFinalBlock && <pre style={terminalTextStyle}>{finalBlock}</pre>}
+        {showCursor && <span className="cursor">_</span>}
+      </div>
+    </main>
+  ) : (
+    <main
+      style={{
+        marginTop: 26,
+        marginLeft: 20,
+        marginRight: 20,
+        marginBottom: 60,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 28,
+          letterSpacing: 4,
+          marginBottom: 16,
+        }}
+      >
+        Terminal
+      </div>
 
-  return (
-    <>
-      {!isMobile ? (
-        <main style={desktopMainStyle}>
-          <div
-            style={{
-              fontSize: desktopTitleSize,
-              letterSpacing: 6,
-              marginBottom: 24,
-            }}
-          >
-            Terminal
+      <div
+        style={{
+          border: "1px solid #888",
+          padding: 14,
+          fontSize: 11,
+          letterSpacing: 1.15,
+          lineHeight: 1.62,
+          marginBottom: 18,
+          minHeight: 146,
+        }}
+      >
+        {showBootBlock && <pre style={terminalTextStyle}>{bootBlock}</pre>}
+        {showFinalBlock && <pre style={terminalTextStyle}>{finalBlock}</pre>}
+        {showCursor && (
+          <div style={{ marginTop: 10 }}>
+            <span className="cursor">_</span>
           </div>
-
-          <div
-            style={{
-              border: "1px solid #888",
-              padding: desktopBoxPadding,
-              width: desktopLeftWidth,
-              fontSize: desktopBoxFont,
-              letterSpacing: 1.4,
-              lineHeight: 1.7,
-              minHeight: desktopBoxMinHeight,
-            }}
-          >
-            {terminalLines.map((line, i) => (
-              <div key={i}>{line}</div>
-            ))}
-
-            {showFinalBlock && (
-              <div style={finalBlockStyle}>
-                <div style={finalFirstLineStyle}>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
-                <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
-              </div>
-            )}
-
-            {showCursor && <span className="cursor">_</span>}
-          </div>
-        </main>
-      ) : (
-        <main
-          style={{
-            marginTop: 26,
-            marginLeft: 20,
-            marginRight: 20,
-            marginBottom: 60,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 28,
-              letterSpacing: 4,
-              marginBottom: 16,
-            }}
-          >
-            Terminal
-          </div>
-
-          <div
-            style={{
-              border: "1px solid #888",
-              padding: 14,
-              fontSize: 11,
-              letterSpacing: 1.15,
-              lineHeight: 1.62,
-              marginBottom: 18,
-              minHeight: 146,
-            }}
-          >
-            {terminalLines.map((line, i) => (
-              <div key={i} style={{ marginTop: i === 0 ? 0 : 8 }}>
-                {line}
-              </div>
-            ))}
-
-            {showFinalBlock && (
-              <div style={finalBlockStyle}>
-                <div style={finalFirstLineStyle}>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
-                <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
-              </div>
-            )}
-
-            {showCursor && (
-              <div style={{ marginTop: 10 }}>
-                <span className="cursor">_</span>
-              </div>
-            )}
-          </div>
-        </main>
-      )}
-    </>
+        )}
+      </div>
+    </main>
   );
 }
