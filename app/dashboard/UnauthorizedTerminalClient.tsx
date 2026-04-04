@@ -34,7 +34,7 @@ export default function UnauthorizedTerminalClient() {
     setShowFinalBlock(false);
     setShowCursor(true);
 
-    const lineDelay = viewportWidth < 900 ? 360 : 450;
+    const lineDelay = 450;
 
     bootLines.forEach((line, index) => {
       const id = window.setTimeout(() => {
@@ -53,7 +53,7 @@ export default function UnauthorizedTerminalClient() {
       timeoutsRef.current.forEach((id) => clearTimeout(id));
       timeoutsRef.current = [];
     };
-  }, [viewportWidth]);
+  }, []);
 
   const isMobile = viewportWidth < 900;
   const isCompactDesktop = !isMobile && viewportWidth >= 1180 && viewportWidth <= 1550;
@@ -79,6 +79,24 @@ export default function UnauthorizedTerminalClient() {
         marginLeft: 120,
         marginRight: 40,
         marginBottom: 60,
+      };
+
+  const finalBlockStyle: React.CSSProperties = isMobile
+    ? {
+        marginTop: 16,
+        lineHeight: 1.62,
+      }
+    : {
+        marginTop: 18,
+        lineHeight: 1.7,
+      };
+
+  const finalSecondLineStyle: React.CSSProperties = isMobile
+    ? {
+        paddingLeft: "1.55em",
+      }
+    : {
+        paddingLeft: "1.55em",
       };
 
   return (
@@ -111,9 +129,9 @@ export default function UnauthorizedTerminalClient() {
             ))}
 
             {showFinalBlock && (
-              <div style={{ marginTop: 18 }}>
+              <div style={finalBlockStyle}>
                 <div>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
-                <div>TERMINAL ACCESS</div>
+                <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
               </div>
             )}
 
@@ -157,9 +175,9 @@ export default function UnauthorizedTerminalClient() {
             ))}
 
             {showFinalBlock && (
-              <div style={{ marginTop: 16 }}>
+              <div style={finalBlockStyle}>
                 <div>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
-                <div>TERMINAL ACCESS</div>
+                <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
               </div>
             )}
 
