@@ -3,17 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function UnauthorizedTerminalClient() {
-  const [lines, setLines] = useState<string[]>([]);
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const [showCursor, setShowCursor] = useState(true);
   const [viewportWidth, setViewportWidth] = useState(1400);
-  const timeoutIdsRef = useRef<number[]>([]);
+  const timeoutsRef = useRef<number[]>([]);
 
-  const unauthorizedScript = [
+  const bootLines = [
     "> AUTHENTICATION FAILURE",
     "> UNAUTHORIZED ACCESS",
     "> PARTICIPANT REGISTRATION REQUIRED",
   ];
 
-  const finalLineBlock = [
+  const finalBlock = [
     "> REQUEST PARTICIPATION TO OBTAIN",
     "TERMINAL ACCESS",
   ];
@@ -26,37 +27,40 @@ export default function UnauthorizedTerminalClient() {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
-    timeoutIdsRef.current.forEach((id) => clearTimeout(id));
-    timeoutIdsRef.current = [];
-    setLines([]);
+    timeoutsRef.current.forEach((id) => clearTimeout(id));
+    timeoutsRef.current = [];
 
-    unauthorizedScript.forEach((line, index) => {
+    setTerminalLines([]);
+    setShowCursor(true);
+
+    const lineDelay = viewportWidth < 900 ? 360 : 450;
+
+    bootLines.forEach((line, index) => {
       const id = window.setTimeout(() => {
-        setLines((prev) => [...prev, line]);
-      }, index * 420);
-      timeoutIdsRef.current.push(id);
+        setTerminalLines((prev) => [...prev, line]);
+      }, index * lineDelay);
+      timeoutsRef.current.push(id);
     });
 
-    const finalBlockDelay = unauthorizedScript.length * 420;
+    const firstFinalId = window.setTimeout(() => {
+      setTerminalLines((prev) => [...prev, finalBlock[0]]);
+    }, bootLines.length * lineDelay);
 
-    finalLineBlock.forEach((line, index) => {
-      const id = window.setTimeout(() => {
-        setLines((prev) => [...prev, line]);
-      }, finalBlockDelay + index * 180);
-      timeoutIdsRef.current.push(id);
-    });
+    const secondFinalId = window.setTimeout(() => {
+      setTerminalLines((prev) => [...prev, finalBlock[1]]);
+    }, bootLines.length * lineDelay + 170);
+
+    timeoutsRef.current.push(firstFinalId, secondFinalId);
 
     return () => {
-      timeoutIdsRef.current.forEach((id) => clearTimeout(id));
-      timeoutIdsRef.current = [];
+      timeoutsRef.current.forEach((id) => clearTimeout(id));
+      timeoutsRef.current = [];
     };
-  }, []);
+  }, [viewportWidth]);
 
   const isMobile = viewportWidth < 900;
   const isCompactDesktop = !isMobile && viewportWidth >= 1180 && viewportWidth <= 1550;
@@ -109,15 +113,11 @@ export default function UnauthorizedTerminalClient() {
               minHeight: desktopBoxMinHeight,
             }}
           >
-            {lines.map((line, i) => (
-              <div key={`${line}-${i}`} style={{ marginTop: i === 0 ? 0 : 0 }}>
-                {line}
-              </div>
+            {terminalLines.map((line, i) => (
+              <div key={i}>{line}</div>
             ))}
 
-            <div style={{ marginTop: 0 }}>
-              <span className="cursor">_</span>
-            </div>
+            {showCursor && <span className="cursor">_</span>}
           </div>
         </main>
       ) : (
@@ -150,15 +150,17 @@ export default function UnauthorizedTerminalClient() {
               minHeight: 146,
             }}
           >
-            {lines.map((line, i) => (
-              <div key={`${line}-${i}`} style={{ marginTop: i === 0 ? 0 : 8 }}>
+            {terminalLines.map((line, i) => (
+              <div key={i} style={{ marginTop: i === 0 ? 0 : 8 }}>
                 {line}
               </div>
             ))}
 
-            <div style={{ marginTop: 10 }}>
-              <span className="cursor">_</span>
-            </div>
+            {showCursor && (
+              <div style={{ marginTop: 10 }}>
+                <span className="cursor">_</span>
+              </div>
+            )}
           </div>
         </main>
       )}
