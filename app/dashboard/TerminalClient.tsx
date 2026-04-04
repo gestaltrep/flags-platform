@@ -119,7 +119,8 @@ export default function TerminalClient() {
     loadTickets();
     loadTier();
 
-    const lineDelay = isMobile ? 360 : 450;
+    // Unified to desktop pacing on both desktop and mobile
+    const lineDelay = 450;
 
     bootScript.forEach((line, index) => {
       const id = window.setTimeout(() => {
@@ -139,13 +140,13 @@ export default function TerminalClient() {
     timeoutIdsRef.current.push(
       window.setTimeout(() => {
         setShowEntrySection(true);
-      }, bootDoneTime + (isMobile ? 180 : 560))
+      }, bootDoneTime + 560)
     );
 
     timeoutIdsRef.current.push(
       window.setTimeout(() => {
         setShowButtons(true);
-      }, bootDoneTime + (isMobile ? 340 : 900))
+      }, bootDoneTime + 900)
     );
   }
 
@@ -565,7 +566,6 @@ export default function TerminalClient() {
       }
     : desktopSendModalStyle;
 
-  // Generate modal styles
   const generateHeaderStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
@@ -637,7 +637,6 @@ export default function TerminalClient() {
       }
     : {};
 
-  // Send modal styles
   const sendHeaderStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
@@ -1683,23 +1682,23 @@ export default function TerminalClient() {
               }}
             />
 
-                        <div
-                          style={{
-                            ...mobileModalInnerStyle,
-                            marginTop: 10,
-                            minHeight: 16,
-                            fontSize: 10,
-                            letterSpacing: 1.2,
-                            lineHeight: 1.2,
-                            color: "#c8c8c8",
-                            textAlign: "center",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {sendMessages[sendModalTicket.id] || " "}
-                        </div>
+            <div
+              style={{
+                ...mobileModalInnerStyle,
+                marginTop: 10,
+                minHeight: 16,
+                fontSize: 10,
+                letterSpacing: 1.2,
+                lineHeight: 1.2,
+                color: "#c8c8c8",
+                textAlign: "center",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {sendMessages[sendModalTicket.id] || " "}
+            </div>
 
             <div
               className="signup-generate-button-wrap"
