@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function UnauthorizedTerminalClient() {
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const [showFinalBlock, setShowFinalBlock] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
   const [viewportWidth, setViewportWidth] = useState(1400);
   const timeoutsRef = useRef<number[]>([]);
@@ -12,11 +13,6 @@ export default function UnauthorizedTerminalClient() {
     "> AUTHENTICATION FAILURE",
     "> UNAUTHORIZED ACCESS",
     "> PARTICIPANT REGISTRATION REQUIRED",
-  ];
-
-  const finalBlock = [
-    "> REQUEST PARTICIPATION TO OBTAIN",
-    "TERMINAL ACCESS",
   ];
 
   useEffect(() => {
@@ -35,6 +31,7 @@ export default function UnauthorizedTerminalClient() {
     timeoutsRef.current = [];
 
     setTerminalLines([]);
+    setShowFinalBlock(false);
     setShowCursor(true);
 
     const lineDelay = viewportWidth < 900 ? 360 : 450;
@@ -46,15 +43,11 @@ export default function UnauthorizedTerminalClient() {
       timeoutsRef.current.push(id);
     });
 
-    const firstFinalId = window.setTimeout(() => {
-      setTerminalLines((prev) => [...prev, finalBlock[0]]);
+    const finalBlockId = window.setTimeout(() => {
+      setShowFinalBlock(true);
     }, bootLines.length * lineDelay);
 
-    const secondFinalId = window.setTimeout(() => {
-      setTerminalLines((prev) => [...prev, finalBlock[1]]);
-    }, bootLines.length * lineDelay + 170);
-
-    timeoutsRef.current.push(firstFinalId, secondFinalId);
+    timeoutsRef.current.push(finalBlockId);
 
     return () => {
       timeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -117,6 +110,13 @@ export default function UnauthorizedTerminalClient() {
               <div key={i}>{line}</div>
             ))}
 
+            {showFinalBlock && (
+              <div style={{ marginTop: 18 }}>
+                <div>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
+                <div>TERMINAL ACCESS</div>
+              </div>
+            )}
+
             {showCursor && <span className="cursor">_</span>}
           </div>
         </main>
@@ -155,6 +155,13 @@ export default function UnauthorizedTerminalClient() {
                 {line}
               </div>
             ))}
+
+            {showFinalBlock && (
+              <div style={{ marginTop: 16 }}>
+                <div>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
+                <div>TERMINAL ACCESS</div>
+              </div>
+            )}
 
             {showCursor && (
               <div style={{ marginTop: 10 }}>
