@@ -83,20 +83,25 @@ export default function UnauthorizedTerminalClient() {
 
   const finalBlockStyle: React.CSSProperties = isMobile
     ? {
-        marginTop: 16,
-        lineHeight: 1.62,
+        marginTop: 8,
       }
     : {
-        marginTop: 18,
-        lineHeight: 1.7,
+        marginTop: 0,
       };
+
+  const finalFirstLineStyle: React.CSSProperties = isMobile
+    ? {
+        marginTop: 8,
+      }
+    : {};
 
   const finalSecondLineStyle: React.CSSProperties = isMobile
     ? {
-        paddingLeft: "1.55em",
+        paddingLeft: "2.18em",
+        marginTop: 8,
       }
     : {
-        paddingLeft: "1.55em",
+        paddingLeft: "2.18em",
       };
 
   return (
@@ -130,7 +135,7 @@ export default function UnauthorizedTerminalClient() {
 
             {showFinalBlock && (
               <div style={finalBlockStyle}>
-                <div>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
+                <div style={finalFirstLineStyle}>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
                 <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
               </div>
             )}
@@ -176,7 +181,7 @@ export default function UnauthorizedTerminalClient() {
 
             {showFinalBlock && (
               <div style={finalBlockStyle}>
-                <div>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
+                <div style={finalFirstLineStyle}>{">"} REQUEST PARTICIPATION TO OBTAIN</div>
                 <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
               </div>
             )}
