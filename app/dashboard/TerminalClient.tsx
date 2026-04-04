@@ -1683,21 +1683,23 @@ export default function TerminalClient() {
               }}
             />
 
-            {sendMessages[sendModalTicket.id] ? (
-              <div
-                style={{
-                  ...mobileModalInnerStyle,
-                  marginTop: 10,
-                  fontSize: 11,
-                  letterSpacing: 1.4,
-                  lineHeight: 1.45,
-                  color: "#c8c8c8",
-                  textAlign: "center",
-                }}
-              >
-                {sendMessages[sendModalTicket.id]}
-              </div>
-            ) : null}
+                        <div
+                          style={{
+                            ...mobileModalInnerStyle,
+                            marginTop: 10,
+                            minHeight: 16,
+                            fontSize: 10,
+                            letterSpacing: 1.2,
+                            lineHeight: 1.2,
+                            color: "#c8c8c8",
+                            textAlign: "center",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {sendMessages[sendModalTicket.id] || " "}
+                        </div>
 
             <div
               className="signup-generate-button-wrap"

@@ -45,20 +45,50 @@ export async function POST(req: Request) {
       );
     }
 
-    const { error: cancelError } = await supabase
+    const { data: pendingTransfer, error: pendingError } = await supabase
+      .from("pending_token_transfers")
+      .select("id, status, accepted_at, cancelled_at")
+      .eq("ticket_code_id", ticketId)
+      .eq("sender_user_id", senderUserId)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (pendingError) {
+      return Response.json(
+        { success: false, error: "Could not inspect transfer state." },
+        { status: 500 }
+      );
+    }
+
+    if (!pendingTransfer) {
+      return Response.json(
+        { success: false, error: "This transfer is no longer pending." },
+        { status: 409 }
+      );
+    }
+
+    const { data: updatedTransfer, error: cancelError } = await supabase
       .from("pending_token_transfers")
       .update({
         status: "cancelled",
         cancelled_at: new Date().toISOString(),
       })
-      .eq("ticket_code_id", ticketId)
-      .eq("sender_user_id", senderUserId)
-      .eq("status", "pending");
+      .eq("id", pendingTransfer.id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
     if (cancelError) {
       return Response.json(
         { success: false, error: "Could not cancel transfer." },
         { status: 500 }
+      );
+    }
+
+    if (!updatedTransfer) {
+      return Response.json(
+        { success: false, error: "This transfer is no longer pending." },
+        { status: 409 }
       );
     }
 

@@ -11,7 +11,11 @@ export default function UnauthorizedTerminalClient() {
     "> AUTHENTICATION FAILURE",
     "> UNAUTHORIZED ACCESS",
     "> PARTICIPANT REGISTRATION REQUIRED",
-    "> REQUEST PARTICIPATION TO OBTAIN TERMINAL ACCESS",
+  ];
+
+  const finalLineBlock = [
+    "> REQUEST PARTICIPATION TO OBTAIN",
+    "TERMINAL ACCESS",
   ];
 
   useEffect(() => {
@@ -36,6 +40,15 @@ export default function UnauthorizedTerminalClient() {
       const id = window.setTimeout(() => {
         setLines((prev) => [...prev, line]);
       }, index * 420);
+      timeoutIdsRef.current.push(id);
+    });
+
+    const finalBlockDelay = unauthorizedScript.length * 420;
+
+    finalLineBlock.forEach((line, index) => {
+      const id = window.setTimeout(() => {
+        setLines((prev) => [...prev, line]);
+      }, finalBlockDelay + index * 180);
       timeoutIdsRef.current.push(id);
     });
 
@@ -97,7 +110,7 @@ export default function UnauthorizedTerminalClient() {
             }}
           >
             {lines.map((line, i) => (
-              <div key={line} style={{ marginTop: i === 0 ? 0 : 0 }}>
+              <div key={`${line}-${i}`} style={{ marginTop: i === 0 ? 0 : 0 }}>
                 {line}
               </div>
             ))}
@@ -138,7 +151,7 @@ export default function UnauthorizedTerminalClient() {
             }}
           >
             {lines.map((line, i) => (
-              <div key={line} style={{ marginTop: i === 0 ? 0 : 8 }}>
+              <div key={`${line}-${i}`} style={{ marginTop: i === 0 ? 0 : 8 }}>
                 {line}
               </div>
             ))}

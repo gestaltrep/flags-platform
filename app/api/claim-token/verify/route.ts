@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
     if (pendingTransfer.recipient_phone !== normalizedPhone) {
       return Response.json(
-        { success: false, error: "Enter the phone number the token was sent to." },
+        { success: false, error: "Enter the correct phone number." },
         { status: 403 }
       );
     }
@@ -162,7 +162,8 @@ export async function POST(req: Request) {
         status: "accepted",
         accepted_at: new Date().toISOString(),
       })
-      .eq("id", pendingTransfer.id);
+      .eq("id", pendingTransfer.id)
+      .eq("status", "pending");
 
     if (transferUpdateError) {
       return Response.json(
