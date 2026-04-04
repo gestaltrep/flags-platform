@@ -83,25 +83,25 @@ export default function UnauthorizedTerminalClient() {
 
   const finalBlockStyle: React.CSSProperties = isMobile
     ? {
-        marginTop: 8,
+        marginTop: 12,
       }
     : {
-        marginTop: 0,
+        marginTop: 8,
       };
 
   const finalFirstLineStyle: React.CSSProperties = isMobile
     ? {
-        marginTop: 8,
+        marginTop: 0,
       }
     : {};
 
   const finalSecondLineStyle: React.CSSProperties = isMobile
     ? {
-        paddingLeft: "2.18em",
+        paddingLeft: "1.82em",
         marginTop: 8,
       }
     : {
-        paddingLeft: "2.18em",
+        paddingLeft: "1.82em",
       };
 
   return (
