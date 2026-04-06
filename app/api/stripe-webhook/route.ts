@@ -1,4 +1,5 @@
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -14,19 +15,26 @@ function makeCode() {
 
 export async function POST(req: Request) {
   console.log("⚡ Stripe webhook received:", req.method);
-  try {
-    const body = await req.text();
-    const signature = req.headers.get("stripe-signature")!;
 
-    const event = stripe.webhooks.constructEvent(
-      body,
-      signature,
+  const rawBody = await req.text();
+  const sig = req.headers.get("stripe-signature");
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sig!,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
+  } catch (err) {
+    console.error("❌ Webhook signature error:", err);
+    return Response.json({ error: "Webhook signature verification failed" }, { status: 400 });
+  }
 
-    console.log("✅ Webhook verified, event type:", event.type);
-    console.log("WEBHOOK EVENT TYPE:", event.type);
+  console.log("✅ Webhook verified, event type:", event.type);
+  console.log("WEBHOOK EVENT TYPE:", event.type);
 
+  try {
     if (event.type !== "checkout.session.completed") {
       return new Response("ok");
     }
@@ -111,7 +119,6 @@ export async function POST(req: Request) {
     return new Response("ok");
   } catch (err) {
     console.error("❌ Webhook error:", err);
-    console.error("Webhook error:", err);
     return new Response("Webhook error", { status: 500 });
   }
 }
