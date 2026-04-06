@@ -13,6 +13,7 @@ function makeCode() {
 }
 
 export async function POST(req: Request) {
+  console.log("⚡ Stripe webhook received:", req.method);
   try {
     const body = await req.text();
     const signature = req.headers.get("stripe-signature")!;
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
+    console.log("✅ Webhook verified, event type:", event.type);
     console.log("WEBHOOK EVENT TYPE:", event.type);
 
     if (event.type !== "checkout.session.completed") {
@@ -108,6 +110,7 @@ export async function POST(req: Request) {
 
     return new Response("ok");
   } catch (err) {
+    console.error("❌ Webhook error:", err);
     console.error("Webhook error:", err);
     return new Response("Webhook error", { status: 500 });
   }
