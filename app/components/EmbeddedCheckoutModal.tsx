@@ -6,6 +6,12 @@ import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  console.error("❌ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set");
+} else {
+  console.log("✅ Stripe key loaded, prefix:", process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.slice(0, 7));
+}
+
 interface EmbeddedCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -203,7 +209,13 @@ export default function EmbeddedCheckoutModal({
             >
               <EmbeddedCheckoutProvider
                 stripe={stripePromise}
-                options={{ clientSecret }}
+                options={{
+                  clientSecret,
+                  onComplete: () => {
+                    console.log("✅ Stripe embedded checkout onComplete fired");
+                    window.location.href = "/dashboard?purchase=complete";
+                  },
+                }}
               >
                 <EmbeddedCheckout />
               </EmbeddedCheckoutProvider>
