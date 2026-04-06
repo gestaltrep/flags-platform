@@ -92,7 +92,6 @@ export async function POST(req: Request) {
         : new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
-      ui_mode: "embedded",
       mode: "payment",
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -102,10 +101,11 @@ export async function POST(req: Request) {
         is_vip: "false",
         event_id: EVENT_ID,
       },
-      return_url: `${origin}/dashboard?purchase=complete`,
+      success_url: `${origin}/dashboard?purchase=success`,
+      cancel_url: `${origin}/dashboard?purchase=cancelled`,
     });
 
-    return Response.json({ clientSecret: session.client_secret });
+    return Response.json({ url: session.url });
   } catch (error) {
     console.error("Stripe checkout error:", error);
     return Response.json({ error: "Checkout creation failed" }, { status: 500 });

@@ -74,11 +74,11 @@ export async function POST(req: Request) {
         is_vip: "true",
         event_id: EVENT_ID,
       },
-      ui_mode: "embedded",
-      return_url: `${origin}/dashboard?purchase=complete`,
+      success_url: `${origin}/dashboard?purchase=success`,
+      cancel_url: `${origin}/dashboard?purchase=cancelled`,
     });
 
-    return Response.json({ clientSecret: session.client_secret });
+    return Response.json({ url: session.url });
   } catch (error) {
     console.error("VIP checkout error:", error);
     return Response.json({ error: "VIP checkout creation failed" }, { status: 500 });
