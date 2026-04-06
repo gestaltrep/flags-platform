@@ -29,9 +29,7 @@ function buildGeneralAdmissionLineItems(quantity: number, sold: number) {
       quantity: take,
       price_data: {
         currency: "usd",
-        product_data: {
-          name: tier.name,
-        },
+        product_data: { name: tier.name },
         unit_amount: tier.price,
       },
     });
@@ -40,9 +38,7 @@ function buildGeneralAdmissionLineItems(quantity: number, sold: number) {
     position += take;
   }
 
-  if (remaining > 0) {
-    throw new Error("General admission sold out");
-  }
+  if (remaining > 0) throw new Error("General admission sold out");
 
   return lineItems;
 }
@@ -90,13 +86,13 @@ export async function POST(req: Request) {
     const h = await headers();
     const forwardedProto = h.get("x-forwarded-proto");
     const forwardedHost = h.get("x-forwarded-host");
-
     const origin =
       forwardedProto && forwardedHost
         ? `${forwardedProto}://${forwardedHost}`
         : new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
+      ui_mode: "embedded",
       mode: "payment",
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -106,11 +102,10 @@ export async function POST(req: Request) {
         is_vip: "false",
         event_id: EVENT_ID,
       },
-      success_url: `${origin}/dashboard?purchase=success`,
-      cancel_url: `${origin}/dashboard?purchase=cancelled`,
+      return_url: `${origin}/dashboard?purchase=complete`,
     });
 
-    return Response.json({ url: session.url });
+    return Response.json({ clientSecret: session.client_secret });
   } catch (error) {
     console.error("Stripe checkout error:", error);
     return Response.json({ error: "Checkout creation failed" }, { status: 500 });

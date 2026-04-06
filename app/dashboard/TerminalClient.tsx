@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
+import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
 
 type Ticket = {
   id?: string;
@@ -36,6 +37,9 @@ export default function TerminalClient() {
 
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [vipOpen, setVipOpen] = useState(false);
+
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutType, setCheckoutType] = useState<"ga" | "vip">("ga");
 
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
@@ -190,62 +194,16 @@ export default function TerminalClient() {
     setVipQuantity((prev) => Math.min(maxAllowed, prev + 1));
   }
 
-  async function generateTokens() {
+  function generateTokens() {
     setCheckoutMessage("");
-
-    try {
-      const res = await fetch("/api/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: gaQuantity }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setCheckoutMessage(data.error || "Checkout failed.");
-        return;
-      }
-
-      if (!data.url) {
-        setCheckoutMessage("No checkout URL was returned.");
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch (err) {
-      console.error("GA checkout failed", err);
-      setCheckoutMessage("Checkout request failed.");
-    }
+    setCheckoutType("ga");
+    setCheckoutOpen(true);
   }
 
-  async function generateVipTokens() {
+  function generateVipTokens() {
     setCheckoutMessage("");
-
-    try {
-      const res = await fetch("/api/create-vip-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: vipQuantity }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setCheckoutMessage(data.error || "VIP checkout failed.");
-        return;
-      }
-
-      if (!data.url) {
-        setCheckoutMessage("No VIP checkout URL was returned.");
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch (err) {
-      console.error("VIP checkout failed", err);
-      setCheckoutMessage("VIP checkout request failed.");
-    }
+    setCheckoutType("vip");
+    setCheckoutOpen(true);
   }
 
   function setSendPhone(ticketId: string, value: string) {
@@ -1734,6 +1692,13 @@ export default function TerminalClient() {
           </div>
         </div>
       )}
+      <EmbeddedCheckoutModal
+        isOpen={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        type={checkoutType}
+        quantity={checkoutType === "vip" ? vipQuantity : gaQuantity}
+        isMobile={isMobile}
+      />
     </main>
   );
 }
