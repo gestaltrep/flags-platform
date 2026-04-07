@@ -1572,7 +1572,12 @@ export default function TerminalClient() {
         type={checkoutType}
         quantity={checkoutType === "vip" ? vipQuantity : gaQuantity}
         isMobile={isMobile}
-        onSuccess={() => setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...")}
+        onSuccess={() => {
+          setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...");
+          setTimeout(() => {
+            window.location.reload();
+          }, 2500);
+        }}
       />
 
       {sendModalTicket && sendModalTicket.id && (
