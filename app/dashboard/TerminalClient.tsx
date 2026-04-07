@@ -1574,9 +1574,23 @@ export default function TerminalClient() {
         isMobile={isMobile}
         onSuccess={() => {
           setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...");
-          setTimeout(() => {
-            window.location.reload();
-          }, 2500);
+          let attempts = 0;
+          const poll = setInterval(async () => {
+            attempts++;
+            try {
+              const res = await fetch("/api/tickets");
+              const data = await res.json();
+              if ((data.tickets?.length ?? 0) > (tickets?.length ?? 0)) {
+                clearInterval(poll);
+                window.location.reload();
+                return;
+              }
+            } catch {}
+            if (attempts >= 10) {
+              clearInterval(poll);
+              window.location.reload();
+            }
+          }, 1000);
         }}
       />
 
