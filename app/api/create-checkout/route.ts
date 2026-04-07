@@ -103,7 +103,7 @@ export async function POST(req: Request) {
         is_vip: "false",
         event_id: EVENT_ID,
       },
-      return_url: `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      return_url: `${origin}/dashboard?purchase=complete`,
     });
 
     return Response.json({ clientSecret: session.client_secret });

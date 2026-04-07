@@ -257,6 +257,7 @@ export default function Home() {
                   className="signup-input"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  style={{ marginBottom: 8 }}
                 />
 
                 <label className="signup-checkbox">
@@ -295,7 +296,7 @@ export default function Home() {
                   </span>
                 </label>
 
-                <label className="signup-checkbox" style={{ alignItems: "flex-start", marginBottom: 8 }}>
+                <label className="signup-checkbox" style={{ alignItems: "flex-start", marginBottom: 12 }}>
                   <input
                     type="checkbox"
                     checked={smsChecked}
@@ -306,7 +307,8 @@ export default function Home() {
                       accentColor: "#9ca3af",
                       backgroundColor: "transparent",
                       border: "1px solid rgba(255,255,255,0.8)",
-                      marginTop: 2,
+                      marginTop: 3,
+                      flexShrink: 0,
                     }}
                   />
                   <span>
@@ -316,7 +318,7 @@ export default function Home() {
 
                 {messageSlot}
 
-                <div className="signup-request-button-wrap">
+                <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
                   <button
                     className="cta-button modal-primary-button"
                     onClick={sendVerification}
@@ -325,8 +327,6 @@ export default function Home() {
                     {loading ? "SENDING..." : "REQUEST"}
                   </button>
                 </div>
-
-                <div className="signup-help-text">By requesting, you consent to receive SMS messages from Signo Research Group.</div>
               </>
             )}
 

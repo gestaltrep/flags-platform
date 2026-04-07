@@ -113,7 +113,8 @@ export default function EmbeddedCheckoutModal({
         setError(data.error || "Failed to initialize checkout.");
         return;
       }
-      setClientSecret(data.clientSecret);
+      const secret = decodeURIComponent(data.clientSecret);
+      setClientSecret(secret);
     } catch {
       setError("Checkout request failed.");
     } finally {
