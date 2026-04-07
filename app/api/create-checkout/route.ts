@@ -92,7 +92,8 @@ export async function POST(req: Request) {
         : new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
-      ui_mode: "custom",
+      // @ts-ignore – "elements" is valid in newer Stripe API; SDK types lag behind
+      ui_mode: "elements",
       mode: "payment",
       payment_method_types: ["card"],
       line_items: lineItems,

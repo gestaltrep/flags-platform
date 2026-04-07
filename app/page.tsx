@@ -295,7 +295,7 @@ export default function Home() {
                   </span>
                 </label>
 
-                <label className="signup-checkbox">
+                <label className="signup-checkbox" style={{ alignItems: "flex-start", marginBottom: 8 }}>
                   <input
                     type="checkbox"
                     checked={smsChecked}
@@ -306,6 +306,7 @@ export default function Home() {
                       accentColor: "#9ca3af",
                       backgroundColor: "transparent",
                       border: "1px solid rgba(255,255,255,0.8)",
+                      marginTop: 2,
                     }}
                   />
                   <span>
