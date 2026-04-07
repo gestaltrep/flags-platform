@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
 import { QRCodeSVG } from "qrcode.react";
 
 type Ticket = {
@@ -21,6 +22,7 @@ type Ticket = {
 
 export default function TerminalClient() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
@@ -36,6 +38,9 @@ export default function TerminalClient() {
 
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [vipOpen, setVipOpen] = useState(false);
+
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutType, setCheckoutType] = useState<"ga" | "vip">("ga");
 
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
@@ -160,6 +165,20 @@ export default function TerminalClient() {
     };
   }, [pathname, isMobile]);
 
+  useEffect(() => {
+    const sessionId = searchParams.get("session_id");
+    if (!sessionId) return;
+
+    fetch(`/api/session-status?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.status === "complete" || data.payment_status === "paid") {
+          setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...");
+        }
+      })
+      .catch(() => {});
+  }, [searchParams]);
+
   function tierColor(targetTier: number) {
     return tier === targetTier ? "#ffffff" : "#555555";
   }
@@ -190,42 +209,18 @@ export default function TerminalClient() {
     setVipQuantity((prev) => Math.min(maxAllowed, prev + 1));
   }
 
-  async function generateTokens() {
+  function generateTokens() {
     setCheckoutMessage("");
-    try {
-      const res = await fetch("/api/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: gaQuantity }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setCheckoutMessage(data.error || "Checkout failed.");
-      }
-    } catch {
-      setCheckoutMessage("Checkout failed.");
-    }
+    setCheckoutType("ga");
+    setCheckoutOpen(true);
+    setPurchaseOpen(false);
   }
 
-  async function generateVipTokens() {
+  function generateVipTokens() {
     setCheckoutMessage("");
-    try {
-      const res = await fetch("/api/create-vip-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: vipQuantity }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setCheckoutMessage(data.error || "Checkout failed.");
-      }
-    } catch {
-      setCheckoutMessage("Checkout failed.");
-    }
+    setCheckoutType("vip");
+    setCheckoutOpen(true);
+    setVipOpen(false);
   }
 
   function setSendPhone(ticketId: string, value: string) {
@@ -1570,6 +1565,15 @@ export default function TerminalClient() {
           </div>
         </div>
       )}
+
+      <EmbeddedCheckoutModal
+        isOpen={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        type={checkoutType}
+        quantity={checkoutType === "vip" ? vipQuantity : gaQuantity}
+        isMobile={isMobile}
+        onSuccess={() => setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...")}
+      />
 
       {sendModalTicket && sendModalTicket.id && (
         <div className="signup-overlay">

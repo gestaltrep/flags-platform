@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import TerminalClient from "./TerminalClient";
 import UnauthorizedTerminalClient from "./UnauthorizedTerminalClient";
@@ -10,5 +11,9 @@ export default async function DashboardPage() {
     return <UnauthorizedTerminalClient />;
   }
 
-  return <TerminalClient />;
+  return (
+    <Suspense>
+      <TerminalClient />
+    </Suspense>
+  );
 }

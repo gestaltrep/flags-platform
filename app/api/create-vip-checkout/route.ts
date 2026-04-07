@@ -54,6 +54,7 @@ export async function POST(req: Request) {
         : new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
+      ui_mode: "custom",
       mode: "payment",
       payment_method_types: ["card"],
       line_items: [
@@ -74,11 +75,10 @@ export async function POST(req: Request) {
         is_vip: "true",
         event_id: EVENT_ID,
       },
-      success_url: `${origin}/dashboard?purchase=success`,
-      cancel_url: `${origin}/dashboard?purchase=cancelled`,
+      return_url: `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    return Response.json({ url: session.url });
+    return Response.json({ clientSecret: session.client_secret });
   } catch (error) {
     console.error("VIP checkout error:", error);
     return Response.json({ error: "VIP checkout creation failed" }, { status: 500 });
