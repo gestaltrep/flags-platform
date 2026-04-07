@@ -1,19 +1,15 @@
 import Stripe from "stripe";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get("user_id")?.value;
-
-    if (!userId) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
     const quantity = Math.max(1, Math.min(10, Number(body.quantity || 1)));
@@ -32,54 +28,21 @@ export async function POST(req: Request) {
 
     const vipSold = count ?? 0;
     const remaining = 150 - vipSold;
+    if (remaining <= 0) return Response.json({ error: "VIP sold out" }, { status: 400 });
+    if (quantity > remaining) return Response.json({ error: `Only ${remaining} VIP tokens remain.` }, { status: 400 });
 
-    if (remaining <= 0) {
-      return Response.json({ error: "VIP sold out" }, { status: 400 });
-    }
-
-    if (quantity > remaining) {
-      return Response.json(
-        { error: `Only ${remaining} VIP tokens remain.` },
-        { status: 400 }
-      );
-    }
-
-    const h = await headers();
-    const forwardedProto = h.get("x-forwarded-proto");
-    const forwardedHost = h.get("x-forwarded-host");
-
-    const origin =
-      forwardedProto && forwardedHost
-        ? `${forwardedProto}://${forwardedHost}`
-        : new URL(req.url).origin;
-
-    const session = await stripe.checkout.sessions.create({
-      // @ts-ignore – "elements" is valid in newer Stripe API; SDK types lag behind
-      ui_mode: "elements",
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          quantity,
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "VIP Token",
-            },
-            unit_amount: 10000,
-          },
-        },
-      ],
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 10000 * quantity,
+      currency: "usd",
       metadata: {
         user_id: userId,
         quantity: String(quantity),
         is_vip: "true",
         event_id: EVENT_ID,
       },
-      return_url: `${origin}/dashboard?purchase=complete`,
     });
 
-    return Response.json({ clientSecret: session.client_secret });
+    return Response.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.error("VIP checkout error:", error);
     return Response.json({ error: "VIP checkout creation failed" }, { status: 500 });

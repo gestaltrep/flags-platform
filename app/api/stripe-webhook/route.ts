@@ -35,11 +35,11 @@ export async function POST(req: Request) {
   console.log("WEBHOOK EVENT TYPE:", event.type);
 
   try {
-    if (event.type !== "checkout.session.completed") {
+    if (event.type !== "payment_intent.succeeded") {
       return new Response("ok");
     }
 
-    const session = event.data.object as Stripe.Checkout.Session;
+    const session = event.data.object as Stripe.PaymentIntent;
 
     console.log("WEBHOOK SESSION ID:", session.id);
     console.log("WEBHOOK METADATA:", session.metadata);
