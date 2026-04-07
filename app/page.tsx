@@ -10,6 +10,7 @@ export default function Home() {
   const [code, setCode] = useState("");
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [smsChecked, setSmsChecked] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,6 +34,11 @@ export default function Home() {
 
     if (!privacyChecked) {
       setMessage("Please agree to the Privacy Policy.");
+      return;
+    }
+
+    if (!smsChecked) {
+      setMessage("Please agree to receive SMS messages.");
       return;
     }
 
@@ -289,6 +295,24 @@ export default function Home() {
                   </span>
                 </label>
 
+                <label className="signup-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={smsChecked}
+                    onChange={(e) => setSmsChecked(e.target.checked)}
+                    style={{
+                      WebkitAppearance: "checkbox",
+                      appearance: "auto",
+                      accentColor: "#9ca3af",
+                      backgroundColor: "transparent",
+                      border: "1px solid rgba(255,255,255,0.8)",
+                    }}
+                  />
+                  <span>
+                    I consent to receive SMS text messages from Signo Research Group, including event updates and account notifications. Message &amp; data rates may apply. Reply STOP to opt out at any time.
+                  </span>
+                </label>
+
                 {messageSlot}
 
                 <div className="signup-request-button-wrap">
@@ -301,7 +325,7 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="signup-help-text">This sends SMS code.</div>
+                <div className="signup-help-text">By requesting, you consent to receive SMS messages from Signo Research Group.</div>
               </>
             )}
 

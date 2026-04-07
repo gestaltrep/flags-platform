@@ -1,30 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
-declare global {
-  interface Window {
-    Stripe?: (key: string) => StripeInstance;
-  }
-}
-
-interface StripeInstance {
-  initCheckoutElementsSdk: (options: {
-    clientSecret: string | Promise<string>;
-    elementsOptions?: object;
-  }) => CheckoutSdk;
-}
-
-interface CheckoutSdk {
-  on: (event: string, handler: (session: { canConfirm: boolean }) => void) => void;
-  loadActions: () => Promise<{ type: string; actions?: CheckoutActions }>;
-  createPaymentElement: () => { mount: (selector: string) => void };
-}
-
-interface CheckoutActions {
-  confirm: () => Promise<{ type: string; error?: { message: string } }>;
-  getSession: () => { total: { total: { amount: string } } };
-}
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface EmbeddedCheckoutModalProps {
   isOpen: boolean;
@@ -35,31 +15,92 @@ interface EmbeddedCheckoutModalProps {
   onSuccess: () => void;
 }
 
-export default function EmbeddedCheckoutModal({
-  isOpen,
-  onClose,
-  type,
-  quantity,
-  isMobile,
-  onSuccess,
-}: EmbeddedCheckoutModalProps) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+function CheckoutForm({ onSuccess, onClose, isMobile }: {
+  onSuccess: () => void;
+  onClose: () => void;
+  isMobile: boolean;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
-  const [canPay, setCanPay] = useState(false);
-  const [total, setTotal] = useState("");
-  const actionsRef = useRef<CheckoutActions | null>(null);
-  const checkoutRef = useRef<CheckoutSdk | null>(null);
-  const mountedRef = useRef(false);
+  const [error, setError] = useState("");
+  const [ready, setReady] = useState(false);
 
-  const initialize = useCallback(async () => {
+  async function handlePay() {
+    if (!stripe || !elements || submitting) return;
+    setSubmitting(true);
+    setError("");
+
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setError(submitError.message || "Payment failed.");
+      setSubmitting(false);
+      return;
+    }
+
+    const { error: confirmError } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/dashboard?purchase=complete`,
+      },
+      redirect: "if_required",
+    });
+
+    if (confirmError) {
+      setError(confirmError.message || "Payment failed.");
+      setSubmitting(false);
+      return;
+    }
+
+    onSuccess();
+    onClose();
+  }
+
+  return (
+    <div style={{ padding: isMobile ? "20px 18px" : "24px 24px" }}>
+      <PaymentElement
+        onReady={() => setReady(true)}
+        options={{ layout: "tabs" }}
+      />
+      {error && (
+        <div style={{
+          marginTop: 12,
+          fontFamily: '"Courier New", monospace',
+          fontSize: 11, letterSpacing: 2,
+          color: "#ff4444", textTransform: "uppercase",
+        }}>{">"} {error}</div>
+      )}
+      <button
+        onClick={handlePay}
+        disabled={!ready || submitting}
+        style={{
+          marginTop: 20, width: "100%", minHeight: 54,
+          border: `1px solid ${ready && !submitting ? "white" : "#444"}`,
+          background: "black",
+          color: ready && !submitting ? "white" : "#444",
+          fontFamily: "Arial, Helvetica, sans-serif",
+          fontWeight: 700, fontSize: isMobile ? 13 : 14,
+          letterSpacing: 3.5, textTransform: "uppercase",
+          cursor: ready && !submitting ? "pointer" : "not-allowed",
+        }}
+      >
+        {submitting ? "PROCESSING..." : "PAY NOW"}
+      </button>
+    </div>
+  );
+}
+
+export default function EmbeddedCheckoutModal({
+  isOpen, onClose, type, quantity, isMobile, onSuccess,
+}: EmbeddedCheckoutModalProps) {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const fetchSecret = useCallback(async () => {
     setLoading(true);
     setError("");
-    setCanPay(false);
-    setTotal("");
-    actionsRef.current = null;
-    mountedRef.current = false;
-
+    setClientSecret(null);
     try {
       const endpoint = type === "vip" ? "/api/create-vip-checkout" : "/api/create-checkout";
       const res = await fetch(endpoint, {
@@ -70,73 +111,27 @@ export default function EmbeddedCheckoutModal({
       const data = await res.json();
       if (!res.ok || !data.clientSecret) {
         setError(data.error || "Failed to initialize checkout.");
-        setLoading(false);
         return;
       }
-
-      const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
-      const stripe = window.Stripe!(stripeKey);
-
-      const checkout = stripe.initCheckoutElementsSdk({
-        clientSecret: data.clientSecret,
-        elementsOptions: { appearance: { theme: "night" } },
-      });
-      checkoutRef.current = checkout;
-
-      checkout.on("change", (session) => {
-        setCanPay(session.canConfirm);
-      });
-
-      const result = await checkout.loadActions();
-      if (result.type === "success" && result.actions) {
-        actionsRef.current = result.actions;
-        const session = result.actions.getSession();
-        setTotal(session.total.total.amount);
-      }
-
-      const paymentElement = checkout.createPaymentElement();
-      paymentElement.mount("#stripe-payment-element");
-      mountedRef.current = true;
-      setLoading(false);
-    } catch (err) {
-      console.error("Checkout init error:", err);
-      setError("Checkout initialization failed.");
+      setClientSecret(data.clientSecret);
+    } catch {
+      setError("Checkout request failed.");
+    } finally {
       setLoading(false);
     }
   }, [type, quantity]);
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    // Load Stripe.js if not already loaded
-    if (!window.Stripe) {
-      const script = document.createElement("script");
-      script.src = "https://js.stripe.com/v3/";
-      script.onload = () => initialize();
-      document.head.appendChild(script);
+    if (isOpen) {
+      fetchSecret();
+      document.body.style.overflow = "hidden";
     } else {
-      initialize();
+      setClientSecret(null);
+      setError("");
+      document.body.style.overflow = "";
     }
-
-    document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
-  }, [isOpen, initialize]);
-
-  async function handlePay() {
-    if (!actionsRef.current || submitting) return;
-    setSubmitting(true);
-    setError("");
-
-    const result = await actionsRef.current.confirm();
-    if (result.type === "error") {
-      setError(result.error?.message || "Payment failed.");
-      setSubmitting(false);
-      return;
-    }
-    // Payment succeeded — webhook will handle token generation
-    onSuccess();
-    onClose();
-  }
+  }, [isOpen, fetchSecret]);
 
   if (!isOpen) return null;
 
@@ -158,7 +153,6 @@ export default function EmbeddedCheckoutModal({
         border: "1px solid white", background: "black",
         display: "flex", flexDirection: "column",
       }}>
-        {/* Header */}
         <div style={{
           borderBottom: "1px solid #333",
           padding: isMobile ? "14px 18px" : "16px 24px",
@@ -169,7 +163,7 @@ export default function EmbeddedCheckoutModal({
             fontSize: isMobile ? 11 : 12, letterSpacing: 3,
             color: "white", textTransform: "uppercase",
           }}>
-            {">"} GENERATE {qtyLabel}
+            GENERATE {qtyLabel}
           </div>
           <button onClick={onClose} style={{
             background: "none", border: "none", color: "#666",
@@ -177,48 +171,42 @@ export default function EmbeddedCheckoutModal({
           }}>×</button>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: isMobile ? "20px 18px" : "24px 24px" }}>
-          {loading && (
-            <div style={{
-              padding: "48px 0", textAlign: "center",
-              fontFamily: '"Courier New", monospace',
-              fontSize: 11, letterSpacing: 3, color: "#666", textTransform: "uppercase",
-            }}>{">"} INITIALIZING...</div>
-          )}
+        {loading && (
+          <div style={{
+            padding: "48px 24px", textAlign: "center",
+            fontFamily: '"Courier New", monospace',
+            fontSize: 11, letterSpacing: 3, color: "#666", textTransform: "uppercase",
+          }}>INITIALIZING...</div>
+        )}
 
-          {error && (
+        {error && !loading && (
+          <div style={{ padding: "32px 24px", textAlign: "center" }}>
             <div style={{
               fontFamily: '"Courier New", monospace', fontSize: 11,
               letterSpacing: 2, color: "#ff4444", textTransform: "uppercase",
-              marginBottom: 16,
-            }}>{">"} {error}</div>
-          )}
+            }}>{error}</div>
+            <button onClick={fetchSecret} style={{
+              marginTop: 20, border: "1px solid white", background: "black",
+              color: "white", padding: "12px 24px",
+              fontFamily: '"Courier New", monospace',
+              fontSize: 11, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer",
+            }}>RETRY</button>
+          </div>
+        )}
 
-          {/* Stripe mounts the card form here */}
-          <div id="stripe-payment-element" style={{ display: loading ? "none" : "block" }} />
-
-          {!loading && (
-            <button
-              onClick={handlePay}
-              disabled={!canPay || submitting}
-              style={{
-                marginTop: 24, width: "100%", minHeight: 54,
-                border: `1px solid ${canPay && !submitting ? "white" : "#444"}`,
-                background: "black",
-                color: canPay && !submitting ? "white" : "#444",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                fontWeight: 700, fontSize: isMobile ? 13 : 14,
-                letterSpacing: 3.5, textTransform: "uppercase",
-                cursor: canPay && !submitting ? "pointer" : "not-allowed",
-              }}
-            >
-              {submitting ? "> PROCESSING..." : total ? `> PAY ${total}` : "> PAY NOW"}
-            </button>
-          )}
-        </div>
+        {clientSecret && !loading && (
+          <Elements
+            stripe={stripePromise}
+            options={{
+              clientSecret,
+              appearance: { theme: "night", variables: { colorBackground: "#000000", colorText: "#ffffff", colorPrimary: "#ffffff", borderRadius: "0px" } },
+            }}
+          >
+            <CheckoutForm onSuccess={onSuccess} onClose={onClose} isMobile={isMobile} />
+          </Elements>
+        )}
       </div>
-      {!loading && (
+      {clientSecret && !loading && (
         <div style={{
           marginTop: 16, fontFamily: '"Courier New", monospace',
           fontSize: 10, letterSpacing: 2, color: "#444",
