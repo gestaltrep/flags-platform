@@ -58,6 +58,7 @@ export async function POST(req: Request) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "usd",
+      payment_method_types: ["card"],
       metadata: {
         user_id: userId,
         quantity: String(quantity),
