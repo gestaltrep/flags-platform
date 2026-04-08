@@ -487,14 +487,18 @@ export default function Home() {
 
             {mode === "login" && loginStep === "phone" && (
               <>
-                <div className="signup-title signup-title-large">Log In</div>
-                <input
-                  placeholder="Phone Number"
-                  className="signup-input"
-                  value={loginPhone}
-                  onChange={(e) => setLoginPhone(e.target.value)}
-                  style={{ marginTop: 32 }}
-                />
+                <div className="signup-title signup-title-large" style={{ marginBottom: 0 }}>
+                  Log In
+                </div>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+                  <input
+                    placeholder="Phone Number"
+                    className="signup-input"
+                    value={loginPhone}
+                    onChange={(e) => setLoginPhone(e.target.value)}
+                    style={{ marginBottom: 0 }}
+                  />
+                </div>
                 {messageSlot}
                 <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
                   <button
@@ -510,13 +514,18 @@ export default function Home() {
 
             {mode === "login" && loginStep === "verify" && (
               <>
-                <div className="signup-title signup-title-large">Enter Code</div>
-                <input
-                  placeholder="6 digit code"
-                  className="signup-input"
-                  value={loginCode}
-                  onChange={(e) => setLoginCode(e.target.value)}
-                />
+                <div className="signup-title signup-title-large" style={{ marginBottom: 0 }}>
+                  Enter Code
+                </div>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+                  <input
+                    placeholder="6 digit code"
+                    className="signup-input"
+                    value={loginCode}
+                    onChange={(e) => setLoginCode(e.target.value)}
+                    style={{ marginBottom: 0 }}
+                  />
+                </div>
                 {messageSlot}
                 <div className="signup-request-button-wrap">
                   <button
@@ -531,11 +540,7 @@ export default function Home() {
             )}
 
             {mode === "register" && (
-              <div style={{
-                textAlign: "center",
-                marginTop: 12,
-                marginBottom: 0,
-              }}>
+              <div style={{ textAlign: "center", marginTop: 12 }}>
                 <button
                   onClick={() => {
                     setMode("login");
@@ -558,7 +563,13 @@ export default function Home() {
                   }}
                 >
                   ALREADY REGISTERED?{" "}
-                  <span style={{ fontWeight: 700, color: "#aaa" }}>LOG IN</span>
+                  <span style={{
+                    fontWeight: 900,
+                    color: "#cccccc",
+                    textDecoration: "none",
+                  }}>
+                    LOG IN
+                  </span>
                 </button>
               </div>
             )}
