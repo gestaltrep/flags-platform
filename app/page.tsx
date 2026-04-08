@@ -529,6 +529,33 @@ export default function Home() {
               </>
             )}
 
+            {mode === "register" && (
+              <button
+                onClick={() => {
+                  setMode("login");
+                  setLoginStep("phone");
+                  setLoginPhone("");
+                  setLoginCode("");
+                  setMessage("");
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  marginTop: 8,
+                  marginBottom: 0,
+                  padding: 0,
+                }}
+              >
+                {">"} ALREADY REGISTERED? LOG IN
+              </button>
+            )}
+
             <button className="signup-close" onClick={() => { setOpen(false); setMode("register"); }}>
               CANCEL
             </button>

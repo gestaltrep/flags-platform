@@ -423,7 +423,7 @@ body::before {
 
 .signup-modal-request {
   width: 418px;
-  min-height: 548px;
+  min-height: auto;
   padding: 0 30px 22px 30px;
 }
 
@@ -699,7 +699,7 @@ body::before {
 
   .signup-modal-request {
     width: min(100%, 418px);
-    min-height: 548px;
+    min-height: auto;
     padding: 0 30px 22px 30px;
   }
 
