@@ -14,6 +14,11 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [mode, setMode] = useState<"register" | "login">("register");
+  const [loginPhone, setLoginPhone] = useState("");
+  const [loginCode, setLoginCode] = useState("");
+  const [loginStep, setLoginStep] = useState<"phone" | "verify">("phone");
+
   async function sendVerification() {
     setMessage("");
 
@@ -139,12 +144,72 @@ export default function Home() {
     }
   }
 
+  async function sendLoginCode() {
+    setMessage("");
+    if (!loginPhone.trim()) {
+      setMessage("Please enter your phone number.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: loginPhone.trim(), name: "" }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        const raw = String(data?.error || "").toLowerCase();
+        if (raw.includes("invalid parameter")) setMessage("SMS is not available right now.");
+        else if (raw.includes("invalid") && raw.includes("phone")) setMessage("This phone number isn't valid.");
+        else setMessage("We couldn't send your code. Please try again.");
+        return;
+      }
+      setLoginStep("verify");
+      setMessage("");
+    } catch {
+      setMessage("We couldn't send your code. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function verifyLoginCode() {
+    setMessage("");
+    if (!loginCode.trim()) {
+      setMessage("Please enter the verification code.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: loginPhone.trim(), code: loginCode.trim(), name: "" }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        const raw = String(data?.error || "").toLowerCase();
+        if (raw.includes("expired")) setMessage("That code has expired.");
+        else if (raw.includes("incorrect") || raw.includes("invalid")) setMessage("That code is incorrect.");
+        else setMessage("We couldn't verify your code. Please try again.");
+        return;
+      }
+      setOpen(false);
+      window.location.href = "/dashboard";
+    } catch {
+      setMessage("We couldn't sign you in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const messageSlot = (
     <div
       style={{
-        minHeight: 42,
-        marginTop: 22,
-        marginBottom: 6,
+        minHeight: 20,
+        marginTop: 8,
+        marginBottom: 4,
         fontSize: 12,
         lineHeight: 1.5,
         color: "#c8c8c8",
@@ -178,6 +243,7 @@ export default function Home() {
             <button
               className="cta-button"
               onClick={() => {
+                setMode("register");
                 setStep("form");
                 setMessage("");
                 setOpen(true);
@@ -188,6 +254,21 @@ export default function Home() {
               }}
             >
               REQUEST PARTICIPATION
+            </button>
+
+            <button
+              className="cta-button"
+              onClick={() => {
+                setMode("login");
+                setLoginStep("phone");
+                setLoginPhone("");
+                setLoginCode("");
+                setMessage("");
+                setOpen(true);
+              }}
+              style={{ width: 352, maxWidth: "100%", marginTop: 10 }}
+            >
+              LOG IN
             </button>
           </div>
         </div>
@@ -214,6 +295,7 @@ export default function Home() {
           <button
             className="cta-button"
             onClick={() => {
+              setMode("register");
               setStep("form");
               setMessage("");
               setOpen(true);
@@ -223,6 +305,21 @@ export default function Home() {
             }}
           >
             REQUEST PARTICIPATION
+          </button>
+
+          <button
+            className="cta-button"
+            onClick={() => {
+              setMode("login");
+              setLoginStep("phone");
+              setLoginPhone("");
+              setLoginCode("");
+              setMessage("");
+              setOpen(true);
+            }}
+            style={{ width: "100%", marginTop: 10 }}
+          >
+            LOG IN
           </button>
         </div>
       </main>
@@ -239,7 +336,7 @@ export default function Home() {
               />
             </div>
 
-            {step === "form" && (
+            {mode === "register" && step === "form" && (
               <>
                 <div className="signup-title signup-title-large">
                   Participant Registration
@@ -330,7 +427,7 @@ export default function Home() {
               </>
             )}
 
-            {step === "verify" && (
+            {mode === "register" && step === "verify" && (
               <>
                 <div className="signup-title signup-title-large">
                   Enter Verification Code
@@ -357,7 +454,51 @@ export default function Home() {
               </>
             )}
 
-            <button className="signup-close" onClick={() => setOpen(false)}>
+            {mode === "login" && loginStep === "phone" && (
+              <>
+                <div className="signup-title signup-title-large">Log In</div>
+                <input
+                  placeholder="Phone Number"
+                  className="signup-input"
+                  value={loginPhone}
+                  onChange={(e) => setLoginPhone(e.target.value)}
+                />
+                {messageSlot}
+                <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
+                  <button
+                    className="cta-button modal-primary-button"
+                    onClick={sendLoginCode}
+                    disabled={loading}
+                  >
+                    {loading ? "SENDING..." : "SEND CODE"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {mode === "login" && loginStep === "verify" && (
+              <>
+                <div className="signup-title signup-title-large">Enter Code</div>
+                <input
+                  placeholder="6 digit code"
+                  className="signup-input"
+                  value={loginCode}
+                  onChange={(e) => setLoginCode(e.target.value)}
+                />
+                {messageSlot}
+                <div className="signup-request-button-wrap">
+                  <button
+                    className="cta-button modal-primary-button"
+                    onClick={verifyLoginCode}
+                    disabled={loading}
+                  >
+                    {loading ? "VERIFYING..." : "VERIFY"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            <button className="signup-close" onClick={() => { setOpen(false); setMode("register"); }}>
               CANCEL
             </button>
           </div>
