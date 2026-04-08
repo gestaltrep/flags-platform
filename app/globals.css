@@ -423,7 +423,7 @@ body::before {
 
 .signup-modal-request {
   width: 418px;
-  min-height: auto;
+  min-height: 548px;
   padding: 0 30px 22px 30px;
 }
 
@@ -443,13 +443,13 @@ body::before {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 82px;
+  min-height: 104px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.62);
   margin-bottom: 26px;
 }
 
 .signup-header-home {
-  margin-bottom: 14px;
+  margin-bottom: 26px;
 }
 
 .signup-logo {
@@ -489,7 +489,7 @@ body::before {
 
 .signup-modal-request .signup-title-large {
   margin-top: 0;
-  margin-bottom: 14px;
+  margin-bottom: 28px;
 }
 
 .signup-modal-ticket .signup-title-large {
@@ -526,7 +526,7 @@ body::before {
   font-size: 12px;
   line-height: 1.4;
   color: #d8d8d8;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .signup-checkbox input {
@@ -549,7 +549,7 @@ body::before {
 
 .signup-modal-request .signup-request-button-wrap {
   margin-top: auto;
-  padding-top: 6px;
+  padding-top: 14px;
 }
 
 .signup-modal-ticket .signup-generate-button-wrap {
@@ -699,7 +699,7 @@ body::before {
 
   .signup-modal-request {
     width: min(100%, 418px);
-    min-height: auto;
+    min-height: 548px;
     padding: 0 30px 22px 30px;
   }
 
@@ -710,13 +710,13 @@ body::before {
   }
 
   .signup-header {
-    min-height: 82px;
+    min-height: 104px;
     gap: 4px;
     margin-bottom: 26px;
   }
 
   .signup-header-home {
-    margin-bottom: 14px;
+    margin-bottom: 26px;
   }
 
   .signup-logo {
@@ -748,7 +748,7 @@ body::before {
 
   .signup-modal-request .signup-title-large {
     margin-top: 0;
-    margin-bottom: 14px;
+    margin-bottom: 28px;
     transform: none;
   }
 
@@ -765,7 +765,7 @@ body::before {
 
   .signup-checkbox {
     font-size: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     align-items: center;
     gap: 10px;
   }
@@ -783,7 +783,7 @@ body::before {
 
   .signup-modal-request .signup-request-button-wrap {
     margin-top: auto;
-    padding-top: 6px;
+    padding-top: 14px;
   }
 
   .signup-modal-ticket .signup-generate-button-wrap {

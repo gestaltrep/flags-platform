@@ -142,9 +142,9 @@ export default function Home() {
   const messageSlot = (
     <div
       style={{
-        minHeight: 20,
-        marginTop: 8,
-        marginBottom: 4,
+        minHeight: 42,
+        marginTop: 22,
+        marginBottom: 6,
         fontSize: 12,
         lineHeight: 1.5,
         color: "#c8c8c8",
