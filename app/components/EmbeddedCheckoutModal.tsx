@@ -189,8 +189,16 @@ export default function EmbeddedCheckoutModal({
               textTransform: "uppercase",
               lineHeight: 2,
             }}>
-              <div>{"> PAYMENT CONFIRMED."}</div>
-              <div>{"> GENERATING TOKEN..."}</div>
+              {(() => {
+                const tokenLabel = type === "vip" ? "VIP TOKEN" : "TOKEN";
+                const tokenPlural = quantity > 1 ? `${quantity} ${tokenLabel}S` : tokenLabel;
+                return (
+                  <>
+                    <div>{"> PAYMENT CONFIRMED."}</div>
+                    <div>{`> GENERATING ${tokenPlural}...`}</div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         ) : (
