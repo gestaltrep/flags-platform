@@ -195,8 +195,8 @@ export default function ClaimTokenPage() {
 
   const messageReserveStyle: React.CSSProperties = {
     minHeight: isMobile ? 28 : 26,
-    marginTop: 8,
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 4,
     fontSize: 10,
     letterSpacing: 1.1,
     lineHeight: 1.35,
