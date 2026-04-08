@@ -179,6 +179,25 @@ export default function TerminalClient() {
       .catch(() => {});
   }, [searchParams]);
 
+  useEffect(() => {
+    const hasPending = tickets.some((t) => !!t.can_cancel);
+    if (!hasPending) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/tickets");
+        const data = await res.json();
+        const newPendingCount = (data ?? []).filter((t: Ticket) => !!t.can_cancel).length;
+        const currentPendingCount = tickets.filter((t) => !!t.can_cancel).length;
+        if (newPendingCount !== currentPendingCount) {
+          window.location.reload();
+        }
+      } catch {}
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [tickets]);
+
   function tierColor(targetTier: number) {
     return tier === targetTier ? "#ffffff" : "#555555";
   }
@@ -1586,11 +1605,11 @@ export default function TerminalClient() {
                 return;
               }
             } catch {}
-            if (attempts >= 10) {
+            if (attempts >= 20) {
               clearInterval(poll);
               window.location.reload();
             }
-          }, 1000);
+          }, 500);
         }}
       />
 
