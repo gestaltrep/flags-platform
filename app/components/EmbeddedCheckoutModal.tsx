@@ -15,10 +15,10 @@ interface EmbeddedCheckoutModalProps {
   onSuccess: () => void;
 }
 
-function CheckoutForm({ onSuccess, onClose, isMobile }: {
+function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
   onSuccess: () => void;
-  onClose: () => void;
   isMobile: boolean;
+  onSucceeded: () => void;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -52,8 +52,8 @@ function CheckoutForm({ onSuccess, onClose, isMobile }: {
       return;
     }
 
+    onSucceeded();
     onSuccess();
-    onClose();
   }
 
   return (
@@ -96,6 +96,7 @@ export default function EmbeddedCheckoutModal({
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
 
   const fetchSecret = useCallback(async () => {
     setLoading(true);
@@ -124,10 +125,12 @@ export default function EmbeddedCheckoutModal({
   useEffect(() => {
     if (isOpen) {
       fetchSecret();
+      setSucceeded(false);
       document.body.style.overflow = "hidden";
     } else {
       setClientSecret(null);
       setError("");
+      setSucceeded(false);
       document.body.style.overflow = "";
     }
     return () => { document.body.style.overflow = ""; };
@@ -146,7 +149,7 @@ export default function EmbeddedCheckoutModal({
         alignItems: "center", justifyContent: "flex-start",
         overflowY: "auto", padding: isMobile ? "24px 16px 40px" : "40px 24px 60px",
       }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => { if (!succeeded && e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
         width: "100%", maxWidth: 520,
@@ -171,42 +174,65 @@ export default function EmbeddedCheckoutModal({
           }}>×</button>
         </div>
 
-        {loading && (
+        {succeeded ? (
           <div style={{
-            padding: "48px 24px", textAlign: "center",
-            fontFamily: '"Courier New", monospace',
-            fontSize: 11, letterSpacing: 3, color: "#666", textTransform: "uppercase",
-          }}>INITIALIZING...</div>
-        )}
-
-        {error && !loading && (
-          <div style={{ padding: "32px 24px", textAlign: "center" }}>
+            padding: isMobile ? "32px 18px" : "40px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}>
             <div style={{
-              fontFamily: '"Courier New", monospace', fontSize: 11,
-              letterSpacing: 2, color: "#ff4444", textTransform: "uppercase",
-            }}>{error}</div>
-            <button onClick={fetchSecret} style={{
-              marginTop: 20, border: "1px solid white", background: "black",
-              color: "white", padding: "12px 24px",
               fontFamily: '"Courier New", monospace',
-              fontSize: 11, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer",
-            }}>RETRY</button>
+              fontSize: isMobile ? 11 : 12,
+              letterSpacing: 2.5,
+              color: "white",
+              textTransform: "uppercase",
+              lineHeight: 2,
+            }}>
+              <div>{"> PAYMENT CONFIRMED."}</div>
+              <div>{"> GENERATING TOKEN..."}</div>
+            </div>
           </div>
-        )}
+        ) : (
+          <>
+            {loading && (
+              <div style={{
+                padding: "48px 24px", textAlign: "center",
+                fontFamily: '"Courier New", monospace',
+                fontSize: 11, letterSpacing: 3, color: "#666", textTransform: "uppercase",
+              }}>INITIALIZING...</div>
+            )}
 
-        {clientSecret && !loading && (
-          <Elements
-            stripe={stripePromise}
-            options={{
-              clientSecret,
-              appearance: { theme: "night", variables: { colorBackground: "#000000", colorText: "#ffffff", colorPrimary: "#ffffff", borderRadius: "0px" } },
-            }}
-          >
-            <CheckoutForm onSuccess={onSuccess} onClose={onClose} isMobile={isMobile} />
-          </Elements>
+            {error && !loading && (
+              <div style={{ padding: "32px 24px", textAlign: "center" }}>
+                <div style={{
+                  fontFamily: '"Courier New", monospace', fontSize: 11,
+                  letterSpacing: 2, color: "#ff4444", textTransform: "uppercase",
+                }}>{error}</div>
+                <button onClick={fetchSecret} style={{
+                  marginTop: 20, border: "1px solid white", background: "black",
+                  color: "white", padding: "12px 24px",
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: 11, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer",
+                }}>RETRY</button>
+              </div>
+            )}
+
+            {clientSecret && !loading && (
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  appearance: { theme: "night", variables: { colorBackground: "#000000", colorText: "#ffffff", colorPrimary: "#ffffff", borderRadius: "0px" } },
+                }}
+              >
+                <CheckoutForm onSuccess={onSuccess} isMobile={isMobile} onSucceeded={() => setSucceeded(true)} />
+              </Elements>
+            )}
+          </>
         )}
       </div>
-      {clientSecret && !loading && (
+      {!succeeded && clientSecret && !loading && (
         <div style={{
           marginTop: 16, fontFamily: '"Courier New", monospace',
           fontSize: 10, letterSpacing: 2, color: "#444",
