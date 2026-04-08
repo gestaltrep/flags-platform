@@ -256,7 +256,7 @@ export default function Home() {
               REQUEST PARTICIPATION
             </button>
 
-            <div style={{ textAlign: "left", marginTop: 10 }}>
+            <div style={{ textAlign: "center", marginTop: 10, width: 352, maxWidth: "100%" }}>
               <button
                 onClick={() => {
                   setMode("login");
