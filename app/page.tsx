@@ -209,7 +209,7 @@ export default function Home() {
       style={{
         minHeight: 20,
         marginTop: 8,
-        marginBottom: 4,
+        marginBottom: 14,
         fontSize: 12,
         lineHeight: 1.5,
         color: "#c8c8c8",
@@ -493,6 +493,7 @@ export default function Home() {
                   className="signup-input"
                   value={loginPhone}
                   onChange={(e) => setLoginPhone(e.target.value)}
+                  style={{ marginTop: 32 }}
                 />
                 {messageSlot}
                 <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
@@ -530,30 +531,36 @@ export default function Home() {
             )}
 
             {mode === "register" && (
-              <button
-                onClick={() => {
-                  setMode("login");
-                  setLoginStep("phone");
-                  setLoginPhone("");
-                  setLoginCode("");
-                  setMessage("");
-                }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#888",
-                  fontFamily: '"Courier New", monospace',
-                  fontSize: 11,
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  marginTop: 8,
-                  marginBottom: 0,
-                  padding: 0,
-                }}
-              >
-                {">"} ALREADY REGISTERED? LOG IN
-              </button>
+              <div style={{
+                textAlign: "center",
+                marginTop: 12,
+                marginBottom: 0,
+              }}>
+                <button
+                  onClick={() => {
+                    setMode("login");
+                    setLoginStep("phone");
+                    setLoginPhone("");
+                    setLoginCode("");
+                    setMessage("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#888",
+                    fontFamily: '"Courier New", monospace',
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    padding: 0,
+                    textDecoration: "none",
+                  }}
+                >
+                  ALREADY REGISTERED?{" "}
+                  <span style={{ fontWeight: 700, color: "#aaa" }}>LOG IN</span>
+                </button>
+              </div>
             )}
 
             <button className="signup-close" onClick={() => { setOpen(false); setMode("register"); }}>
