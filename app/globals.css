@@ -300,8 +300,8 @@ body::before {
   display: block;
   width: 100%;
   height: 266px;
-  object-fit: contain;
-  object-position: center top;
+  object-fit: cover;
+  object-position: center center;
   background: black;
 }
 
