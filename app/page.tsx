@@ -256,18 +256,8 @@ export default function Home() {
               REQUEST PARTICIPATION
             </button>
 
-            <div
-              style={{
-                marginTop: 10,
-                fontFamily: '"Courier New", monospace',
-                fontSize: 11,
-                letterSpacing: 2,
-                color: "#c8c8c8",
-                textTransform: "uppercase",
-              }}
-            >
-              {">"} IF ALREADY REGISTERED —{" "}
-              <span
+            <div style={{ textAlign: "left", marginTop: 10 }}>
+              <button
                 onClick={() => {
                   setMode("login");
                   setLoginStep("phone");
@@ -277,13 +267,21 @@ export default function Home() {
                   setOpen(true);
                 }}
                 style={{
-                  textDecoration: "underline",
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
                   cursor: "pointer",
-                  color: "white",
+                  padding: 0,
+                  textDecoration: "none",
                 }}
               >
-                LOG IN
-              </span>
+                ALREADY REGISTERED?{" "}
+                <span style={{ fontWeight: 900, color: "#cccccc" }}>LOG IN</span>
+              </button>
             </div>
           </div>
         </div>
@@ -322,19 +320,8 @@ export default function Home() {
             REQUEST PARTICIPATION
           </button>
 
-          <div
-            style={{
-              marginTop: 12,
-              textAlign: "center",
-              fontFamily: '"Courier New", monospace',
-              fontSize: 11,
-              letterSpacing: 2,
-              color: "#c8c8c8",
-              textTransform: "uppercase",
-            }}
-          >
-            {">"} IF ALREADY REGISTERED —{" "}
-            <span
+          <div style={{ textAlign: "center", marginTop: 10 }}>
+            <button
               onClick={() => {
                 setMode("login");
                 setLoginStep("phone");
@@ -344,13 +331,21 @@ export default function Home() {
                 setOpen(true);
               }}
               style={{
-                textDecoration: "underline",
+                background: "none",
+                border: "none",
+                color: "#888",
+                fontFamily: '"Courier New", monospace',
+                fontSize: 11,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
                 cursor: "pointer",
-                color: "white",
+                padding: 0,
+                textDecoration: "none",
               }}
             >
-              LOG IN
-            </span>
+              ALREADY REGISTERED?{" "}
+              <span style={{ fontWeight: 900, color: "#cccccc" }}>LOG IN</span>
+            </button>
           </div>
         </div>
       </main>
@@ -537,41 +532,6 @@ export default function Home() {
                   </button>
                 </div>
               </>
-            )}
-
-            {mode === "register" && (
-              <div style={{ textAlign: "center", marginTop: 12 }}>
-                <button
-                  onClick={() => {
-                    setMode("login");
-                    setLoginStep("phone");
-                    setLoginPhone("");
-                    setLoginCode("");
-                    setMessage("");
-                  }}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#888",
-                    fontFamily: '"Courier New", monospace',
-                    fontSize: 11,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    padding: 0,
-                    textDecoration: "none",
-                  }}
-                >
-                  ALREADY REGISTERED?{" "}
-                  <span style={{
-                    fontWeight: 900,
-                    color: "#cccccc",
-                    textDecoration: "none",
-                  }}>
-                    LOG IN
-                  </span>
-                </button>
-              </div>
             )}
 
             <button className="signup-close" onClick={() => { setOpen(false); setMode("register"); }}>
