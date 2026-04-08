@@ -256,20 +256,35 @@ export default function Home() {
               REQUEST PARTICIPATION
             </button>
 
-            <button
-              className="cta-button"
-              onClick={() => {
-                setMode("login");
-                setLoginStep("phone");
-                setLoginPhone("");
-                setLoginCode("");
-                setMessage("");
-                setOpen(true);
+            <div
+              style={{
+                marginTop: 10,
+                fontFamily: '"Courier New", monospace',
+                fontSize: 11,
+                letterSpacing: 2,
+                color: "#c8c8c8",
+                textTransform: "uppercase",
               }}
-              style={{ width: 352, maxWidth: "100%", marginTop: 10 }}
             >
-              LOG IN
-            </button>
+              {">"} IF ALREADY REGISTERED —{" "}
+              <span
+                onClick={() => {
+                  setMode("login");
+                  setLoginStep("phone");
+                  setLoginPhone("");
+                  setLoginCode("");
+                  setMessage("");
+                  setOpen(true);
+                }}
+                style={{
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  color: "white",
+                }}
+              >
+                LOG IN
+              </span>
+            </div>
           </div>
         </div>
       </main>
@@ -307,20 +322,36 @@ export default function Home() {
             REQUEST PARTICIPATION
           </button>
 
-          <button
-            className="cta-button"
-            onClick={() => {
-              setMode("login");
-              setLoginStep("phone");
-              setLoginPhone("");
-              setLoginCode("");
-              setMessage("");
-              setOpen(true);
+          <div
+            style={{
+              marginTop: 12,
+              textAlign: "center",
+              fontFamily: '"Courier New", monospace',
+              fontSize: 11,
+              letterSpacing: 2,
+              color: "#c8c8c8",
+              textTransform: "uppercase",
             }}
-            style={{ width: "100%", marginTop: 10 }}
           >
-            LOG IN
-          </button>
+            {">"} IF ALREADY REGISTERED —{" "}
+            <span
+              onClick={() => {
+                setMode("login");
+                setLoginStep("phone");
+                setLoginPhone("");
+                setLoginCode("");
+                setMessage("");
+                setOpen(true);
+              }}
+              style={{
+                textDecoration: "underline",
+                cursor: "pointer",
+                color: "white",
+              }}
+            >
+              LOG IN
+            </span>
+          </div>
         </div>
       </main>
 
