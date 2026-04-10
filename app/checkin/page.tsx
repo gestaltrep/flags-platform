@@ -417,7 +417,7 @@ export default function CheckInPage() {
       setStep("verify");
       setMessage("Verification code sent.");
     } catch {
-      setMessage("We couldn't send your code.");
+      setMessage("Something went wrong. Please try again.");
     } finally {
       setSendingVerify(false);
     }
@@ -796,13 +796,9 @@ export default function CheckInPage() {
             <button
               type="submit"
               style={buttonStyle}
-              disabled={submitting || sendingVerify}
+              disabled={sendingVerify}
             >
-              {submitting
-                ? "PROCESSING..."
-                : sendingVerify
-                ? "SENDING CODE..."
-                : "COMPLETE CHECK-IN"}
+              {sendingVerify ? "SENDING..." : "SEND CODE"}
             </button>
           </form>
         )}
