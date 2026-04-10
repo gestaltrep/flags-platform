@@ -8,9 +8,11 @@ export default function CheckinGatePage() {
     }}>
       <style>{`
         @keyframes eerieBreath {
-          0%   { transform: scale(1.00); filter: brightness(0.85) saturate(1.0); }
-          50%  { transform: scale(1.04); filter: brightness(1.05) saturate(1.3); }
-          100% { transform: scale(1.00); filter: brightness(0.85) saturate(1.0); }
+          0%   { transform: scale(1.000) translate(0px, 0px); filter: brightness(0.92) saturate(0.95); }
+          25%  { transform: scale(1.008) translate(-1px, 0.5px); filter: brightness(0.97) saturate(1.02); }
+          50%  { transform: scale(1.012) translate(0px, 1px); filter: brightness(1.00) saturate(1.05); }
+          75%  { transform: scale(1.006) translate(1px, 0.5px); filter: brightness(0.96) saturate(1.01); }
+          100% { transform: scale(1.000) translate(0px, 0px); filter: brightness(0.92) saturate(0.95); }
         }
       `}</style>
       <img
@@ -23,7 +25,7 @@ export default function CheckinGatePage() {
           height: "100%",
           objectFit: "cover",
           objectPosition: "center",
-          animation: "eerieBreath 6s ease-in-out infinite",
+          animation: "eerieBreath 9s ease-in-out infinite",
           willChange: "transform, filter",
         }}
       />
