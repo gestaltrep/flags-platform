@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { normalizeUSPhone } from "@/lib/phone";
 
+const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
+
 export async function POST(req: Request) {
   try {
     const { phone, code, name } = await req.json();
@@ -97,6 +99,12 @@ export async function POST(req: Request) {
 
       userId = insertedUser.id;
     }
+
+    await supabase
+      .from("players")
+      .update({ phone_verified: true })
+      .eq("id", userId)
+      .eq("event_id", EVENT_ID);
 
     const cookieStore = await cookies();
     cookieStore.set("user_id", userId, {

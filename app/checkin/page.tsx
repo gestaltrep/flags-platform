@@ -847,8 +847,9 @@ export default function CheckInPage() {
         )}
 
         {validateState === "ready" && step === "success" && (
-          <div style={{ ...statusLineStyle, marginTop: 6 }}>
-            {">"} {message || "Check-in complete."}
+          <div style={{ ...statusLineStyle, marginTop: 6, lineHeight: 2 }}>
+            <div>{">"} CHECK-IN COMPLETE.</div>
+            <div>{">"} STAY SAFE.</div>
           </div>
         )}
       </div>
