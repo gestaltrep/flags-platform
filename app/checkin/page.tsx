@@ -169,7 +169,7 @@ export default function CheckInPage() {
   const [submitting, setSubmitting] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [verified, setVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
 
   const [debugStep, setDebugStep] = useState<
     "" | "consent" | "form" | "verify" | "success"
@@ -419,7 +419,7 @@ export default function CheckInPage() {
         return false;
       }
 
-      if (data.needsVerification && !verified) {
+      if (data.needsVerification && !phoneVerified) {
         const sent = await requestVerificationCode();
         return sent ? false : false;
       }
@@ -470,7 +470,7 @@ export default function CheckInPage() {
         return;
       }
 
-      setVerified(true);
+      setPhoneVerified(true);
       await runCheckIn();
     } catch {
       setMessage("Verification failed.");
@@ -795,7 +795,7 @@ export default function CheckInPage() {
         {validateState === "ready" && step === "verify" && (
           <form onSubmit={completeVerification} style={{ marginTop: 4 }}>
             <div style={{ ...statusLineStyle, marginBottom: isMobile ? 16 : 10 }}>
-              {">"} VERIFY THIS PHONE NUMBER TO COMPLETE CHECK-IN.
+              {">"} ENTER THE CODE SENT TO YOUR PHONE.
             </div>
 
             <input
@@ -826,7 +826,7 @@ export default function CheckInPage() {
             </div>
 
             <button type="submit" style={buttonStyle} disabled={verifying || submitting}>
-              {verifying || submitting ? "VERIFYING..." : "VERIFY & COMPLETE"}
+              {verifying || submitting ? "VERIFYING..." : "COMPLETE CHECK-IN"}
             </button>
           </form>
         )}
