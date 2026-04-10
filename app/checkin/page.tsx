@@ -169,6 +169,7 @@ export default function CheckInPage() {
   const [submitting, setSubmitting] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   const [debugStep, setDebugStep] = useState<
     "" | "consent" | "form" | "verify" | "success"
@@ -418,7 +419,7 @@ export default function CheckInPage() {
         return false;
       }
 
-      if (data.needsVerification) {
+      if (data.needsVerification && !verified) {
         const sent = await requestVerificationCode();
         return sent ? false : false;
       }
@@ -469,6 +470,7 @@ export default function CheckInPage() {
         return;
       }
 
+      setVerified(true);
       await runCheckIn();
     } catch {
       setMessage("Verification failed.");
