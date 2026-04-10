@@ -4,14 +4,17 @@ export default function CheckinGatePage() {
       position: "fixed",
       inset: 0,
       background: "black",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
       overflow: "hidden",
     }}>
+      <style>{`
+        @keyframes eerieBreath {
+          0%   { transform: scale(1.00); filter: brightness(0.85) saturate(1.0); }
+          50%  { transform: scale(1.04); filter: brightness(1.05) saturate(1.3); }
+          100% { transform: scale(1.00); filter: brightness(0.85) saturate(1.0); }
+        }
+      `}</style>
       <img
-        src="/checkin-gate.png"
+        src="/thislong.png"
         alt=""
         style={{
           position: "absolute",
@@ -20,36 +23,10 @@ export default function CheckinGatePage() {
           height: "100%",
           objectFit: "cover",
           objectPosition: "center",
-          opacity: 0.9,
+          animation: "eerieBreath 6s ease-in-out infinite",
+          willChange: "transform, filter",
         }}
       />
-      <div style={{
-        position: "relative",
-        zIndex: 10,
-        textAlign: "center",
-        fontFamily: '"Courier New", monospace',
-        color: "#8b0000",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 16,
-        padding: "0 24px",
-      }}>
-        <div style={{
-          fontSize: "clamp(11px, 2vw, 14px)",
-          letterSpacing: 4,
-          textTransform: "uppercase",
-          lineHeight: 2,
-          textShadow: "0 0 12px #8b0000",
-        }}>
-          <div>{">"} SIGNO RESEARCH GROUP</div>
-          <div>{">"} RESTRICTED ACCESS TERMINAL</div>
-          <div>{">"} AUTHORIZATION REQUIRED</div>
-          <div style={{ marginTop: 8, color: "#555", fontSize: "clamp(9px, 1.5vw, 11px)", letterSpacing: 3 }}>
-            ENTRY PROTOCOL INACTIVE
-          </div>
-        </div>
-      </div>
     </main>
   );
 }
