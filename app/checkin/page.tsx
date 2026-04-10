@@ -373,44 +373,16 @@ export default function CheckInPage() {
     setMessage("");
 
     try {
-      // Call checkin first to validate all fields and ensure the user row exists
-      // in the DB before we send a verification SMS. The API returns
-      // needsVerification: true because phone_verified is false at this point —
-      // that's expected. Any other error (bad ticket, tag conflict, etc.) surfaces
-      // here before we ever bother sending an SMS.
-      const checkinRes = await fetch("/api/checkin", {
+      const res = await fetch("/api/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, phone, tag, team, serial }),
-      });
-
-      const checkinData = await checkinRes.json();
-
-      if (!checkinRes.ok || !checkinData.success) {
-        setMessage(checkinData.message || "Check-in validation failed.");
-        return;
-      }
-
-      if (!checkinData.needsVerification) {
-        // Phone was already verified — complete immediately without SMS.
-        setStep("success");
-        setMessage(checkinData.message || "Check-in complete.");
-        return;
-      }
-
-      // User row now exists in DB. Send the verification SMS.
-      const smsRes = await fetch("/api/send-code", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ phone }),
       });
 
-      const smsData = await smsRes.json();
+      const data = await res.json();
 
-      if (!smsRes.ok || !smsData.success) {
-        setMessage(smsData.error || "We couldn't send your code.");
+      if (!res.ok || !data.success) {
+        setMessage(data.error || "We couldn't send your code.");
         return;
       }
 

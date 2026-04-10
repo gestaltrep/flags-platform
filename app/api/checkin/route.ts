@@ -157,14 +157,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: existingPlayer } = await supabase
-      .from("players")
-      .select("id, phone_verified")
-      .eq("id", user.id)
-      .eq("event_id", EVENT_ID)
-      .maybeSingle();
-
-    if (!existingPlayer?.phone_verified) {
+    if (!user.phone_verified) {
       return Response.json({
         success: true,
         needsVerification: true,
