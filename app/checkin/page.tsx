@@ -169,7 +169,6 @@ export default function CheckInPage() {
   const [submitting, setSubmitting] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
 
   const [debugStep, setDebugStep] = useState<
     "" | "consent" | "form" | "verify" | "success"
@@ -362,7 +361,14 @@ export default function CheckInPage() {
     color: "white",
   };
 
-  async function requestVerificationCode() {
+  async function onSubmitDetails(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!phone.trim() || !tag.trim() || !team || !serial.trim()) {
+      setMessage("All fields are required.");
+      return;
+    }
+
     setSendingVerify(true);
     setMessage("");
 
@@ -379,15 +385,13 @@ export default function CheckInPage() {
 
       if (!res.ok || !data.success) {
         setMessage(data.error || "We couldn't send your code.");
-        return false;
+        return;
       }
 
       setStep("verify");
       setMessage("Verification code sent.");
-      return true;
     } catch {
       setMessage("We couldn't send your code.");
-      return false;
     } finally {
       setSendingVerify(false);
     }
@@ -414,17 +418,7 @@ export default function CheckInPage() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        setMessage(data.message || "Check-in failed.");
-        return false;
-      }
-
-      if (data.needsVerification && !phoneVerified) {
-        const sent = await requestVerificationCode();
-        return sent ? false : false;
-      }
-
-      if (!data.success) {
+      if (!res.ok || !data.success) {
         setMessage(data.message || "Check-in failed.");
         return false;
       }
@@ -470,24 +464,12 @@ export default function CheckInPage() {
         return;
       }
 
-      setPhoneVerified(true);
       await runCheckIn();
     } catch {
       setMessage("Verification failed.");
     } finally {
       setVerifying(false);
     }
-  }
-
-  async function onSubmitDetails(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!phone.trim() || !tag.trim() || !team || !serial.trim()) {
-      setMessage("All fields are required.");
-      return;
-    }
-
-    await runCheckIn();
   }
 
   function continueFromConsent() {
