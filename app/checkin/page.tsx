@@ -373,7 +373,33 @@ export default function CheckInPage() {
     setMessage("");
 
     try {
-      const res = await fetch("/api/send-code", {
+      // Call checkin first to validate all fields and ensure the user row exists
+      // in the DB before we send a verification SMS. The API returns
+      // needsVerification: true because phone_verified is false at this point —
+      // that's expected. Any other error (bad ticket, tag conflict, etc.) surfaces
+      // here before we ever bother sending an SMS.
+      const checkinRes = await fetch("/api/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, phone, tag, team, serial }),
+      });
+
+      const checkinData = await checkinRes.json();
+
+      if (!checkinRes.ok || !checkinData.success) {
+        setMessage(checkinData.message || "Check-in validation failed.");
+        return;
+      }
+
+      if (!checkinData.needsVerification) {
+        // Phone was already verified — complete immediately without SMS.
+        setStep("success");
+        setMessage(checkinData.message || "Check-in complete.");
+        return;
+      }
+
+      // User row now exists in DB. Send the verification SMS.
+      const smsRes = await fetch("/api/send-code", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -381,10 +407,10 @@ export default function CheckInPage() {
         body: JSON.stringify({ phone }),
       });
 
-      const data = await res.json();
+      const smsData = await smsRes.json();
 
-      if (!res.ok || !data.success) {
-        setMessage(data.error || "We couldn't send your code.");
+      if (!smsRes.ok || !smsData.success) {
+        setMessage(smsData.error || "We couldn't send your code.");
         return;
       }
 
@@ -420,6 +446,13 @@ export default function CheckInPage() {
 
       if (!res.ok || !data.success) {
         setMessage(data.message || "Check-in failed.");
+        return false;
+      }
+
+      if (data.needsVerification) {
+        // Should not happen here — phone was just verified. Guard against it
+        // rather than showing a false success screen with no player record written.
+        setMessage("Phone verification required. Please try again.");
         return false;
       }
 

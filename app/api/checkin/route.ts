@@ -1,10 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import { normalizeUSPhone } from "@/lib/phone";
 
 const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
-
-function normalizePhone(phone: string) {
-  return phone.replace(/[^\d+]/g, "").trim();
-}
 
 function normalizeTag(tag: string) {
   return tag.trim();
@@ -19,7 +16,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const code = String(body.code || "").trim().toUpperCase();
-    const phone = normalizePhone(String(body.phone || ""));
+    const phone = normalizeUSPhone(String(body.phone || ""));
     const team = String(body.team || "").trim().toLowerCase();
     const tag = normalizeTag(String(body.tag || ""));
     const serial = normalizeSerial(String(body.serial || ""));
