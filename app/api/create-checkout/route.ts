@@ -59,8 +59,10 @@ export async function POST(req: Request) {
     let discountPercent = 0;
     let promoCodeId: string | null = null;
 
+    console.log("PROMO_LOOKUP_QUERY:", promoCode, "TYPE:", typeof promoCode);
+    console.log("AFTER_LOOKUP_QUERY");
+
     if (promoCode && typeof promoCode === "string" && promoCode.trim().length > 0) {
-      console.log("PROMO_LOOKUP_QUERY:", promoCode, "TYPE:", typeof promoCode);
       console.log("PROMO_BLOCK_ENTERED");
       console.log("SUPABASE_URL_CHECK:", process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40));
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
