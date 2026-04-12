@@ -62,12 +62,18 @@ export async function POST(req: Request) {
     if (promoCode) {
       console.log("PROMO_LOOKUP_QUERY:", promoCode?.toUpperCase?.()?.trim());
       try {
+        const { count: promoTableCount } = await supabase
+          .from("promo_codes")
+          .select("*", { count: "exact", head: true });
+        console.log("PROMO_TABLE_COUNT:", promoTableCount);
+
+        const start = Date.now();
         const { data: promo, error: promoError } = await supabase
           .from("promo_codes")
           .select("id, active")
           .eq("code", promoCode.toUpperCase().trim())
           .maybeSingle();
-
+        console.log("PROMO_LOOKUP_MS:", Date.now() - start);
         console.log("PROMO_LOOKUP_RESULT:", JSON.stringify(promo));
         console.log("PROMO_LOOKUP_ERROR:", JSON.stringify(promoError));
 
