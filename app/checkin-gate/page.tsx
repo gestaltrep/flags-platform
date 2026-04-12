@@ -11,9 +11,11 @@ export default function CheckinGatePage() {
     }}>
       <style>{`
         @keyframes eerieBreath {
-          0%   { transform: scale(1.00); filter: brightness(0.85) saturate(1.0); }
-          50%  { transform: scale(1.06); filter: brightness(1.08) saturate(1.4); }
-          100% { transform: scale(1.00); filter: brightness(0.85) saturate(1.0); }
+          0%   { transform: scale(1.000) translate(0px, 0px); filter: brightness(0.88) saturate(0.95); }
+          25%  { transform: scale(1.006) translate(-0.5px, 0.5px); filter: brightness(0.93) saturate(1.01); }
+          50%  { transform: scale(1.010) translate(0px, 0.8px); filter: brightness(0.97) saturate(1.06); }
+          75%  { transform: scale(1.005) translate(0.5px, 0.3px); filter: brightness(0.92) saturate(1.02); }
+          100% { transform: scale(1.000) translate(0px, 0px); filter: brightness(0.88) saturate(0.95); }
         }
       `}</style>
       <video
@@ -28,7 +30,7 @@ export default function CheckinGatePage() {
           height: "100%",
           objectFit: "cover",
           objectPosition: "center",
-          animation: "eerieBreath 6s ease-in-out infinite",
+          animation: "eerieBreath 10s ease-in-out infinite",
           willChange: "transform, filter",
         }}
       >
