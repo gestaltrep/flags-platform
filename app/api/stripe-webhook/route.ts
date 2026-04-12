@@ -118,6 +118,8 @@ export async function POST(req: Request) {
       return new Response("Ticket insert failed", { status: 500 });
     }
 
+    console.log("PROMO CHECK:", { promoCodeId: paymentIntent.metadata?.promo_code_id });
+
     if (promoCodeId && insertedTickets) {
       for (const ticketCode of insertedTickets) {
         await supabase.from("promo_code_uses").insert({
