@@ -125,22 +125,20 @@ export async function POST(req: Request) {
     console.error("INSERTED_TICKETS_COUNT:", insertedTickets?.length);
     console.error("PROMO_CODE_ID_PRESENT:", !!promoCodeId, promoCodeId?.length);
 
-    if (promoCodeId && insertedTickets) {
-      console.error("PROMO_INSERT_ATTEMPT", promoCodeId, insertedTickets?.length);
-      for (const ticketCode of insertedTickets) {
-        console.error("INSERTING_PROMO_USE:", { promo_code_id: promoCodeId, ticket_code_id: ticketCode.id });
-        const { error: promoUseError } = await supabase.from("promo_code_uses").insert({
-          promo_code_id: promoCodeId,
-          ticket_code_id: ticketCode.id,
-          user_id: userId,
-          amount_paid: paymentIntent.amount,
-          discount_applied: discountApplied,
-        });
-        if (promoUseError) {
-          console.error("PROMO_USE_INSERT_ERROR:", JSON.stringify(promoUseError));
-        } else {
-          console.error("PROMO_USE_INSERT_SUCCESS");
-        }
+    if (promoCodeId) {
+      console.error("PROMO_INSERT_ATTEMPT", promoCodeId, quantity);
+      const { error: promoUseError } = await supabase.from("promo_code_uses").insert({
+        promo_code_id: promoCodeId,
+        user_id: userId,
+        ticket_quantity: quantity,
+        amount_paid: paymentIntent.amount,
+        amount_saved: discountApplied,
+        is_vip: isVip,
+      });
+      if (promoUseError) {
+        console.error("PROMO_USE_INSERT_ERROR:", JSON.stringify(promoUseError));
+      } else {
+        console.error("PROMO_USE_INSERT_SUCCESS");
       }
     }
 
