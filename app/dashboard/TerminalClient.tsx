@@ -269,6 +269,10 @@ export default function TerminalClient() {
   }
 
   function generateTokens() {
+    if (gaPromoCode.trim() && gaPromoValid !== true) {
+      setGaPromoValid(false);
+      return;
+    }
     setCheckoutMessage("");
     setCheckoutType("ga");
     const pricePerToken = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
@@ -279,6 +283,10 @@ export default function TerminalClient() {
   }
 
   function generateVipTokens() {
+    if (vipPromoCode.trim() && vipPromoValid !== true) {
+      setVipPromoValid(false);
+      return;
+    }
     setCheckoutMessage("");
     setCheckoutType("vip");
     const base = 6667 * vipQuantity;
@@ -1459,41 +1467,48 @@ export default function TerminalClient() {
             </div>
 
             <div style={{
-              position: "relative",
-              marginTop: isMobile ? 16 : 14,
               ...(isMobile ? mobileModalInnerStyle : {}),
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: isMobile ? 20 : 18,
+              marginBottom: isMobile ? 20 : 18,
             }}>
-              <input
-                value={gaPromoCode}
-                onChange={(e) => handleGaPromoChange(e.target.value.toUpperCase())}
-                placeholder="PROMO CODE (OPTIONAL)"
-                style={{
-                  ...sendInputStyle,
-                  paddingRight: 36,
-                  fontSize: isMobile ? 13 : 12,
-                  letterSpacing: 2,
-                }}
-              />
-              {gaPromoValid === true && (
-                <span style={{
-                  position: "absolute",
-                  right: 12,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#ffffff",
-                  fontSize: 14,
-                }}>✓</span>
-              )}
-              {gaPromoValid === false && (
-                <div style={{
-                  fontSize: 10,
-                  letterSpacing: 1.2,
-                  color: "#c8c8c8",
-                  marginTop: 6,
-                }}>
-                  INVALID PROMO CODE.
-                </div>
-              )}
+              <div style={{ position: "relative", width: "100%" }}>
+                <input
+                  value={gaPromoCode}
+                  onChange={(e) => handleGaPromoChange(e.target.value.toUpperCase())}
+                  placeholder="PROMO CODE (OPTIONAL)"
+                  style={{
+                    ...sendInputStyle,
+                    paddingRight: 36,
+                    fontSize: isMobile ? 13 : 12,
+                    letterSpacing: 2,
+                    width: "100%",
+                  }}
+                />
+                {gaPromoValid === true && (
+                  <span style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#ffffff",
+                    fontSize: 14,
+                  }}>✓</span>
+                )}
+              </div>
+              <div style={{
+                minHeight: isMobile ? 18 : 16,
+                marginTop: 8,
+                fontSize: 10,
+                letterSpacing: 1.2,
+                color: "#c8c8c8",
+                textAlign: "center",
+                width: "100%",
+              }}>
+                {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+              </div>
             </div>
 
             {checkoutMessage && (
@@ -1619,41 +1634,48 @@ export default function TerminalClient() {
             </div>
 
             <div style={{
-              position: "relative",
-              marginTop: isMobile ? 16 : 14,
               ...(isMobile ? mobileModalInnerStyle : {}),
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: isMobile ? 20 : 18,
+              marginBottom: isMobile ? 20 : 18,
             }}>
-              <input
-                value={vipPromoCode}
-                onChange={(e) => handleVipPromoChange(e.target.value.toUpperCase())}
-                placeholder="PROMO CODE (OPTIONAL)"
-                style={{
-                  ...sendInputStyle,
-                  paddingRight: 36,
-                  fontSize: isMobile ? 13 : 12,
-                  letterSpacing: 2,
-                }}
-              />
-              {vipPromoValid === true && (
-                <span style={{
-                  position: "absolute",
-                  right: 12,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#ffffff",
-                  fontSize: 14,
-                }}>✓</span>
-              )}
-              {vipPromoValid === false && (
-                <div style={{
-                  fontSize: 10,
-                  letterSpacing: 1.2,
-                  color: "#c8c8c8",
-                  marginTop: 6,
-                }}>
-                  INVALID PROMO CODE.
-                </div>
-              )}
+              <div style={{ position: "relative", width: "100%" }}>
+                <input
+                  value={vipPromoCode}
+                  onChange={(e) => handleVipPromoChange(e.target.value.toUpperCase())}
+                  placeholder="PROMO CODE (OPTIONAL)"
+                  style={{
+                    ...sendInputStyle,
+                    paddingRight: 36,
+                    fontSize: isMobile ? 13 : 12,
+                    letterSpacing: 2,
+                    width: "100%",
+                  }}
+                />
+                {vipPromoValid === true && (
+                  <span style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#ffffff",
+                    fontSize: 14,
+                  }}>✓</span>
+                )}
+              </div>
+              <div style={{
+                minHeight: isMobile ? 18 : 16,
+                marginTop: 8,
+                fontSize: 10,
+                letterSpacing: 1.2,
+                color: "#c8c8c8",
+                textAlign: "center",
+                width: "100%",
+              }}>
+                {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+              </div>
             </div>
 
             {checkoutMessage && (
