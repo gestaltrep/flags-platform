@@ -122,16 +122,23 @@ export async function POST(req: Request) {
 
     console.log("WEBHOOK_PROMO_ID:", paymentIntent.metadata?.promo_code_id);
     console.log("WEBHOOK_PROMO_ID_LENGTH:", (paymentIntent.metadata?.promo_code_id || "").length);
+    console.log("INSERTED_TICKETS:", JSON.stringify(insertedTickets));
 
     if (promoCodeId && insertedTickets) {
       for (const ticketCode of insertedTickets) {
-        await supabase.from("promo_code_uses").insert({
+        console.log("INSERTING_PROMO_USE:", { promo_code_id: promoCodeId, ticket_code_id: ticketCode.id });
+        const { error: promoUseError } = await supabase.from("promo_code_uses").insert({
           promo_code_id: promoCodeId,
           ticket_code_id: ticketCode.id,
           user_id: userId,
           amount_paid: paymentIntent.amount,
           discount_applied: discountApplied,
         });
+        if (promoUseError) {
+          console.error("PROMO_USE_INSERT_ERROR:", JSON.stringify(promoUseError));
+        } else {
+          console.log("PROMO_USE_INSERT_SUCCESS");
+        }
       }
     }
 
