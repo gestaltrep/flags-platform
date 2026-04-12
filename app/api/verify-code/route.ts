@@ -17,6 +17,14 @@ export async function POST(req: Request) {
       );
     }
 
+    const phoneRegex = /^\+1\d{10}$/;
+    if (!phoneRegex.test(normalizedPhone)) {
+      return Response.json(
+        { success: false, error: "Invalid phone number." },
+        { status: 400 }
+      );
+    }
+
     if (!normalizedCode) {
       return Response.json(
         { success: false, error: "Please enter the verification code." },
