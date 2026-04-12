@@ -40,20 +40,21 @@ export async function POST(req: Request) {
     if (promoCode) {
       console.log("PROMO_LOOKUP_QUERY:", promoCode?.toUpperCase?.()?.trim());
       try {
-        const { count: promoTableCount } = await supabase
-          .from("promo_codes")
-          .select("*", { count: "exact", head: true });
-        console.log("PROMO_TABLE_COUNT:", promoTableCount);
-
-        const start = Date.now();
-        const { data: promo, error: promoError } = await supabase
-          .from("promo_codes")
-          .select("id, active")
-          .eq("code", promoCode.toUpperCase().trim())
-          .maybeSingle();
-        console.log("PROMO_LOOKUP_MS:", Date.now() - start);
-        console.log("PROMO_LOOKUP_RESULT:", JSON.stringify(promo));
-        console.log("PROMO_LOOKUP_ERROR:", JSON.stringify(promoError));
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const promoRes = await fetch(
+          `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(promoCode.toUpperCase().trim())}&select=id,active&limit=1`,
+          {
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const promoRows = await promoRes.json();
+        console.log("PROMO_FETCH_RESULT:", JSON.stringify(promoRows));
+        const promo = Array.isArray(promoRows) && promoRows.length > 0 ? promoRows[0] : null;
 
         if (promo?.active) {
           discountPercent = 10;
