@@ -1471,7 +1471,7 @@ export default function TerminalClient() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              marginTop: isMobile ? 20 : 18,
+              marginTop: isMobile ? 22 : 30,
               marginBottom: isMobile ? 20 : 18,
             }}>
               <div style={{ position: "relative", width: "100%" }}>
@@ -1638,7 +1638,7 @@ export default function TerminalClient() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              marginTop: isMobile ? 20 : 18,
+              marginTop: isMobile ? 22 : 30,
               marginBottom: isMobile ? 20 : 18,
             }}>
               <div style={{ position: "relative", width: "100%" }}>
