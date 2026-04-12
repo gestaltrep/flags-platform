@@ -927,10 +927,10 @@ export default function TerminalClient() {
                   }}
                 >
                   <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
                       <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
                     </div>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
                       <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
                     </div>
                     <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
@@ -1411,10 +1411,10 @@ export default function TerminalClient() {
 
                 <div style={mobileTierTrackStyle}>
                   <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
                       <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
                     </div>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
                       <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
                     </div>
                     <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
