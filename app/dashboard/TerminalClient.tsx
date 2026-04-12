@@ -662,10 +662,13 @@ export default function TerminalClient() {
   const generateButtonWrapStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
-        paddingTop: 0,
-        marginTop: "auto",
+        paddingTop: 14,
+        marginTop: 0,
       }
-    : {};
+    : {
+        paddingTop: 14,
+        marginTop: 0,
+      };
 
   const generateButtonStyle: React.CSSProperties = isMobile
     ? {
