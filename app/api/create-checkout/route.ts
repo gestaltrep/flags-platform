@@ -61,17 +61,23 @@ export async function POST(req: Request) {
 
     if (promoCode) {
       console.log("PROMO_LOOKUP_QUERY:", promoCode?.toUpperCase?.()?.trim());
-      const { data: promo } = await supabase
-        .from("promo_codes")
-        .select("id, active")
-        .eq("code", promoCode.toUpperCase().trim())
-        .maybeSingle();
+      try {
+        const { data: promo, error: promoError } = await supabase
+          .from("promo_codes")
+          .select("id, active")
+          .eq("code", promoCode.toUpperCase().trim())
+          .maybeSingle();
 
-      console.log("PROMO_LOOKUP_RESULT:", JSON.stringify(promo));
+        console.log("PROMO_LOOKUP_RESULT:", JSON.stringify(promo));
+        console.log("PROMO_LOOKUP_ERROR:", JSON.stringify(promoError));
 
-      if (promo?.active) {
-        discountPercent = 10;
-        promoCodeId = promo.id;
+        if (promo?.active) {
+          discountPercent = 10;
+          promoCodeId = promo.id;
+        }
+      } catch (promoEx) {
+        console.error("PROMO_VALIDATION_EXCEPTION:", promoEx);
+        // proceed without discount — don't block checkout
       }
     }
 
