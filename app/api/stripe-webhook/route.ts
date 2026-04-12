@@ -120,13 +120,15 @@ export async function POST(req: Request) {
       return new Response("Ticket insert failed", { status: 500 });
     }
 
-    console.log("WEBHOOK_PROMO_ID:", paymentIntent.metadata?.promo_code_id);
-    console.log("WEBHOOK_PROMO_ID_LENGTH:", (paymentIntent.metadata?.promo_code_id || "").length);
-    console.log("INSERTED_TICKETS:", JSON.stringify(insertedTickets));
+    console.error("WEBHOOK_PROMO_ID:", paymentIntent.metadata?.promo_code_id);
+    console.error("WEBHOOK_PROMO_ID_LENGTH:", (paymentIntent.metadata?.promo_code_id || "").length);
+    console.error("INSERTED_TICKETS_COUNT:", insertedTickets?.length);
+    console.error("PROMO_CODE_ID_PRESENT:", !!promoCodeId, promoCodeId?.length);
 
     if (promoCodeId && insertedTickets) {
+      console.error("PROMO_INSERT_ATTEMPT", promoCodeId, insertedTickets?.length);
       for (const ticketCode of insertedTickets) {
-        console.log("INSERTING_PROMO_USE:", { promo_code_id: promoCodeId, ticket_code_id: ticketCode.id });
+        console.error("INSERTING_PROMO_USE:", { promo_code_id: promoCodeId, ticket_code_id: ticketCode.id });
         const { error: promoUseError } = await supabase.from("promo_code_uses").insert({
           promo_code_id: promoCodeId,
           ticket_code_id: ticketCode.id,
@@ -137,7 +139,7 @@ export async function POST(req: Request) {
         if (promoUseError) {
           console.error("PROMO_USE_INSERT_ERROR:", JSON.stringify(promoUseError));
         } else {
-          console.log("PROMO_USE_INSERT_SUCCESS");
+          console.error("PROMO_USE_INSERT_SUCCESS");
         }
       }
     }
