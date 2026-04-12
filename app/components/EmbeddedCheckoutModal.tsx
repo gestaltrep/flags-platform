@@ -60,7 +60,17 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
     <div style={{ padding: isMobile ? "20px 18px" : "24px 24px" }}>
       <PaymentElement
         onReady={() => setReady(true)}
-        options={{ layout: "tabs" }}
+        options={{
+          layout: "tabs",
+          fields: {
+            billingDetails: {
+              email: "never",
+              phone: "never",
+              address: "never",
+              name: "never",
+            },
+          },
+        }}
       />
       {error && (
         <div style={{
@@ -238,14 +248,6 @@ export default function EmbeddedCheckoutModal({
                       colorText: "#ffffff",
                       colorPrimary: "#ffffff",
                       borderRadius: "0px",
-                    },
-                  },
-                  fields: {
-                    billingDetails: {
-                      email: "never",
-                      phone: "never",
-                      address: "never",
-                      name: "never",
                     },
                   },
                 }}
