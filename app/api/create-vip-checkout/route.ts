@@ -38,8 +38,6 @@ export async function POST(req: Request) {
     let promoCodeId: string | null = null;
 
     if (promoCode && typeof promoCode === "string" && promoCode.trim().length > 0) {
-      console.log("PROMO_LOOKUP_QUERY:", promoCode, "TYPE:", typeof promoCode);
-      console.log("SUPABASE_URL_CHECK:", process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40));
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
       const controller = new AbortController();
@@ -58,7 +56,6 @@ export async function POST(req: Request) {
         );
         clearTimeout(timeout);
         const promoRows = await promoRes.json();
-        console.log("PROMO_FETCH_RESULT:", JSON.stringify(promoRows));
         const promo = Array.isArray(promoRows) && promoRows.length > 0 ? promoRows[0] : null;
 
         if (promo?.active) {
@@ -66,7 +63,7 @@ export async function POST(req: Request) {
           promoCodeId = promo.id;
         }
       } catch (fetchErr: unknown) {
-        console.log("PROMO_FETCH_ERROR:", (fetchErr as Error)?.name, (fetchErr as Error)?.message);
+        console.error("Promo fetch error:", (fetchErr as Error)?.name, (fetchErr as Error)?.message);
         // proceed without discount
       } finally {
         clearTimeout(timeout);
@@ -76,11 +73,6 @@ export async function POST(req: Request) {
     const finalAmount = discountPercent > 0
       ? Math.round(baseAmount * 0.9)
       : baseAmount;
-
-    console.log("PROMO_CODE_VALUE:", promoCode);
-    console.log("PROMO_CODE_ID_VALUE:", promoCodeId);
-    console.log("DISCOUNT_PCT:", discountPercent);
-    console.log("FINAL_AMOUNT:", finalAmount);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: finalAmount,
