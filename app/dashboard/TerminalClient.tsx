@@ -49,6 +49,11 @@ export default function TerminalClient() {
   const [checkoutAmount, setCheckoutAmount] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(1400);
 
+  const [gaPromoCode, setGaPromoCode] = useState("");
+  const [gaPromoValid, setGaPromoValid] = useState<boolean | null>(null);
+  const [vipPromoCode, setVipPromoCode] = useState("");
+  const [vipPromoValid, setVipPromoValid] = useState<boolean | null>(null);
+
   const [sendPhones, setSendPhones] = useState<Record<string, string>>({});
   const [sendMessages, setSendMessages] = useState<Record<string, string>>({});
   const [sendingTicketId, setSendingTicketId] = useState<string | null>(null);
@@ -56,6 +61,8 @@ export default function TerminalClient() {
   const [sendModalTicket, setSendModalTicket] = useState<Ticket | null>(null);
 
   const timeoutIdsRef = useRef<number[]>([]);
+  const gaPromoTimer = useRef<number | null>(null);
+  const vipPromoTimer = useRef<number | null>(null);
 
   const bootScript = [
     "> INITIALIZING SESSION",
@@ -229,11 +236,44 @@ export default function TerminalClient() {
     setVipQuantity((prev) => Math.min(maxAllowed, prev + 1));
   }
 
+  function handleGaPromoChange(value: string) {
+    setGaPromoCode(value);
+    setGaPromoValid(null);
+    if (gaPromoTimer.current) clearTimeout(gaPromoTimer.current);
+    if (!value.trim()) return;
+    gaPromoTimer.current = window.setTimeout(async () => {
+      const res = await fetch("/api/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: value }),
+      });
+      const data = await res.json();
+      setGaPromoValid(data.valid);
+    }, 600);
+  }
+
+  function handleVipPromoChange(value: string) {
+    setVipPromoCode(value);
+    setVipPromoValid(null);
+    if (vipPromoTimer.current) clearTimeout(vipPromoTimer.current);
+    if (!value.trim()) return;
+    vipPromoTimer.current = window.setTimeout(async () => {
+      const res = await fetch("/api/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: value }),
+      });
+      const data = await res.json();
+      setVipPromoValid(data.valid);
+    }, 600);
+  }
+
   function generateTokens() {
     setCheckoutMessage("");
     setCheckoutType("ga");
-    const pricePerToken = tier === 1 ? 2750 : tier === 2 ? 3850 : 4950;
-    setCheckoutAmount(pricePerToken * gaQuantity);
+    const pricePerToken = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
+    const base = pricePerToken * gaQuantity;
+    setCheckoutAmount(gaPromoValid ? Math.round(base * 0.9) : base);
     setCheckoutOpen(true);
     setPurchaseOpen(false);
   }
@@ -241,7 +281,8 @@ export default function TerminalClient() {
   function generateVipTokens() {
     setCheckoutMessage("");
     setCheckoutType("vip");
-    setCheckoutAmount(6600 * vipQuantity);
+    const base = 6667 * vipQuantity;
+    setCheckoutAmount(vipPromoValid ? Math.round(base * 0.9) : base);
     setCheckoutOpen(true);
     setVipOpen(false);
   }
@@ -867,7 +908,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "5%",
+                      left: "33.3333%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -879,7 +920,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "12.5%",
+                      left: "66.6667%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -1339,7 +1380,7 @@ export default function TerminalClient() {
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
-                  {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.50" : tier === 2 ? "$38.50" : "$49.50"}`}
+                  {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.78" : tier === 2 ? "$38.89" : "$50.00"}`}
                 </span>
               </div>
             </div>
@@ -1370,7 +1411,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "5%",
+                      left: "33.3333%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -1381,7 +1422,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "12.5%",
+                      left: "66.6667%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -1415,6 +1456,44 @@ export default function TerminalClient() {
               >
                 <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
               </button>
+            </div>
+
+            <div style={{
+              position: "relative",
+              marginTop: isMobile ? 16 : 14,
+              ...(isMobile ? mobileModalInnerStyle : {}),
+            }}>
+              <input
+                value={gaPromoCode}
+                onChange={(e) => handleGaPromoChange(e.target.value.toUpperCase())}
+                placeholder="PROMO CODE (OPTIONAL)"
+                style={{
+                  ...sendInputStyle,
+                  paddingRight: 36,
+                  fontSize: isMobile ? 13 : 12,
+                  letterSpacing: 2,
+                }}
+              />
+              {gaPromoValid === true && (
+                <span style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#ffffff",
+                  fontSize: 14,
+                }}>✓</span>
+              )}
+              {gaPromoValid === false && (
+                <div style={{
+                  fontSize: 10,
+                  letterSpacing: 1.2,
+                  color: "#c8c8c8",
+                  marginTop: 6,
+                }}>
+                  INVALID PROMO CODE.
+                </div>
+              )}
             </div>
 
             {checkoutMessage && (
@@ -1490,7 +1569,7 @@ export default function TerminalClient() {
             <div className="modal-status-copy" style={generateStatusCopyStyle}>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.00</span>
+                <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.67</span>
               </div>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
@@ -1537,6 +1616,44 @@ export default function TerminalClient() {
               >
                 <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
               </button>
+            </div>
+
+            <div style={{
+              position: "relative",
+              marginTop: isMobile ? 16 : 14,
+              ...(isMobile ? mobileModalInnerStyle : {}),
+            }}>
+              <input
+                value={vipPromoCode}
+                onChange={(e) => handleVipPromoChange(e.target.value.toUpperCase())}
+                placeholder="PROMO CODE (OPTIONAL)"
+                style={{
+                  ...sendInputStyle,
+                  paddingRight: 36,
+                  fontSize: isMobile ? 13 : 12,
+                  letterSpacing: 2,
+                }}
+              />
+              {vipPromoValid === true && (
+                <span style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#ffffff",
+                  fontSize: 14,
+                }}>✓</span>
+              )}
+              {vipPromoValid === false && (
+                <div style={{
+                  fontSize: 10,
+                  letterSpacing: 1.2,
+                  color: "#c8c8c8",
+                  marginTop: 6,
+                }}>
+                  INVALID PROMO CODE.
+                </div>
+              )}
             </div>
 
             {checkoutMessage && (
@@ -1590,6 +1707,7 @@ export default function TerminalClient() {
         quantity={checkoutType === "vip" ? vipQuantity : gaQuantity}
         isMobile={isMobile}
         amount={checkoutAmount}
+        promoCode={checkoutType === "vip" ? vipPromoCode : gaPromoCode}
         onSuccess={() => {
           setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...");
           let attempts = 0;

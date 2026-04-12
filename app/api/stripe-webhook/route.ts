@@ -48,6 +48,8 @@ export async function POST(req: Request) {
     const quantity = parseInt(session.metadata?.quantity || "1", 10);
     const isVip = session.metadata?.is_vip === "true";
     const eventId = session.metadata?.event_id || EVENT_ID;
+    const promoCodeId = session.metadata?.promo_code_id || "";
+    const discountApplied = Number(session.metadata?.discount_applied ?? 0);
 
     console.log("PARSED VALUES:", {
       userId,
@@ -105,13 +107,26 @@ export async function POST(req: Request) {
 
     console.log("ROWS TO INSERT:", rows);
 
-    const { error: ticketError } = await supabase
+    const { data: insertedTickets, error: ticketError } = await supabase
       .from("ticket_codes")
-      .insert(rows);
+      .insert(rows)
+      .select();
 
     if (ticketError) {
       console.error("Ticket insert error:", ticketError);
       return new Response("Ticket insert failed", { status: 500 });
+    }
+
+    if (promoCodeId && insertedTickets) {
+      for (const ticketCode of insertedTickets) {
+        await supabase.from("promo_code_uses").insert({
+          promo_code_id: promoCodeId,
+          ticket_code_id: ticketCode.id,
+          user_id: userId,
+          amount_paid: session.amount,
+          discount_applied: discountApplied,
+        });
+      }
     }
 
     console.log("Webhook completed successfully");

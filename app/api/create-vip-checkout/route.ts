@@ -13,6 +13,7 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => ({}));
     const quantity = Math.max(1, Math.min(10, Number(body.quantity || 1)));
+    const promoCode: string | undefined = body.promoCode;
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,8 +32,30 @@ export async function POST(req: Request) {
     if (remaining <= 0) return Response.json({ error: "VIP sold out" }, { status: 400 });
     if (quantity > remaining) return Response.json({ error: `Only ${remaining} VIP tokens remain.` }, { status: 400 });
 
+    const baseAmount = 6667 * quantity;
+
+    let discountPercent = 0;
+    let promoCodeId: string | null = null;
+
+    if (promoCode) {
+      const { data: promo } = await supabase
+        .from("promo_codes")
+        .select("id, active")
+        .eq("code", promoCode.toUpperCase().trim())
+        .maybeSingle();
+
+      if (promo?.active) {
+        discountPercent = 10;
+        promoCodeId = promo.id;
+      }
+    }
+
+    const finalAmount = discountPercent > 0
+      ? Math.round(baseAmount * 0.9)
+      : baseAmount;
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 6600 * quantity,
+      amount: finalAmount,
       currency: "usd",
       automatic_payment_methods: { enabled: true },
       payment_method_options: {
@@ -45,6 +68,8 @@ export async function POST(req: Request) {
         quantity: String(quantity),
         is_vip: "true",
         event_id: EVENT_ID,
+        promo_code_id: promoCodeId ?? "",
+        discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * 0.1) : 0),
       },
     });
 

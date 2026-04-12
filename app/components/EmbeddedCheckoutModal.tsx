@@ -14,6 +14,7 @@ interface EmbeddedCheckoutModalProps {
   isMobile: boolean;
   onSuccess: () => void;
   amount: number;
+  promoCode: string;
 }
 
 function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
@@ -67,7 +68,15 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
 
   return (
     <div style={{ padding: isMobile ? "20px 18px" : "24px 24px" }}>
-      <PaymentElement onReady={() => setReady(true)} />
+      <PaymentElement
+        onReady={() => setReady(true)}
+        options={{
+          layout: {
+            type: "tabs",
+            defaultCollapsed: false,
+          },
+        }}
+      />
       {error && (
         <div style={{
           marginTop: 12,
@@ -97,7 +106,7 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
 }
 
 export default function EmbeddedCheckoutModal({
-  isOpen, onClose, type, quantity, isMobile, onSuccess, amount,
+  isOpen, onClose, type, quantity, isMobile, onSuccess, amount, promoCode,
 }: EmbeddedCheckoutModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -113,7 +122,7 @@ export default function EmbeddedCheckoutModal({
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity }),
+        body: JSON.stringify({ quantity, promoCode: promoCode || undefined }),
       });
       const data = await res.json();
       if (!res.ok || !data.clientSecret) {
@@ -127,7 +136,7 @@ export default function EmbeddedCheckoutModal({
     } finally {
       setLoading(false);
     }
-  }, [type, quantity]);
+  }, [type, quantity, promoCode]);
 
   useEffect(() => {
     if (isOpen) {

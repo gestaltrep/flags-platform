@@ -7,9 +7,9 @@ const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
 function buildAmount(quantity: number, sold: number): number {
   const tiers = [
-    { cap: 50,   price: 2750, label: "Tier 1 Token" },
-    { cap: 125,  price: 3850, label: "Tier 2 Token" },
-    { cap: 1000, price: 4950, label: "Tier 3 Token" },
+    { cap: 50,   price: 2778, label: "Tier 1 Token" },
+    { cap: 125,  price: 3889, label: "Tier 2 Token" },
+    { cap: 1000, price: 5000, label: "Tier 3 Token" },
   ];
   let remaining = quantity;
   let position = sold;
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const quantity = Math.max(1, Math.min(10, Number(body.quantity || 1)));
+    const promoCode: string | undefined = body.promoCode;
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,10 +54,30 @@ export async function POST(req: Request) {
     if (remaining <= 0) return Response.json({ error: "General admission sold out" }, { status: 400 });
     if (quantity > remaining) return Response.json({ error: `Only ${remaining} tokens remain.` }, { status: 400 });
 
-    const amount = buildAmount(quantity, sold);
+    const baseAmount = buildAmount(quantity, sold);
+
+    let discountPercent = 0;
+    let promoCodeId: string | null = null;
+
+    if (promoCode) {
+      const { data: promo } = await supabase
+        .from("promo_codes")
+        .select("id, active")
+        .eq("code", promoCode.toUpperCase().trim())
+        .maybeSingle();
+
+      if (promo?.active) {
+        discountPercent = 10;
+        promoCodeId = promo.id;
+      }
+    }
+
+    const finalAmount = discountPercent > 0
+      ? Math.round(baseAmount * 0.9)
+      : baseAmount;
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: finalAmount,
       currency: "usd",
       automatic_payment_methods: { enabled: true },
       payment_method_options: {
@@ -69,6 +90,8 @@ export async function POST(req: Request) {
         quantity: String(quantity),
         is_vip: "false",
         event_id: EVENT_ID,
+        promo_code_id: promoCodeId ?? "",
+        discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * 0.1) : 0),
       },
     });
 
