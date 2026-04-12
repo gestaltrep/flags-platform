@@ -61,12 +61,14 @@ export async function POST(req: Request) {
 
     if (promoCode) {
       console.log("PROMO_LOOKUP_QUERY:", promoCode?.toUpperCase?.()?.trim());
+      console.log("PROMO_BLOCK_ENTERED");
       console.log("SUPABASE_URL_CHECK:", process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40));
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3000);
       try {
+        console.log("PROMO_FETCH_STARTING");
         const promoRes = await fetch(
           `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(promoCode.toUpperCase().trim())}&select=id,active&limit=1`,
           {
