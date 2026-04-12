@@ -51,8 +51,10 @@ export default function TerminalClient() {
 
   const [gaPromoCode, setGaPromoCode] = useState("");
   const [gaPromoValid, setGaPromoValid] = useState<boolean | null>(null);
+  const [gaPromoChecking, setGaPromoChecking] = useState(false);
   const [vipPromoCode, setVipPromoCode] = useState("");
   const [vipPromoValid, setVipPromoValid] = useState<boolean | null>(null);
+  const [vipPromoChecking, setVipPromoChecking] = useState(false);
 
   const [sendPhones, setSendPhones] = useState<Record<string, string>>({});
   const [sendMessages, setSendMessages] = useState<Record<string, string>>({});
@@ -240,7 +242,11 @@ export default function TerminalClient() {
     setGaPromoCode(value);
     setGaPromoValid(null);
     if (gaPromoTimer.current) clearTimeout(gaPromoTimer.current);
-    if (!value.trim()) return;
+    if (!value.trim()) {
+      setGaPromoChecking(false);
+      return;
+    }
+    setGaPromoChecking(true);
     gaPromoTimer.current = window.setTimeout(async () => {
       const res = await fetch("/api/validate-promo", {
         method: "POST",
@@ -249,14 +255,19 @@ export default function TerminalClient() {
       });
       const data = await res.json();
       setGaPromoValid(data.valid);
-    }, 600);
+      setGaPromoChecking(false);
+    }, 800);
   }
 
   function handleVipPromoChange(value: string) {
     setVipPromoCode(value);
     setVipPromoValid(null);
     if (vipPromoTimer.current) clearTimeout(vipPromoTimer.current);
-    if (!value.trim()) return;
+    if (!value.trim()) {
+      setVipPromoChecking(false);
+      return;
+    }
+    setVipPromoChecking(true);
     vipPromoTimer.current = window.setTimeout(async () => {
       const res = await fetch("/api/validate-promo", {
         method: "POST",
@@ -265,11 +276,12 @@ export default function TerminalClient() {
       });
       const data = await res.json();
       setVipPromoValid(data.valid);
-    }, 600);
+      setVipPromoChecking(false);
+    }, 800);
   }
 
   function generateTokens() {
-    if (gaPromoCode.trim() && gaPromoValid !== true) {
+    if (gaPromoCode.trim() && (gaPromoChecking || gaPromoValid !== true)) {
       setGaPromoValid(false);
       return;
     }
@@ -283,7 +295,7 @@ export default function TerminalClient() {
   }
 
   function generateVipTokens() {
-    if (vipPromoCode.trim() && vipPromoValid !== true) {
+    if (vipPromoCode.trim() && (vipPromoChecking || vipPromoValid !== true)) {
       setVipPromoValid(false);
       return;
     }
@@ -1490,7 +1502,18 @@ export default function TerminalClient() {
                     width: "100%",
                   }}
                 />
-                {gaPromoValid === true && (
+                {gaPromoChecking && (
+                  <span style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#555",
+                    fontSize: 11,
+                    letterSpacing: 1,
+                  }}>...</span>
+                )}
+                {gaPromoValid === true && !gaPromoChecking && (
                   <span style={{
                     position: "absolute",
                     right: 12,
@@ -1657,7 +1680,18 @@ export default function TerminalClient() {
                     width: "100%",
                   }}
                 />
-                {vipPromoValid === true && (
+                {vipPromoChecking && (
+                  <span style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#555",
+                    fontSize: 11,
+                    letterSpacing: 1,
+                  }}>...</span>
+                )}
+                {vipPromoValid === true && !vipPromoChecking && (
                   <span style={{
                     position: "absolute",
                     right: 12,

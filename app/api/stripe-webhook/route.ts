@@ -41,8 +41,8 @@ export async function POST(req: Request) {
 
     const session = event.data.object as Stripe.PaymentIntent;
 
-    console.log("WEBHOOK SESSION ID:", session.id);
     console.log("WEBHOOK METADATA:", session.metadata);
+    console.log("WEBHOOK SESSION ID:", session.id);
 
     const userId = session.metadata?.user_id;
     const quantity = parseInt(session.metadata?.quantity || "1", 10);
