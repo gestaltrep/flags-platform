@@ -59,20 +59,7 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
 
   return (
     <div style={{ padding: isMobile ? "20px 18px" : "24px 24px" }}>
-      <PaymentElement
-        onReady={() => setReady(true)}
-        options={{
-          layout: "tabs",
-          fields: {
-            billingDetails: {
-              email: "never",
-              phone: "never",
-              address: "never",
-              name: "never",
-            },
-          },
-        }}
-      />
+      <PaymentElement onReady={() => setReady(true)} />
       {error && (
         <div style={{
           marginTop: 12,
