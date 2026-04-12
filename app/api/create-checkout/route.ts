@@ -60,11 +60,14 @@ export async function POST(req: Request) {
     let promoCodeId: string | null = null;
 
     if (promoCode) {
+      console.log("PROMO_LOOKUP_QUERY:", promoCode?.toUpperCase?.()?.trim());
       const { data: promo } = await supabase
         .from("promo_codes")
         .select("id, active")
         .eq("code", promoCode.toUpperCase().trim())
         .maybeSingle();
+
+      console.log("PROMO_LOOKUP_RESULT:", JSON.stringify(promo));
 
       if (promo?.active) {
         discountPercent = 10;
