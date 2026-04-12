@@ -41,6 +41,8 @@ export async function POST(req: Request) {
 
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
+    console.log("RAW_METADATA_KEYS:", Object.keys(paymentIntent.metadata || {}).join(","));
+    console.log("RAW_PROMO_ID:", paymentIntent.metadata?.promo_code_id);
     console.log("WEBHOOK METADATA:", paymentIntent.metadata);
     console.log("WEBHOOK PAYMENT INTENT ID:", paymentIntent.id);
 
