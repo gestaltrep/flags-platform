@@ -597,7 +597,7 @@ export default function TerminalClient() {
     ? {
         width: "calc(100vw - 32px)",
         maxWidth: 370,
-        minHeight: 468,
+        minHeight: "auto",
         paddingTop: 0,
         paddingBottom: 18,
       }
@@ -1472,7 +1472,7 @@ export default function TerminalClient() {
               flexDirection: "column",
               alignItems: "center",
               marginTop: isMobile ? 22 : 30,
-              marginBottom: isMobile ? 20 : 18,
+              marginBottom: isMobile ? 22 : 30,
             }}>
               <div style={{ position: "relative", width: "100%" }}>
                 <input
@@ -1639,7 +1639,7 @@ export default function TerminalClient() {
               flexDirection: "column",
               alignItems: "center",
               marginTop: isMobile ? 22 : 30,
-              marginBottom: isMobile ? 20 : 18,
+              marginBottom: isMobile ? 22 : 30,
             }}>
               <div style={{ position: "relative", width: "100%" }}>
                 <input
