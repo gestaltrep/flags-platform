@@ -46,6 +46,7 @@ export default function TerminalClient() {
   const [vipQuantity, setVipQuantity] = useState(1);
 
   const [checkoutMessage, setCheckoutMessage] = useState("");
+  const [checkoutAmount, setCheckoutAmount] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(1400);
 
   const [sendPhones, setSendPhones] = useState<Record<string, string>>({});
@@ -231,6 +232,8 @@ export default function TerminalClient() {
   function generateTokens() {
     setCheckoutMessage("");
     setCheckoutType("ga");
+    const pricePerToken = tier === 1 ? 2750 : tier === 2 ? 3850 : 4950;
+    setCheckoutAmount(pricePerToken * gaQuantity);
     setCheckoutOpen(true);
     setPurchaseOpen(false);
   }
@@ -238,6 +241,7 @@ export default function TerminalClient() {
   function generateVipTokens() {
     setCheckoutMessage("");
     setCheckoutType("vip");
+    setCheckoutAmount(6600 * vipQuantity);
     setCheckoutOpen(true);
     setVipOpen(false);
   }
@@ -1335,26 +1339,8 @@ export default function TerminalClient() {
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
-                  CURRENT TIER: TIER {tier} ACTIVE
+                  {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.50" : tier === 2 ? "$38.50" : "$49.50"}`}
                 </span>
-              </div>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">
-                  TOKEN GENERATION CHANNEL OPEN
-                </span>
-              </div>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">TIER 1: $27.50 — 50 TOKENS</span>
-              </div>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">TIER 2: $38.50 — 75 TOKENS</span>
-              </div>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">TIER 3: $49.50 — 875 TOKENS</span>
               </div>
             </div>
 
@@ -1504,11 +1490,7 @@ export default function TerminalClient() {
             <div className="modal-status-copy" style={generateStatusCopyStyle}>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">VIP CHANNEL ACTIVE</span>
-              </div>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">VIP: $66.00 — 50 TOKENS</span>
+                <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.00</span>
               </div>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
@@ -1607,6 +1589,7 @@ export default function TerminalClient() {
         type={checkoutType}
         quantity={checkoutType === "vip" ? vipQuantity : gaQuantity}
         isMobile={isMobile}
+        amount={checkoutAmount}
         onSuccess={() => {
           setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...");
           let attempts = 0;

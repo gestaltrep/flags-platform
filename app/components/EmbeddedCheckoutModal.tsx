@@ -13,6 +13,7 @@ interface EmbeddedCheckoutModalProps {
   quantity: number;
   isMobile: boolean;
   onSuccess: () => void;
+  amount: number;
 }
 
 function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
@@ -101,7 +102,7 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
 }
 
 export default function EmbeddedCheckoutModal({
-  isOpen, onClose, type, quantity, isMobile, onSuccess,
+  isOpen, onClose, type, quantity, isMobile, onSuccess, amount,
 }: EmbeddedCheckoutModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -171,12 +172,27 @@ export default function EmbeddedCheckoutModal({
           padding: isMobile ? "14px 18px" : "16px 24px",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div style={{
-            fontFamily: '"Courier New", monospace',
-            fontSize: isMobile ? 11 : 12, letterSpacing: 3,
-            color: "white", textTransform: "uppercase",
-          }}>
-            GENERATE {qtyLabel}
+          <div>
+            <div style={{
+              fontFamily: '"Courier New", monospace',
+              fontSize: isMobile ? 11 : 12, letterSpacing: 3,
+              color: "white", textTransform: "uppercase",
+            }}>
+              GENERATE {qtyLabel}
+            </div>
+            {amount > 0 && (
+              <div style={{
+                fontFamily: '"Courier New", monospace',
+                fontSize: isMobile ? 11 : 12,
+                letterSpacing: 2,
+                color: "#888888",
+                textAlign: "center",
+                marginTop: 4,
+                marginBottom: 0,
+              }}>
+                {`$${(amount / 100).toFixed(2)} USD`}
+              </div>
+            )}
           </div>
           <button onClick={onClose} style={{
             background: "none", border: "none", color: "#666",
