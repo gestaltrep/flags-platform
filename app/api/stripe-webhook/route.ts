@@ -39,23 +39,24 @@ export async function POST(req: Request) {
       return new Response("ok");
     }
 
-    const session = event.data.object as Stripe.PaymentIntent;
+    const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-    console.log("WEBHOOK METADATA:", session.metadata);
-    console.log("WEBHOOK SESSION ID:", session.id);
+    console.log("WEBHOOK METADATA:", paymentIntent.metadata);
+    console.log("WEBHOOK PAYMENT INTENT ID:", paymentIntent.id);
 
-    const userId = session.metadata?.user_id;
-    const quantity = parseInt(session.metadata?.quantity || "1", 10);
-    const isVip = session.metadata?.is_vip === "true";
-    const eventId = session.metadata?.event_id || EVENT_ID;
-    const promoCodeId = session.metadata?.promo_code_id || "";
-    const discountApplied = Number(session.metadata?.discount_applied ?? 0);
+    const userId = paymentIntent.metadata?.user_id;
+    const quantity = parseInt(paymentIntent.metadata?.quantity || "1", 10);
+    const isVip = paymentIntent.metadata?.is_vip === "true";
+    const eventId = paymentIntent.metadata?.event_id || EVENT_ID;
+    const promoCodeId = paymentIntent.metadata?.promo_code_id || "";
+    const discountApplied = Number(paymentIntent.metadata?.discount_applied ?? 0);
 
     console.log("PARSED VALUES:", {
       userId,
       quantity,
       isVip,
       eventId,
+      promoCodeId,
     });
 
     if (!userId) {
@@ -71,11 +72,11 @@ export async function POST(req: Request) {
     const { data: existingTransaction } = await supabase
       .from("wallet_transactions")
       .select("id")
-      .eq("stripe_session_id", session.id)
+      .eq("stripe_session_id", paymentIntent.id)
       .maybeSingle();
 
     if (existingTransaction) {
-      console.log("Webhook already processed for session:", session.id);
+      console.log("Webhook already processed for payment intent:", paymentIntent.id);
       return new Response("ok");
     }
 
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
         event_id: eventId,
         amount: quantity,
         type: isVip ? "vip_registration" : "registration",
-        stripe_session_id: session.id,
+        stripe_session_id: paymentIntent.id,
       });
 
     if (walletError) {
@@ -123,7 +124,7 @@ export async function POST(req: Request) {
           promo_code_id: promoCodeId,
           ticket_code_id: ticketCode.id,
           user_id: userId,
-          amount_paid: session.amount,
+          amount_paid: paymentIntent.amount,
           discount_applied: discountApplied,
         });
       }
