@@ -32,6 +32,6 @@ export async function GET() {
     sold,
     vipSold,
     generalSoldOut: sold >= 1000,
-    vipSoldOut: vipSold >= 150,
+    vipSoldOut: vipSold >= 50,
   });
 }
