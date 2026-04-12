@@ -32,29 +32,37 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
     setSubmitting(true);
     setError("");
 
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setError(submitError.message || "Payment failed.");
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        console.error("Stripe elements.submit error:", submitError);
+        setError(submitError.message || "Payment failed.");
+        setSubmitting(false);
+        return;
+      }
+
+      const { error: confirmError } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard?purchase=complete`,
+        },
+        redirect: "if_required",
+      });
+
+      if (confirmError) {
+        console.error("Stripe confirmPayment error:", confirmError);
+        setError(confirmError.message || "Payment failed.");
+        setSubmitting(false);
+        return;
+      }
+
+      onSucceeded();
+      onSuccess();
+    } catch (err) {
+      console.error("Unexpected payment error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setSubmitting(false);
-      return;
     }
-
-    const { error: confirmError } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/dashboard?purchase=complete`,
-      },
-      redirect: "if_required",
-    });
-
-    if (confirmError) {
-      setError(confirmError.message || "Payment failed.");
-      setSubmitting(false);
-      return;
-    }
-
-    onSucceeded();
-    onSuccess();
   }
 
   return (
@@ -113,7 +121,8 @@ export default function EmbeddedCheckoutModal({
         return;
       }
       setClientSecret(data.clientSecret);
-    } catch {
+    } catch (err) {
+      console.error("Checkout request failed:", err);
       setError("Checkout request failed.");
     } finally {
       setLoading(false);
