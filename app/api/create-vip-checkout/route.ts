@@ -39,12 +39,16 @@ export async function POST(req: Request) {
 
     if (promoCode) {
       console.log("PROMO_LOOKUP_QUERY:", promoCode?.toUpperCase?.()?.trim());
+      console.log("SUPABASE_URL_CHECK:", process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40));
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
         const promoRes = await fetch(
           `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(promoCode.toUpperCase().trim())}&select=id,active&limit=1`,
           {
+            signal: controller.signal,
             headers: {
               apikey: supabaseKey,
               Authorization: `Bearer ${supabaseKey}`,
@@ -52,6 +56,7 @@ export async function POST(req: Request) {
             },
           }
         );
+        clearTimeout(timeout);
         const promoRows = await promoRes.json();
         console.log("PROMO_FETCH_RESULT:", JSON.stringify(promoRows));
         const promo = Array.isArray(promoRows) && promoRows.length > 0 ? promoRows[0] : null;
@@ -60,9 +65,11 @@ export async function POST(req: Request) {
           discountPercent = 10;
           promoCodeId = promo.id;
         }
-      } catch (promoEx) {
-        console.error("PROMO_VALIDATION_EXCEPTION:", promoEx);
-        // proceed without discount — don't block checkout
+      } catch (fetchErr: unknown) {
+        console.log("PROMO_FETCH_ERROR:", (fetchErr as Error)?.name, (fetchErr as Error)?.message);
+        // proceed without discount
+      } finally {
+        clearTimeout(timeout);
       }
     }
 
