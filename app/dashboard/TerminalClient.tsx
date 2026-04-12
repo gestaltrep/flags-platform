@@ -212,8 +212,14 @@ export default function TerminalClient() {
     return tier === targetTier ? "#ffffff" : "#555555";
   }
 
-  function tierProgressPercent() {
-    return Math.max(0, Math.min(100, (sold / 1000) * 100));
+  function tier1Fill() {
+    return Math.max(0, Math.min(1, sold / 50));
+  }
+  function tier2Fill() {
+    return Math.max(0, Math.min(1, (sold - 50) / 75));
+  }
+  function tier3Fill() {
+    return Math.max(0, Math.min(1, (sold - 125) / 875));
   }
 
   function vipProgressPercent() {
@@ -920,37 +926,17 @@ export default function TerminalClient() {
                     marginBottom: 24,
                   }}
                 >
-                  <div
-                    style={{
-                      width: `${tierProgressPercent()}%`,
-                      height: "100%",
-                      background: "white",
-                    }}
-                  />
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "33.3333%",
-                      top: 0,
-                      bottom: 0,
-                      width: 1,
-                      background: "#888",
-                      transform: "translateX(-0.5px)",
-                    }}
-                  />
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "66.6667%",
-                      top: 0,
-                      bottom: 0,
-                      width: 1,
-                      background: "#888",
-                      transform: "translateX(-0.5px)",
-                    }}
-                  />
+                  <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                  </div>
                 </div>
 
                 <div
@@ -1424,35 +1410,17 @@ export default function TerminalClient() {
                 </div>
 
                 <div style={mobileTierTrackStyle}>
-                  <div
-                    style={{
-                      width: `${tierProgressPercent()}%`,
-                      height: "100%",
-                      background: "white",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "33.3333%",
-                      top: 0,
-                      bottom: 0,
-                      width: 1,
-                      background: "#888",
-                      transform: "translateX(-0.5px)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "66.6667%",
-                      top: 0,
-                      bottom: 0,
-                      width: 1,
-                      background: "#888",
-                      transform: "translateX(-0.5px)",
-                    }}
-                  />
+                  <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
