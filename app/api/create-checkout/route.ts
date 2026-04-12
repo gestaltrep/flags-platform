@@ -7,9 +7,9 @@ const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
 function buildAmount(quantity: number, sold: number): number {
   const tiers = [
-    { cap: 333, price: 3500 },
-    { cap: 666, price: 5000 },
-    { cap: 1000, price: 6500 },
+    { cap: 50,   price: 2750, label: "Tier 1 Token" },
+    { cap: 125,  price: 3850, label: "Tier 2 Token" },
+    { cap: 1000, price: 4950, label: "Tier 3 Token" },
   ];
   let remaining = quantity;
   let position = sold;

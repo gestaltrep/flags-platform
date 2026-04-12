@@ -207,7 +207,7 @@ export default function TerminalClient() {
   }
 
   function vipProgressPercent() {
-    return Math.max(0, Math.min(100, (vipSold / 150) * 100));
+    return Math.max(0, Math.min(100, (vipSold / 50) * 100));
   }
 
   function decGa() {
@@ -223,7 +223,7 @@ export default function TerminalClient() {
   }
 
   function incVip() {
-    const remaining = Math.max(0, 150 - vipSold);
+    const remaining = Math.max(0, 50 - vipSold);
     const maxAllowed = Math.max(1, Math.min(10, remaining));
     setVipQuantity((prev) => Math.min(maxAllowed, prev + 1));
   }
@@ -863,7 +863,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "33.3333%",
+                      left: "5%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -875,7 +875,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "66.6666%",
+                      left: "12.5%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -1344,6 +1344,18 @@ export default function TerminalClient() {
                   TOKEN GENERATION CHANNEL OPEN
                 </span>
               </div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">TIER 1: $27.50 — 50 TOKENS</span>
+              </div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">TIER 2: $38.50 — 75 TOKENS</span>
+              </div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">TIER 3: $49.50 — 875 TOKENS</span>
+              </div>
             </div>
 
             {isMobile && (
@@ -1372,7 +1384,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "33.3333%",
+                      left: "5%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -1383,7 +1395,7 @@ export default function TerminalClient() {
                   <div
                     style={{
                       position: "absolute",
-                      left: "66.6666%",
+                      left: "12.5%",
                       top: 0,
                       bottom: 0,
                       width: 1,
@@ -1496,8 +1508,12 @@ export default function TerminalClient() {
               </div>
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
+                <span className="modal-status-text">VIP: $66.00 — 50 TOKENS</span>
+              </div>
+              <div className="modal-status-line">
+                <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
-                  REMAINING VIP ALLOCATION: {Math.max(0, 150 - vipSold)}
+                  REMAINING VIP ALLOCATION: {Math.max(0, 50 - vipSold)}
                 </span>
               </div>
             </div>

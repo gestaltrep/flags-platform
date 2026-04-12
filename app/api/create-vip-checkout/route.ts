@@ -27,12 +27,12 @@ export async function POST(req: Request) {
       .not("buyer_user_id", "is", null);
 
     const vipSold = count ?? 0;
-    const remaining = 150 - vipSold;
+    const remaining = 50 - vipSold;
     if (remaining <= 0) return Response.json({ error: "VIP sold out" }, { status: 400 });
     if (quantity > remaining) return Response.json({ error: `Only ${remaining} VIP tokens remain.` }, { status: 400 });
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 10000 * quantity,
+      amount: 6600 * quantity,
       currency: "usd",
       automatic_payment_methods: { enabled: true },
       payment_method_options: {
