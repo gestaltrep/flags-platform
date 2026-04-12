@@ -118,7 +118,8 @@ export async function POST(req: Request) {
       return new Response("Ticket insert failed", { status: 500 });
     }
 
-    console.log("PROMO CHECK:", { promoCodeId: paymentIntent.metadata?.promo_code_id });
+    console.log("WEBHOOK_PROMO_ID:", paymentIntent.metadata?.promo_code_id);
+    console.log("WEBHOOK_PROMO_ID_LENGTH:", (paymentIntent.metadata?.promo_code_id || "").length);
 
     if (promoCodeId && insertedTickets) {
       for (const ticketCode of insertedTickets) {

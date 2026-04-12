@@ -76,7 +76,10 @@ export async function POST(req: Request) {
       ? Math.round(baseAmount * 0.9)
       : baseAmount;
 
-    console.log("PROMO DEBUG:", { promoCode, promoCodeId, discountPercent, finalAmount });
+    console.log("PROMO_CODE_VALUE:", promoCode);
+    console.log("PROMO_CODE_ID_VALUE:", promoCodeId);
+    console.log("DISCOUNT_PCT:", discountPercent);
+    console.log("FINAL_AMOUNT:", finalAmount);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: finalAmount,
