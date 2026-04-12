@@ -59,6 +59,11 @@ export async function POST(req: Request) {
       amount,
       currency: "usd",
       automatic_payment_methods: { enabled: true },
+      payment_method_options: {
+        card: {
+          setup_future_usage: undefined,
+        },
+      },
       metadata: {
         user_id: userId,
         quantity: String(quantity),

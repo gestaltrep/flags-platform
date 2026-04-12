@@ -131,9 +131,8 @@ export default function UnauthorizedTerminalClient() {
             {showFinalBlock && (
               <div style={finalBlockStyle}>
                 <div style={finalFirstLineStyle}>
-                  {">"} REQUEST PARTICIPATION TO OBTAIN
+                  {">"} REQUEST PARTICIPATION OR LOG IN TO OBTAIN TERMINAL ACCESS
                 </div>
-                <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
               </div>
             )}
 
@@ -179,9 +178,8 @@ export default function UnauthorizedTerminalClient() {
             {showFinalBlock && (
               <div style={finalBlockStyle}>
                 <div style={finalFirstLineStyle}>
-                  {">"} REQUEST PARTICIPATION TO OBTAIN
+                  {">"} REQUEST PARTICIPATION OR LOG IN TO OBTAIN TERMINAL ACCESS
                 </div>
-                <div style={finalSecondLineStyle}>TERMINAL ACCESS</div>
               </div>
             )}
 

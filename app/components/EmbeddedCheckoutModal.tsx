@@ -231,7 +231,23 @@ export default function EmbeddedCheckoutModal({
                 stripe={stripePromise}
                 options={{
                   clientSecret,
-                  appearance: { theme: "night", variables: { colorBackground: "#000000", colorText: "#ffffff", colorPrimary: "#ffffff", borderRadius: "0px" } },
+                  appearance: {
+                    theme: "night",
+                    variables: {
+                      colorBackground: "#000000",
+                      colorText: "#ffffff",
+                      colorPrimary: "#ffffff",
+                      borderRadius: "0px",
+                    },
+                  },
+                  fields: {
+                    billingDetails: {
+                      email: "never",
+                      phone: "never",
+                      address: "never",
+                      name: "never",
+                    },
+                  },
                 }}
               >
                 <CheckoutForm onSuccess={onSuccess} isMobile={isMobile} onSucceeded={() => setSucceeded(true)} />
