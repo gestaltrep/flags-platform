@@ -227,12 +227,8 @@ export default function Home() {
     <>
       <main className="home-desktop">
         <div className="home-desktop-grid">
-          <div className="home-poster-wrap" style={{ position: "relative" }}>
-            <img
-              src="/poster-image.png"
-              className="home-poster-image"
-              alt="Event site"
-            />
+          <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
+            <img src="/poster-image.png" className="home-poster-image" alt="Event site" />
             <div style={{
               position: "absolute",
               bottom: 10,
@@ -241,6 +237,7 @@ export default function Home() {
               fontSize: 13,
               letterSpacing: 1.5,
               color: "#ffffff",
+              pointerEvents: "none",
             }}>
               RAVE_Initiation.html
             </div>
