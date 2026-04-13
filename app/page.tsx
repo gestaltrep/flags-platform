@@ -227,16 +227,26 @@ export default function Home() {
     <>
       <main className="home-desktop">
         <div className="home-desktop-grid">
-          <div className="home-poster-wrap">
+          <div className="home-poster-wrap" style={{ position: "relative" }}>
             <img
               src="/poster-image.png"
               className="home-poster-image"
               alt="Event site"
             />
+            <div style={{
+              position: "absolute",
+              bottom: 10,
+              right: 12,
+              fontFamily: '"Courier New", monospace',
+              fontSize: 13,
+              letterSpacing: 1.5,
+              color: "rgba(255,255,255,0.75)",
+            }}>
+              RAVE_Initiation.html
+            </div>
           </div>
 
           <div className="home-desktop-info">
-            <div style={{ fontSize: 13, letterSpacing: 2, marginBottom: 18, opacity: 0.7 }}>RAVE_Initiation.html</div>
             <div className="home-date-desktop">May 30</div>
             <div className="home-time-desktop">4:30 PM – 12 AM</div>
             <div className="home-location-desktop">Port Charlotte, FL</div>
@@ -291,19 +301,29 @@ export default function Home() {
       <main className="home-mobile">
         <div className="home-mobile-frame">
           <div className="home-mobile-text">
-            <div style={{ fontSize: 12, letterSpacing: 2, marginBottom: 10, opacity: 0.7 }}>RAVE_Initiation.html</div>
             <div className="home-date-mobile">MAY 30</div>
             <div className="home-time-mobile">4:30 PM – 12 AM</div>
             <div className="home-location-mobile">PORT CHARLOTTE, FL</div>
           </div>
         </div>
 
-        <div className="home-mobile-poster-wrap">
+        <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
           <img
             src="/poster-image.png"
             className="home-mobile-poster"
             alt="Event site"
           />
+          <div style={{
+            position: "absolute",
+            bottom: 10,
+            right: 12,
+            fontFamily: '"Courier New", monospace',
+            fontSize: 11,
+            letterSpacing: 1.5,
+            color: "rgba(255,255,255,0.75)",
+          }}>
+            RAVE_Initiation.html
+          </div>
         </div>
 
         <div className="home-mobile-cta-wrap">

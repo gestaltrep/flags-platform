@@ -193,13 +193,17 @@ body::before {
 .home-poster-wrap {
   width: 528px;
   max-width: 100%;
+  height: 520px;
+  overflow: hidden;
 }
 
 .home-poster-image {
   width: 528px;
   max-width: 100%;
-  height: auto;
+  height: 520px;
   display: block;
+  object-fit: cover;
+  object-position: center center;
 }
 
 .home-desktop-info {
@@ -301,8 +305,8 @@ body::before {
   display: block;
   width: 100%;
   height: 266px;
-  object-fit: contain;
-  object-position: center top;
+  object-fit: cover;
+  object-position: center center;
   background: black;
 }
 
@@ -326,10 +330,12 @@ body::before {
 
   .home-poster-wrap {
     width: 590px;
+    height: 520px;
   }
 
   .home-poster-image {
     width: 590px;
+    height: 520px;
   }
 
   .home-desktop-info {
