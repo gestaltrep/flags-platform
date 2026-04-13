@@ -615,7 +615,7 @@ export default function TerminalClient() {
     ? {
         width: "calc(100vw - 32px)",
         maxWidth: 370,
-        minHeight: "auto",
+        minHeight: "calc(100dvh - 32px)",
         paddingTop: 0,
         paddingBottom: 18,
       }
