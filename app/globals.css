@@ -203,7 +203,7 @@ body::before {
   height: 420px;
   display: block;
   object-fit: cover;
-  object-position: center 30%;
+  object-position: center 58%;
 }
 
 .home-desktop-info {
@@ -306,7 +306,7 @@ body::before {
   width: 100%;
   height: 266px;
   object-fit: cover;
-  object-position: center 40%;
+  object-position: center 58%;
   background: black;
 }
 
@@ -336,6 +336,7 @@ body::before {
   .home-poster-image {
     width: 590px;
     height: 420px;
+    object-position: center 58%;
   }
 
   .home-desktop-info {
