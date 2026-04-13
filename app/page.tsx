@@ -236,9 +236,10 @@ export default function Home() {
           </div>
 
           <div className="home-desktop-info">
+            <div style={{ fontSize: 13, letterSpacing: 2, marginBottom: 18, opacity: 0.7 }}>RAVE_Initiation.html</div>
             <div className="home-date-desktop">May 30</div>
-            <div className="home-time-desktop">5 PM – 5 AM</div>
-            <div className="home-location-desktop">Immokalee, FL</div>
+            <div className="home-time-desktop">4:30 PM – 12 AM</div>
+            <div className="home-location-desktop">Port Charlotte, FL</div>
 
             <button
               className="cta-button"
@@ -290,9 +291,10 @@ export default function Home() {
       <main className="home-mobile">
         <div className="home-mobile-frame">
           <div className="home-mobile-text">
+            <div style={{ fontSize: 12, letterSpacing: 2, marginBottom: 10, opacity: 0.7 }}>RAVE_Initiation.html</div>
             <div className="home-date-mobile">MAY 30</div>
-            <div className="home-time-mobile">5 PM – 5 AM</div>
-            <div className="home-location-mobile">IMMOKALEE, FL</div>
+            <div className="home-time-mobile">4:30 PM – 12 AM</div>
+            <div className="home-location-mobile">PORT CHARLOTTE, FL</div>
           </div>
         </div>
 
