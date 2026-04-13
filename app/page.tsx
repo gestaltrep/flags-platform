@@ -240,7 +240,7 @@ export default function Home() {
               fontFamily: '"Courier New", monospace',
               fontSize: 13,
               letterSpacing: 1.5,
-              color: "rgba(255,255,255,0.75)",
+              color: "#ffffff",
             }}>
               RAVE_Initiation.html
             </div>
@@ -316,11 +316,12 @@ export default function Home() {
           <div style={{
             position: "absolute",
             bottom: 10,
-            right: 12,
+            right: 6,
+            left: "auto",
             fontFamily: '"Courier New", monospace',
             fontSize: 11,
             letterSpacing: 1.5,
-            color: "rgba(255,255,255,0.75)",
+            color: "#ffffff",
           }}>
             RAVE_Initiation.html
           </div>
