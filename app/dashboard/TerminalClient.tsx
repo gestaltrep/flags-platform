@@ -615,9 +615,10 @@ export default function TerminalClient() {
     ? {
         width: "calc(100vw - 32px)",
         maxWidth: 370,
-        minHeight: 580,
+        height: 580,
         paddingTop: 0,
         paddingBottom: 18,
+        overflow: "hidden",
       }
     : desktopGenerateModalStyle;
 
