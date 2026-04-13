@@ -1385,125 +1385,218 @@ export default function TerminalClient() {
               Generate Tokens
             </div>
 
-            <div className="modal-status-copy" style={generateStatusCopyStyle}>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">
-                  {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.78" : tier === 2 ? "$38.89" : "$50.00"}`}
-                </span>
-              </div>
-            </div>
-
-            {isMobile && (
-              <div style={mobileTierVisualWrapStyle}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
-                    textAlign: "center",
-                    ...mobileTierLabelStyle,
-                  }}
-                >
-                  <div style={{ color: tierColor(1) }}>TIER 1</div>
-                  <div style={{ color: tierColor(2) }}>TIER 2</div>
-                  <div style={{ color: tierColor(3) }}>TIER 3</div>
+            {isMobile ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
+                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">
+                      {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.78" : tier === 2 ? "$38.89" : "$50.00"}`}
+                    </span>
+                  </div>
                 </div>
 
-                <div style={mobileTierTrackStyle}>
-                  <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
-                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
+                <div style={mobileTierVisualWrapStyle}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      textAlign: "center",
+                      ...mobileTierLabelStyle,
+                    }}
+                  >
+                    <div style={{ color: tierColor(1) }}>TIER 1</div>
+                    <div style={{ color: tierColor(2) }}>TIER 2</div>
+                    <div style={{ color: tierColor(3) }}>TIER 3</div>
+                  </div>
+
+                  <div style={mobileTierTrackStyle}>
+                    <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                      <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
+                        <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
+                      </div>
+                      <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
+                        <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
+                      </div>
+                      <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
+                        <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
 
-            <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
-              QUANTITY
-            </div>
+                <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
+                  QUANTITY
+                </div>
 
-            <div className="modal-quantity-row" style={generateQuantityRowStyle}>
-              <button
-                className="cta-button"
-                style={modalArrowButtonStyle}
-                onClick={decGa}
-              >
-                <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
-              </button>
+                <div className="modal-quantity-row" style={generateQuantityRowStyle}>
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={decGa}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
+                  </button>
 
-              <div style={modalQuantityBoxStyle}>{gaQuantity}</div>
+                  <div style={modalQuantityBoxStyle}>{gaQuantity}</div>
 
-              <button
-                className="cta-button"
-                style={modalArrowButtonStyle}
-                onClick={incGa}
-              >
-                <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
-              </button>
-            </div>
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={incGa}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
+                  </button>
+                </div>
 
-            <div style={{
-              ...(isMobile ? mobileModalInnerStyle : {}),
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginTop: isMobile ? 22 : 30,
-              marginBottom: isMobile ? 22 : 30,
-            }}>
-              <div style={{ position: "relative", width: "100%" }}>
-                <input
-                  value={gaPromoCode}
-                  onChange={(e) => handleGaPromoChange(e.target.value.toUpperCase())}
-                  placeholder="PROMO CODE (OPTIONAL)"
-                  style={{
-                    ...sendInputStyle,
-                    paddingRight: 36,
-                    fontSize: isMobile ? 13 : 12,
-                    letterSpacing: 2,
+                <div style={{
+                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: isMobile ? 22 : 30,
+                  marginBottom: isMobile ? 22 : 30,
+                }}>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      value={gaPromoCode}
+                      onChange={(e) => handleGaPromoChange(e.target.value.toUpperCase())}
+                      placeholder="PROMO CODE (OPTIONAL)"
+                      style={{
+                        ...sendInputStyle,
+                        paddingRight: 36,
+                        fontSize: isMobile ? 13 : 12,
+                        letterSpacing: 2,
+                        width: "100%",
+                      }}
+                    />
+                    {gaPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#555",
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      }}>...</span>
+                    )}
+                    {gaPromoValid === true && !gaPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#ffffff",
+                        fontSize: 14,
+                      }}>✓</span>
+                    )}
+                  </div>
+                  <div style={{
+                    minHeight: isMobile ? 18 : 16,
+                    marginTop: 8,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: "#c8c8c8",
+                    textAlign: "center",
                     width: "100%",
-                  }}
-                />
-                {gaPromoChecking && (
-                  <span style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "#555",
-                    fontSize: 11,
-                    letterSpacing: 1,
-                  }}>...</span>
-                )}
-                {gaPromoValid === true && !gaPromoChecking && (
-                  <span style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "#ffffff",
-                    fontSize: 14,
-                  }}>✓</span>
-                )}
+                  }}>
+                    {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                  </div>
+                </div>
               </div>
-              <div style={{
-                minHeight: isMobile ? 18 : 16,
-                marginTop: 8,
-                fontSize: 10,
-                letterSpacing: 1.2,
-                color: "#c8c8c8",
-                textAlign: "center",
-                width: "100%",
-              }}>
-                {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE." : ""}
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">
+                      {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.78" : tier === 2 ? "$38.89" : "$50.00"}`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
+                  QUANTITY
+                </div>
+
+                <div className="modal-quantity-row" style={generateQuantityRowStyle}>
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={decGa}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
+                  </button>
+
+                  <div style={modalQuantityBoxStyle}>{gaQuantity}</div>
+
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={incGa}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
+                  </button>
+                </div>
+
+                <div style={{
+                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: isMobile ? 22 : 30,
+                  marginBottom: isMobile ? 22 : 30,
+                }}>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      value={gaPromoCode}
+                      onChange={(e) => handleGaPromoChange(e.target.value.toUpperCase())}
+                      placeholder="PROMO CODE (OPTIONAL)"
+                      style={{
+                        ...sendInputStyle,
+                        paddingRight: 36,
+                        fontSize: isMobile ? 13 : 12,
+                        letterSpacing: 2,
+                        width: "100%",
+                      }}
+                    />
+                    {gaPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#555",
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      }}>...</span>
+                    )}
+                    {gaPromoValid === true && !gaPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#ffffff",
+                        fontSize: 14,
+                      }}>✓</span>
+                    )}
+                  </div>
+                  <div style={{
+                    minHeight: isMobile ? 18 : 16,
+                    marginTop: 8,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: "#c8c8c8",
+                    textAlign: "center",
+                    width: "100%",
+                  }}>
+                    {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                  </div>
+                </div>
+              </>
+            )}
 
             {checkoutMessage && (
               <div className="modal-checkout-message">{checkoutMessage}</div>
@@ -1575,113 +1668,210 @@ export default function TerminalClient() {
               Generate VIP Tokens
             </div>
 
-            <div className="modal-status-copy" style={generateStatusCopyStyle}>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.67</span>
-              </div>
-              <div className="modal-status-line">
-                <span className="modal-status-symbol">{">"}</span>
-                <span className="modal-status-text">
-                  REMAINING VIP ALLOCATION: {Math.max(0, 50 - vipSold)}
-                </span>
-              </div>
-            </div>
+            {isMobile ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
+                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.67</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">
+                      REMAINING VIP ALLOCATION: {Math.max(0, 50 - vipSold)}
+                    </span>
+                  </div>
+                </div>
 
-            {isMobile && (
-              <div style={mobileTierVisualWrapStyle}>
-                <div style={mobileTierLabelStyle}>VIP ALLOCATION</div>
-                <div style={mobileVipTrackStyle}>
-                  <div
-                    style={{
-                      width: `${vipProgressPercent()}%`,
-                      height: "100%",
-                      background: "white",
-                    }}
-                  />
+                <div style={mobileTierVisualWrapStyle}>
+                  <div style={mobileTierLabelStyle}>VIP ALLOCATION</div>
+                  <div style={mobileVipTrackStyle}>
+                    <div
+                      style={{
+                        width: `${vipProgressPercent()}%`,
+                        height: "100%",
+                        background: "white",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
+                  QUANTITY
+                </div>
+
+                <div className="modal-quantity-row" style={generateQuantityRowStyle}>
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={decVip}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
+                  </button>
+
+                  <div style={modalQuantityBoxStyle}>{vipQuantity}</div>
+
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={incVip}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
+                  </button>
+                </div>
+
+                <div style={{
+                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: isMobile ? 22 : 30,
+                  marginBottom: isMobile ? 22 : 30,
+                }}>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      value={vipPromoCode}
+                      onChange={(e) => handleVipPromoChange(e.target.value.toUpperCase())}
+                      placeholder="PROMO CODE (OPTIONAL)"
+                      style={{
+                        ...sendInputStyle,
+                        paddingRight: 36,
+                        fontSize: isMobile ? 13 : 12,
+                        letterSpacing: 2,
+                        width: "100%",
+                      }}
+                    />
+                    {vipPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#555",
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      }}>...</span>
+                    )}
+                    {vipPromoValid === true && !vipPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#ffffff",
+                        fontSize: 14,
+                      }}>✓</span>
+                    )}
+                  </div>
+                  <div style={{
+                    minHeight: isMobile ? 18 : 16,
+                    marginTop: 8,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: "#c8c8c8",
+                    textAlign: "center",
+                    width: "100%",
+                  }}>
+                    {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                  </div>
                 </div>
               </div>
-            )}
+            ) : (
+              <>
+                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.67</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">
+                      REMAINING VIP ALLOCATION: {Math.max(0, 50 - vipSold)}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
-              QUANTITY
-            </div>
+                <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
+                  QUANTITY
+                </div>
 
-            <div className="modal-quantity-row" style={generateQuantityRowStyle}>
-              <button
-                className="cta-button"
-                style={modalArrowButtonStyle}
-                onClick={decVip}
-              >
-                <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
-              </button>
+                <div className="modal-quantity-row" style={generateQuantityRowStyle}>
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={decVip}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-down">▼</span>
+                  </button>
 
-              <div style={modalQuantityBoxStyle}>{vipQuantity}</div>
+                  <div style={modalQuantityBoxStyle}>{vipQuantity}</div>
 
-              <button
-                className="cta-button"
-                style={modalArrowButtonStyle}
-                onClick={incVip}
-              >
-                <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
-              </button>
-            </div>
+                  <button
+                    className="cta-button"
+                    style={modalArrowButtonStyle}
+                    onClick={incVip}
+                  >
+                    <span className="modal-arrow-glyph modal-arrow-glyph-up">▲</span>
+                  </button>
+                </div>
 
-            <div style={{
-              ...(isMobile ? mobileModalInnerStyle : {}),
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginTop: isMobile ? 22 : 30,
-              marginBottom: isMobile ? 22 : 30,
-            }}>
-              <div style={{ position: "relative", width: "100%" }}>
-                <input
-                  value={vipPromoCode}
-                  onChange={(e) => handleVipPromoChange(e.target.value.toUpperCase())}
-                  placeholder="PROMO CODE (OPTIONAL)"
-                  style={{
-                    ...sendInputStyle,
-                    paddingRight: 36,
-                    fontSize: isMobile ? 13 : 12,
-                    letterSpacing: 2,
+                <div style={{
+                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: isMobile ? 22 : 30,
+                  marginBottom: isMobile ? 22 : 30,
+                }}>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      value={vipPromoCode}
+                      onChange={(e) => handleVipPromoChange(e.target.value.toUpperCase())}
+                      placeholder="PROMO CODE (OPTIONAL)"
+                      style={{
+                        ...sendInputStyle,
+                        paddingRight: 36,
+                        fontSize: isMobile ? 13 : 12,
+                        letterSpacing: 2,
+                        width: "100%",
+                      }}
+                    />
+                    {vipPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#555",
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      }}>...</span>
+                    )}
+                    {vipPromoValid === true && !vipPromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#ffffff",
+                        fontSize: 14,
+                      }}>✓</span>
+                    )}
+                  </div>
+                  <div style={{
+                    minHeight: isMobile ? 18 : 16,
+                    marginTop: 8,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: "#c8c8c8",
+                    textAlign: "center",
                     width: "100%",
-                  }}
-                />
-                {vipPromoChecking && (
-                  <span style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "#555",
-                    fontSize: 11,
-                    letterSpacing: 1,
-                  }}>...</span>
-                )}
-                {vipPromoValid === true && !vipPromoChecking && (
-                  <span style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "#ffffff",
-                    fontSize: 14,
-                  }}>✓</span>
-                )}
-              </div>
-              <div style={{
-                minHeight: isMobile ? 18 : 16,
-                marginTop: 8,
-                fontSize: 10,
-                letterSpacing: 1.2,
-                color: "#c8c8c8",
-                textAlign: "center",
-                width: "100%",
-              }}>
-                {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE." : ""}
-              </div>
-            </div>
+                  }}>
+                    {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                  </div>
+                </div>
+              </>
+            )}
 
             {checkoutMessage && (
               <div className="modal-checkout-message">{checkoutMessage}</div>
