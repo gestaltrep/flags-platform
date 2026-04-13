@@ -238,10 +238,13 @@ body::before {
 
 .home-mobile {
   display: none;
+  max-width: 350px;
   margin-top: 18px;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 72px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .home-mobile-frame {
