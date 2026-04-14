@@ -244,7 +244,7 @@ export default function CertificateMailerPage() {
       }}
     >
       <button
-        onClick={() => handleExport(1)}
+        onClick={() => handleExport(4)}
         disabled={exporting}
         style={{
           position: "fixed",
@@ -263,7 +263,7 @@ export default function CertificateMailerPage() {
           textTransform: "uppercase",
         }}
       >
-        {exporting ? "Rendering\u2026" : "Export PNG (1\u00d7)"}
+        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
       </button>
 
       <div
