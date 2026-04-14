@@ -72,6 +72,8 @@ export default function InitiationPosterPage() {
         backgroundColor: "#000000",
         width: POSTER_WIDTH,
         height: POSTER_HEIGHT,
+        windowWidth: POSTER_WIDTH,
+        windowHeight: POSTER_HEIGHT,
         scrollX: 0,
         scrollY: 0,
         x: 0,
