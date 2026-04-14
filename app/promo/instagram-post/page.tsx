@@ -208,7 +208,7 @@ export default function InstagramPostPage() {
                 src="/logo.png"
                 alt="Signo"
                 style={{
-                  height: 96,
+                  height: 110,
                   width: "auto",
                   objectFit: "contain",
                   flexShrink: 0,
@@ -219,7 +219,7 @@ export default function InstagramPostPage() {
                 src="/BASS TABERNACLE.png"
                 alt="Bass Tabernacle"
                 style={{
-                  height: 96,
+                  height: 85,
                   width: "auto",
                   objectFit: "contain",
                   flexShrink: 0,
