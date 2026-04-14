@@ -274,7 +274,7 @@ export default function CertificateMailerPage() {
                 color: "#333",
                 fontSize: 22,
                 lineHeight: 1.14,
-                paddingTop: 55,
+                paddingTop: 65,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
