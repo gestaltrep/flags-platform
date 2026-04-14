@@ -168,7 +168,7 @@ export default function InstagramPostPage() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "flex-start",
-            paddingTop: 10,
+            paddingTop: 0,
           }}>
             <div style={{
               fontSize: 64,
