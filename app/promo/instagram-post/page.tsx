@@ -145,7 +145,7 @@ export default function InstagramPostPage() {
                 lineHeight: 1,
                 letterSpacing: "0.02em",
                 textAlign: "center",
-                marginBottom: 28,
+                marginBottom: 10,
               }}
             >
               May  30
@@ -159,7 +159,7 @@ export default function InstagramPostPage() {
                 width: 520,
                 height: 520,
                 objectFit: "contain",
-                marginBottom: 28,
+                marginBottom: 10,
               }}
             />
 
@@ -184,7 +184,7 @@ export default function InstagramPostPage() {
                 lineHeight: 1.15,
                 letterSpacing: "0.01em",
                 textAlign: "center",
-                marginBottom: 36,
+                marginBottom: 14,
               }}
             >
               Port Charlotte, FL
