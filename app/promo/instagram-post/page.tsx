@@ -147,8 +147,8 @@ export default function InstagramPostPage() {
               src="/logo.png"
               alt="Signo Research Group"
               style={{
-                width: 310,
-                height: 310,
+                width: 220,
+                height: 220,
                 objectFit: "contain",
               }}
             />
