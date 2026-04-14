@@ -151,7 +151,7 @@ export default function InstagramPostPage() {
 
           {/* Logo — centered */}
           <img
-            src="/logo.png"
+            src="/logo-trimmed.png"
             alt="Signo Research Group"
             style={{
               width: 520,
