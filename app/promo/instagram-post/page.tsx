@@ -153,7 +153,7 @@ export default function InstagramPostPage() {
 
           {/* May 30 — next tier of the triangle, wider than the logo */}
           <div style={{
-            fontSize: 200,
+            fontSize: 100,
             fontWeight: 400,
             lineHeight: 1,
             letterSpacing: "0.02em",
