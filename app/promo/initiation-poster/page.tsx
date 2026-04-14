@@ -168,13 +168,13 @@ export default function InitiationPosterPage() {
             style={{
               position: "relative",
               width: "100%",
-              height: 1010,
+              height: 780,
               overflow: "hidden",
               background: "#000",
             }}
           >
             <img
-              src="/initiation-main.png"
+              src="/initiation-main-cropped.png"
               alt="Rave Initiation poster image"
               style={{
                 position: "absolute",
