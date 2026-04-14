@@ -298,7 +298,7 @@ export default function CertificateMailerPage() {
               style={{
                 position: "absolute",
                 left: 34,
-                top: 45,
+                top: 28,
                 display: "flex",
                 alignItems: "center",
                 gap: 20,
@@ -387,7 +387,7 @@ export default function CertificateMailerPage() {
               style={{
                 position: "absolute",
                 left: 184,
-                top: 142,
+                top: 126,
                 width: 690,
                 height: 4,
                 background: "#222",
