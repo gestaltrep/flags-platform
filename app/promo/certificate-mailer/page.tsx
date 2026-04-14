@@ -63,9 +63,9 @@ function RoundedBox() {
         style={{
           position: "absolute",
           left: 232,
-          top: 77,
+          top: 83,
           width: 331,
-          height: 107,
+          height: 95,
           background: "#fff",
           zIndex: 1,
         }}
