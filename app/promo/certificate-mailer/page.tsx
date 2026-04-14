@@ -148,7 +148,54 @@ function RoundedBox() {
 /* ─── Page ─── */
 export default function CertificateMailerPage() {
   const [scale, setScale] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const barcodeRef = useRef<SVGSVGElement>(null);
+
+  const handleExport = async (scaleFactor: number = 4) => {
+    if (exporting) return;
+    setExporting(true);
+
+    try {
+      const mailer = document.getElementById("promo-mailer-export");
+      if (!mailer) return;
+
+      const wrapper = mailer.parentElement as HTMLElement;
+      const savedTransform = wrapper.style.transform;
+
+      wrapper.style.transform = "none";
+      await new Promise((r) => setTimeout(r, 400));
+
+      const w = 1600 * scaleFactor;
+      const h = 780 * scaleFactor;
+
+      const domtoimage = (await import("dom-to-image-more")).default;
+
+      const dataUrl = await domtoimage.toPng(mailer, {
+        width: w,
+        height: h,
+        style: {
+          transform: `scale(${scaleFactor})`,
+          transformOrigin: "top left",
+          width: "1600px",
+          height: "780px",
+        },
+        quality: 1.0,
+      });
+
+      const link = document.createElement("a");
+      link.download = `RAVE_Initiation_mailer_${w}x${h}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      wrapper.style.transform = savedTransform;
+    } catch (err) {
+      console.error("Export failed:", err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (barcodeRef.current) {
@@ -195,6 +242,29 @@ export default function CertificateMailerPage() {
         boxSizing: "border-box",
       }}
     >
+      <button
+        onClick={() => handleExport(4)}
+        disabled={exporting}
+        style={{
+          position: "fixed",
+          top: 18,
+          right: 24,
+          zIndex: 9999,
+          padding: "10px 22px",
+          background: exporting ? "#444" : "#fff",
+          color: "#000",
+          border: "none",
+          fontFamily: '"Courier New", monospace',
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: 1.5,
+          cursor: exporting ? "wait" : "pointer",
+          textTransform: "uppercase",
+        }}
+      >
+        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
+      </button>
+
       <div
         style={{
           transform: `scale(${scale})`,
