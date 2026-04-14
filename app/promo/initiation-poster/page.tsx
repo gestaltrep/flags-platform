@@ -41,9 +41,25 @@ export default function InitiationPosterPage() {
       if (!poster) return;
 
       const wrapper = poster.parentElement as HTMLElement;
-      const savedTransform = wrapper.style.transform;
 
+      // Save original styles
+      const savedWrapperTransform = wrapper.style.transform;
+      const savedWrapperPosition = wrapper.style.position;
+      const savedWrapperLeft = wrapper.style.left;
+      const savedWrapperTop = wrapper.style.top;
+      const savedWrapperZIndex = wrapper.style.zIndex;
+      const savedBodyOverflow = document.body.style.overflow;
+
+      // Pull the wrapper out of flex flow so the poster
+      // renders at true 1080×1770 even if viewport is narrower
       wrapper.style.transform = "none";
+      wrapper.style.position = "fixed";
+      wrapper.style.left = "0px";
+      wrapper.style.top = "0px";
+      wrapper.style.zIndex = "-1";
+      document.body.style.overflow = "hidden";
+
+      // Wait for reflow
       await new Promise((r) => setTimeout(r, 400));
 
       const canvas = await html2canvas(poster, {
@@ -53,13 +69,14 @@ export default function InitiationPosterPage() {
         backgroundColor: "#000000",
         width: 1080,
         height: 1770,
-        scrollX: -window.scrollX,
-        scrollY: -window.scrollY,
+        scrollX: 0,
+        scrollY: 0,
         x: 0,
         y: 0,
         logging: false,
       });
 
+      // Trigger download
       const link = document.createElement("a");
       link.download = `RAVE_Initiation_poster_${canvas.width}x${canvas.height}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -67,7 +84,13 @@ export default function InitiationPosterPage() {
       link.click();
       document.body.removeChild(link);
 
-      wrapper.style.transform = savedTransform;
+      // Restore everything
+      wrapper.style.transform = savedWrapperTransform;
+      wrapper.style.position = savedWrapperPosition;
+      wrapper.style.left = savedWrapperLeft;
+      wrapper.style.top = savedWrapperTop;
+      wrapper.style.zIndex = savedWrapperZIndex;
+      document.body.style.overflow = savedBodyOverflow;
     } catch (err) {
       console.error("Export failed:", err);
     } finally {
