@@ -156,7 +156,7 @@ export default function CertificateMailerPage() {
     setExporting(true);
 
     try {
-      const mailer = document.getElementById("promo-mailer-export");
+      const mailer = document.getElementById("mailer-card");
       if (!mailer) return;
 
       const wrapper = mailer.parentElement as HTMLElement;
@@ -165,19 +165,20 @@ export default function CertificateMailerPage() {
       wrapper.style.transform = "none";
       await new Promise((r) => setTimeout(r, 400));
 
-      const w = 1600 * scaleFactor;
-      const h = 780 * scaleFactor;
+      const w = 1300 * scaleFactor;
+      const h = 660 * scaleFactor;
 
       const domtoimage = (await import("dom-to-image-more")).default;
 
       const dataUrl = await domtoimage.toPng(mailer, {
         width: w,
         height: h,
+        bgcolor: "#ffffff",
         style: {
           transform: `scale(${scaleFactor})`,
           transformOrigin: "top left",
-          width: "1600px",
-          height: "780px",
+          width: "1300px",
+          height: "660px",
         },
         quality: 1.0,
       });
@@ -243,7 +244,7 @@ export default function CertificateMailerPage() {
       }}
     >
       <button
-        onClick={() => handleExport(4)}
+        onClick={() => handleExport(1)}
         disabled={exporting}
         style={{
           position: "fixed",
@@ -262,7 +263,7 @@ export default function CertificateMailerPage() {
           textTransform: "uppercase",
         }}
       >
-        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
+        {exporting ? "Rendering\u2026" : "Export PNG (1\u00d7)"}
       </button>
 
       <div
@@ -282,6 +283,7 @@ export default function CertificateMailerPage() {
         >
           {/* ════════════ TOP CARD ════════════ */}
           <div
+            id="mailer-card"
             style={{
               position: "absolute",
               left: 80,
