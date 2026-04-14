@@ -265,7 +265,7 @@ export default function CertificateMailerPage() {
               style={{
                 position: "absolute",
                 right: 30,
-                top: 18,
+                top: 30,
                 width: 176,
                 height: 126,
                 border: "3px solid #444",
