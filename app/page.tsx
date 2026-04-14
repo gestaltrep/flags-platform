@@ -231,8 +231,8 @@ export default function Home() {
             <img src="/poster-image.png" className="home-poster-image" alt="Event site" />
             <div style={{
               position: "absolute",
-              bottom: 5,
-              right: 5,
+              bottom: 3,
+              right: 3,
               fontFamily: '"Courier New", monospace',
               fontSize: 13,
               letterSpacing: 1.5,
