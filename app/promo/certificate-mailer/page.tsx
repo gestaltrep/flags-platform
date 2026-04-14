@@ -168,6 +168,40 @@ export default function CertificateMailerPage() {
   }, []);
 
   useEffect(() => {
+    if (!barcodeRef.current) return;
+
+    // Wait a tick for JsBarcode to render
+    const timer = setTimeout(() => {
+      const rects = barcodeRef.current?.querySelectorAll("rect");
+      if (!rects) return;
+
+      // Skip the first rect (background) — only modify bar rects
+      const bars = Array.from(rects).filter(r => r.getAttribute("fill") !== "#ffffff" && r.getAttribute("fill") !== "transparent");
+
+      // Seed a simple pseudo-random from index for consistent look
+      bars.forEach((bar, i) => {
+        const originalHeight = parseFloat(bar.getAttribute("height") || "50");
+        const originalY = parseFloat(bar.getAttribute("y") || "0");
+
+        // Vary height between 60% and 100% of original
+        const seed = ((i * 7 + 3) % 11) / 11;
+        const newHeight = originalHeight * (0.6 + seed * 0.4);
+
+        // Alternate between growing from top and bottom
+        if (i % 3 === 0) {
+          // Grow from bottom — shift Y down
+          bar.setAttribute("y", String(originalY + (originalHeight - newHeight)));
+        }
+        // Otherwise keep original Y (grows from top)
+
+        bar.setAttribute("height", String(newHeight));
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const updateScale = () => {
       const paddingX = 180;
       const paddingY = 120;
