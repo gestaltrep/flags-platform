@@ -192,7 +192,7 @@ export default function InstagramPostPage() {
             <div
               style={{
                 border: "3px solid #fff",
-                padding: "26px 80px",
+                padding: "26px 140px",
                 fontSize: 38,
                 fontWeight: 700,
                 letterSpacing: "0.04em",
