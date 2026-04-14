@@ -204,27 +204,38 @@ export default function InstagramPostPage() {
                 minWidth: 820,
               }}
             >
-              <img
-                src="/logo.png"
-                alt="Signo"
+              {/* Signo + Bass Tabernacle logos — copied from initiation poster */}
+              <div
                 style={{
-                  height: 56,
-                  width: "auto",
-                  objectFit: "contain",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  gap: 0,
                   flexShrink: 0,
                 }}
-              />
+              >
+                <img
+                  src="/logo.png"
+                  alt="Signo"
+                  style={{
+                    width: 110,
+                    height: 110,
+                    objectFit: "contain",
+                    position: "relative",
+                    top: 10,
+                  }}
+                />
+                <img
+                  src="/BASS TABERNACLE.png"
+                  alt="Bass Tabernacle"
+                  style={{
+                    width: 145,
+                    height: 145,
+                    objectFit: "contain",
+                    marginLeft: -35,
+                  }}
+                />
+              </div>
               <span>signoresearchgroup.com</span>
-              <img
-                src="/BASS TABERNACLE.png"
-                alt="Bass Tabernacle"
-                style={{
-                  height: 56,
-                  width: "auto",
-                  objectFit: "contain",
-                  flexShrink: 0,
-                }}
-              />
             </div>
           </div>
         </div>
@@ -232,3 +243,4 @@ export default function InstagramPostPage() {
     </main>
   );
 }
+
