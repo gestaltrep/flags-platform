@@ -156,7 +156,7 @@ export default function CertificateMailerPage() {
         format: "CODE128",
         width: 2,
         height: 50,
-        displayValue: true,
+        displayValue: false,
         fontSize: 14,
         font: "Courier New",
         textMargin: 6,
@@ -340,6 +340,16 @@ export default function CertificateMailerPage() {
               }}
             >
               <svg ref={barcodeRef} />
+              <div style={{
+                marginTop: 6,
+                fontSize: 17,
+                color: "#333",
+                letterSpacing: "0.02em",
+                textAlign: "center",
+                fontFamily: '"Courier New", monospace',
+              }}>
+                2333-33948-04302633901
+              </div>
             </div>
 
             {/* ── ADDRESS BLOCK ── */}
