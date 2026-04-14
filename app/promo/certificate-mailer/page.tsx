@@ -283,12 +283,12 @@ export default function CertificateMailerPage() {
             >
               <div style={{ position: "absolute", top: 26, left: 0, right: 0, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 0, height: 45, overflow: "visible" }}>
                 <img
-                  src="/logo.png"
+                  src="/logo-trimmed.png"
                   alt="Signo"
                   style={{ width: 80, height: 80, filter: "invert(1)", objectFit: "contain", position: "relative", top: 5 }}
                 />
                 <img
-                  src="/BASS TABERNACLE.png"
+                  src="/bass-tab-trimmed.png"
                   alt="Bass Tabernacle"
                   style={{ width: 80, height: 80, filter: "invert(1)", objectFit: "contain", marginLeft: -25 }}
                 />
