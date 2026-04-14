@@ -1,5 +1,6 @@
 "use client";
 
+import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 
@@ -30,37 +31,19 @@ export default function InitiationPosterPage() {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  /* ── load html2canvas once ── */
-  const loadHtml2Canvas = async (): Promise<any> => {
-    if (typeof (window as any).html2canvas !== "undefined") {
-      return (window as any).html2canvas;
-    }
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src =
-        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-      script.onload = () => resolve((window as any).html2canvas);
-      script.onerror = () => reject(new Error("Failed to load html2canvas"));
-      document.head.appendChild(script);
-    });
-  };
-
   /* ── export handler ── */
   const handleExport = async (scaleFactor: number = 4) => {
     if (exporting) return;
     setExporting(true);
 
     try {
-      const html2canvas = await loadHtml2Canvas();
       const poster = document.getElementById("promo-poster-export");
       if (!poster) return;
 
       const wrapper = poster.parentElement as HTMLElement;
       const savedTransform = wrapper.style.transform;
 
-      // strip preview scale so html2canvas sees the poster at true 1080×1770
       wrapper.style.transform = "none";
-      // force reflow
       await new Promise((r) => setTimeout(r, 400));
 
       const canvas = await html2canvas(poster, {
@@ -68,8 +51,8 @@ export default function InitiationPosterPage() {
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#000000",
-        width: POSTER_WIDTH,
-        height: POSTER_HEIGHT,
+        width: 1080,
+        height: 1770,
         scrollX: -window.scrollX,
         scrollY: -window.scrollY,
         x: 0,
@@ -77,7 +60,6 @@ export default function InitiationPosterPage() {
         logging: false,
       });
 
-      // trigger download
       const link = document.createElement("a");
       link.download = `RAVE_Initiation_poster_${canvas.width}x${canvas.height}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -85,11 +67,9 @@ export default function InitiationPosterPage() {
       link.click();
       document.body.removeChild(link);
 
-      // restore preview
       wrapper.style.transform = savedTransform;
     } catch (err) {
       console.error("Export failed:", err);
-      alert("Export failed — check console for details.");
     } finally {
       setExporting(false);
     }
