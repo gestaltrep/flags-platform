@@ -192,7 +192,7 @@ export default function InstagramPostPage() {
             <div
               style={{
                 border: "3px solid #fff",
-                padding: "22px 40px",
+                padding: "22px 30px",
                 fontSize: 38,
                 fontWeight: 700,
                 letterSpacing: "0.04em",
@@ -208,8 +208,8 @@ export default function InstagramPostPage() {
                 src="/logo.png"
                 alt="Signo"
                 style={{
-                  width: 72,
-                  height: 72,
+                  height: 96,
+                  width: "auto",
                   objectFit: "contain",
                   flexShrink: 0,
                 }}
@@ -219,8 +219,8 @@ export default function InstagramPostPage() {
                 src="/BASS TABERNACLE.png"
                 alt="Bass Tabernacle"
                 style={{
-                  width: 72,
-                  height: 72,
+                  height: 96,
+                  width: "auto",
                   objectFit: "contain",
                   flexShrink: 0,
                 }}
