@@ -128,16 +128,15 @@ export default function InstagramPostPage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          {/* Top section — pushes down to center the logo */}
+          {/* Top section */}
           <div style={{
-            flex: 1,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-end",
-            paddingBottom: 10,
+            marginBottom: 10,
           }}>
             <div style={{
               fontSize: 160,
@@ -161,14 +160,11 @@ export default function InstagramPostPage() {
             }}
           />
 
-          {/* Bottom section — mirrors top to keep logo centered */}
+          {/* Bottom section */}
           <div style={{
-            flex: 1,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-start",
-            paddingTop: 0,
           }}>
             <div style={{
               fontSize: 64,
