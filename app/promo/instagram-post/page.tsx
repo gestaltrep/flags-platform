@@ -189,15 +189,43 @@ export default function InstagramPostPage() {
             }}>
               Port Charlotte, FL
             </div>
-            <div style={{
-              border: "3px solid #fff",
-              padding: "26px 80px",
-              fontSize: 38,
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              textAlign: "center",
-            }}>
-              signoresearchgroup.com
+            <div
+              style={{
+                border: "3px solid #fff",
+                padding: "22px 40px",
+                fontSize: 38,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 28,
+                minWidth: 820,
+              }}
+            >
+              <img
+                src="/logo.png"
+                alt="Signo"
+                style={{
+                  width: 48,
+                  height: 48,
+                  objectFit: "contain",
+                  flexShrink: 0,
+                }}
+              />
+              <span>signoresearchgroup.com</span>
+              <img
+                src="/BASS TABERNACLE.png"
+                alt="Bass Tabernacle"
+                style={{
+                  width: 48,
+                  height: 48,
+                  objectFit: "contain",
+                  flexShrink: 0,
+                  filter: "invert(1)",
+                }}
+              />
             </div>
           </div>
         </div>
