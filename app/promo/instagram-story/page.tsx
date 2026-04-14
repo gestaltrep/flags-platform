@@ -84,7 +84,7 @@ export default function InstagramStoryPage() {
       }}
     >
       <button
-        onClick={() => handleExport(4)}
+        onClick={() => handleExport(1)}
         disabled={exporting}
         style={{
           position: "fixed",
@@ -103,7 +103,7 @@ export default function InstagramStoryPage() {
           textTransform: "uppercase",
         }}
       >
-        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
+        {exporting ? "Rendering\u2026" : "Export PNG (1\u00d7)"}
       </button>
 
       {/* Preview wrapper */}

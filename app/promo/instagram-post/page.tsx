@@ -24,7 +24,7 @@ export default function InstagramPostPage() {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  const handleExport = async (scaleFactor: number = 4) => {
+  const handleExport = async (scaleFactor: number = 1) => {
     if (exporting) return;
     setExporting(true);
 
@@ -84,7 +84,7 @@ export default function InstagramPostPage() {
       }}
     >
       <button
-        onClick={() => handleExport(4)}
+        onClick={() => handleExport(1)}
         disabled={exporting}
         style={{
           position: "fixed",
@@ -103,7 +103,7 @@ export default function InstagramPostPage() {
           textTransform: "uppercase",
         }}
       >
-        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
+        {exporting ? "Rendering\u2026" : "Export PNG (1\u00d7)"}
       </button>
 
       {/* Preview wrapper */}
