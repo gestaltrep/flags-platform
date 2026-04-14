@@ -2,7 +2,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
-import domtoimage from "dom-to-image-more";
 
 const POSTER_WIDTH = 1080;
 const POSTER_HEIGHT = 1770;
@@ -50,6 +49,7 @@ export default function InitiationPosterPage() {
       const w = POSTER_WIDTH * scaleFactor;
       const h = POSTER_HEIGHT * scaleFactor;
 
+      const domtoimage = (await import("dom-to-image-more")).default;
       const dataUrl = await domtoimage.toPng(poster, {
         width: w,
         height: h,
