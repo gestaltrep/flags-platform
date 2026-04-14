@@ -302,7 +302,7 @@ export default function CertificateMailerPage() {
                     width: "auto",
                     objectFit: "contain",
                     filter: "invert(1)",
-                    marginLeft: -5,
+                    marginLeft: 8,
                     position: "relative",
                     top: -20,
                   }}
