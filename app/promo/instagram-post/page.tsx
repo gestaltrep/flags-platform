@@ -131,7 +131,7 @@ export default function InstagramPostPage() {
             justifyContent: "center",
           }}
         >
-          {/* Pyramid — centered vertically and horizontally */}
+          {/* Equilateral triangle pyramid — centered on canvas */}
           <div
             style={{
               flex: 1,
@@ -139,24 +139,24 @@ export default function InstagramPostPage() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 40,
+              gap: 42,
             }}
           >
-            {/* Tier 1: Logo capstone (~200px visible) */}
+            {/* Tier 1: Logo capstone (~160px visible) */}
             <img
               src="/logo.png"
               alt="Signo Research Group"
               style={{
-                width: 220,
-                height: 220,
+                width: 246,
+                height: 246,
                 objectFit: "contain",
               }}
             />
 
-            {/* Tier 2: May 30 (~350px wide) */}
+            {/* Tier 2: May 30 (~320px wide) */}
             <div
               style={{
-                fontSize: 94,
+                fontSize: 86,
                 fontWeight: 400,
                 lineHeight: 1,
                 letterSpacing: "0.02em",
@@ -166,10 +166,10 @@ export default function InstagramPostPage() {
               May  30
             </div>
 
-            {/* Tier 3: Time (~500px wide) */}
+            {/* Tier 3: Time (~480px wide) */}
             <div
               style={{
-                fontSize: 55,
+                fontSize: 52,
                 fontWeight: 500,
                 lineHeight: 1,
                 letterSpacing: "0.01em",
@@ -179,10 +179,10 @@ export default function InstagramPostPage() {
               4:30 PM - 12 AM
             </div>
 
-            {/* Tier 4: Place (~650px wide) */}
+            {/* Tier 4: Place (~640px wide) */}
             <div
               style={{
-                fontSize: 59,
+                fontSize: 58,
                 fontWeight: 500,
                 lineHeight: 1,
                 letterSpacing: "0.01em",
@@ -192,11 +192,11 @@ export default function InstagramPostPage() {
               Port Charlotte, FL
             </div>
 
-            {/* Tier 5: Button (~800px wide) */}
+            {/* Tier 5: Button base (~800px wide) */}
             <div
               style={{
                 border: "3px solid #fff",
-                padding: "22px 60px",
+                padding: "22px 0",
                 fontSize: 38,
                 fontWeight: 700,
                 letterSpacing: "0.04em",
@@ -205,6 +205,7 @@ export default function InstagramPostPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 24,
+                width: 800,
               }}
             >
               <img
