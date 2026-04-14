@@ -189,17 +189,47 @@ export default function InstagramPostPage() {
             }}>
               Port Charlotte, FL
             </div>
+            {/* Bottom row: Signo logo | URL | Bass Tab logo */}
             <div
               style={{
-                border: "3px solid #fff",
-                padding: "26px 140px",
-                fontSize: 38,
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 32,
+                marginTop: 14,
               }}
             >
-              SIGNORESEARCHGROUP.COM
+              <img
+                src="/logo-trimmed.png"
+                alt="Signo"
+                style={{
+                  height: 64,
+                  width: "auto",
+                  objectFit: "contain",
+                  flexShrink: 0,
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 34,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                SIGNORESEARCHGROUP.COM
+              </div>
+              <img
+                src="/bass-tab-trimmed.png"
+                alt="Bass Tabernacle"
+                style={{
+                  height: 64,
+                  width: "auto",
+                  objectFit: "contain",
+                  flexShrink: 0,
+                }}
+              />
             </div>
           </div>
         </div>
@@ -207,4 +237,3 @@ export default function InstagramPostPage() {
     </main>
   );
 }
-
