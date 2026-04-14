@@ -131,40 +131,46 @@ export default function InstagramPostPage() {
             justifyContent: "center",
           }}
         >
-          {/* Top section */}
+          {/* Top section — logo as capstone */}
           <div style={{
+            flex: 1,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginBottom: 10,
+            justifyContent: "flex-end",
+            paddingBottom: 10,
           }}>
-            <div style={{
-              fontSize: 160,
-              fontWeight: 400,
-              lineHeight: 1,
-              letterSpacing: "0.02em",
-              textAlign: "center",
-            }}>
-              May  30
-            </div>
+            <img
+              src="/logo.png"
+              alt="Signo Research Group"
+              style={{
+                width: 520,
+                height: 520,
+                objectFit: "contain",
+              }}
+            />
           </div>
 
-          {/* Logo — centered */}
-          <img
-            src="/logo-trimmed.png"
-            alt="Signo Research Group"
-            style={{
-              width: 520,
-              height: 520,
-              objectFit: "contain",
-            }}
-          />
+          {/* May 30 — next tier of the triangle, wider than the logo */}
+          <div style={{
+            fontSize: 200,
+            fontWeight: 400,
+            lineHeight: 1,
+            letterSpacing: "0.02em",
+            textAlign: "center",
+          }}>
+            May  30
+          </div>
 
           {/* Bottom section */}
           <div style={{
+            flex: 1,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "flex-start",
+            paddingTop: 0,
+            width: "100%",
           }}>
             <div style={{
               fontSize: 64,
