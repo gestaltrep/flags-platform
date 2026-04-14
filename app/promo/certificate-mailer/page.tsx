@@ -419,7 +419,7 @@ export default function CertificateMailerPage() {
               style={{
                 position: "absolute",
                 left: 106,
-                top: 420,
+                top: 428,
                 width: 614,
                 textAlign: "center",
               }}
