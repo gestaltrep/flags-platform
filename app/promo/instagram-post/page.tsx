@@ -139,7 +139,7 @@ export default function InstagramPostPage() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 39,
+              gap: 24,
             }}
           >
             {/* Tier 1: Logo capstone (160px wide) */}
@@ -147,7 +147,7 @@ export default function InstagramPostPage() {
               src="/logo-trimmed.png"
               alt="Signo Research Group"
               style={{
-                width: 160,
+                width: 340,
                 height: "auto",
                 objectFit: "contain",
               }}
@@ -156,7 +156,7 @@ export default function InstagramPostPage() {
             {/* Tier 2: May 30 (~320px wide) */}
             <div
               style={{
-                fontSize: 86,
+                fontSize: 98,
                 fontWeight: 400,
                 lineHeight: 1,
                 letterSpacing: "0.02em",
@@ -169,7 +169,7 @@ export default function InstagramPostPage() {
             {/* Tier 3: Time (~480px wide) */}
             <div
               style={{
-                fontSize: 52,
+                fontSize: 56,
                 fontWeight: 500,
                 lineHeight: 1,
                 letterSpacing: "0.01em",
@@ -182,7 +182,7 @@ export default function InstagramPostPage() {
             {/* Tier 4: Place (~640px wide) */}
             <div
               style={{
-                fontSize: 58,
+                fontSize: 60,
                 fontWeight: 500,
                 lineHeight: 1,
                 letterSpacing: "0.01em",
