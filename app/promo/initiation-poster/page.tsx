@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 
 const POSTER_WIDTH = 1080;
-const POSTER_HEIGHT = 1540;
+const POSTER_HEIGHT = 1600;
 
 export default function InitiationPosterPage() {
   const [scale, setScale] = useState(1);
@@ -168,7 +168,7 @@ export default function InitiationPosterPage() {
             style={{
               position: "relative",
               width: "100%",
-              height: 780,
+              height: 840,
               overflow: "hidden",
               background: "#000",
             }}
