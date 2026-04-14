@@ -234,7 +234,7 @@ export default function InitiationPosterPage() {
                   objectFit: "contain",
                   marginLeft: -35,
                   position: "relative",
-                  top: 1,
+                  top: 2,
                 }}
               />
             </div>
