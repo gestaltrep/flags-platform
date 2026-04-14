@@ -155,7 +155,7 @@ export default function CertificateMailerPage() {
       JsBarcode(barcodeRef.current, "2333 El Jobean Road, Port Charlotte, Florida 33948", {
         format: "CODE128",
         width: 3,
-        height: 70,
+        height: 90,
         displayValue: false,
         fontSize: 14,
         font: "Courier New",
@@ -334,7 +334,7 @@ export default function CertificateMailerPage() {
               style={{
                 position: "absolute",
                 left: 106,
-                top: 458,
+                top: 435,
                 width: 614,
                 textAlign: "center",
               }}
