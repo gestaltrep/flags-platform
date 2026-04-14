@@ -400,7 +400,7 @@ export default function CertificateMailerPage() {
                 color: "#222",
               }}
             >
-              T02610
+              TR-1000
               <br />
               04/07/2026
             </div>
