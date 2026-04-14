@@ -298,7 +298,7 @@ export default function CertificateMailerPage() {
                   src="/bass-tab-trimmed.png"
                   alt="Bass Tabernacle"
                   style={{
-                    height: 65,
+                    height: 50,
                     width: "auto",
                     objectFit: "contain",
                     filter: "invert(1)",
