@@ -168,38 +168,6 @@ export default function CertificateMailerPage() {
   }, []);
 
   useEffect(() => {
-    if (!barcodeRef.current) return;
-
-    const timer = setTimeout(() => {
-      const rects = barcodeRef.current?.querySelectorAll("rect");
-      if (!rects) return;
-
-      const bars = Array.from(rects).filter(r => {
-        const fill = r.getAttribute("fill");
-        return fill !== "#ffffff" && fill !== "transparent" && fill !== "#fff";
-      });
-
-      if (bars.length === 0) return;
-
-      bars.forEach((bar, i) => {
-        const originalHeight = parseFloat(bar.getAttribute("height") || "50");
-        const originalY = parseFloat(bar.getAttribute("y") || "0");
-        const midY = originalY + originalHeight / 2;
-
-        // Vary height between 60% and 100% of original
-        const seed = ((i * 7 + 3) % 11) / 11;
-        const newHeight = originalHeight * (0.6 + seed * 0.4);
-
-        // Center the bar on the original midline
-        bar.setAttribute("height", String(newHeight));
-        bar.setAttribute("y", String(midY - newHeight / 2));
-      });
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
     const updateScale = () => {
       const paddingX = 180;
       const paddingY = 120;
@@ -373,7 +341,7 @@ export default function CertificateMailerPage() {
             >
               <svg ref={barcodeRef} />
               <div style={{
-                marginTop: -4,
+                marginTop: -8,
                 fontSize: 17,
                 fontWeight: 700,
                 color: "#333",
