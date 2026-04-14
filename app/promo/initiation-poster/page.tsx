@@ -229,8 +229,8 @@ export default function InitiationPosterPage() {
                 src="/BASS TABERNACLE.png"
                 alt="Bass Tabernacle"
                 style={{
-                  width: 124,
-                  height: 124,
+                  width: 123,
+                  height: 123,
                   objectFit: "contain",
                   marginLeft: -35,
                   position: "relative",
