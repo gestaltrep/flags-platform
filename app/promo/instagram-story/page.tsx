@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 const POST_WIDTH = 2160;
-const POST_HEIGHT = 2700; // 4:5 Instagram ratio
+const POST_HEIGHT = 3840; // 9:16 Instagram story ratio
 
-export default function InstagramPostPage() {
+export default function InstagramStoryPage() {
   const [scale, setScale] = useState(1);
   const [exporting, setExporting] = useState(false);
 
@@ -29,7 +29,7 @@ export default function InstagramPostPage() {
     setExporting(true);
 
     try {
-      const post = document.getElementById("promo-ig-export");
+      const post = document.getElementById("promo-story-export");
       if (!post) return;
 
       const wrapper = post.parentElement as HTMLElement;
@@ -56,7 +56,7 @@ export default function InstagramPostPage() {
       });
 
       const link = document.createElement("a");
-      link.download = `RAVE_Initiation_post_${w}x${h}.png`;
+      link.download = `RAVE_Initiation_story_${w}x${h}.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
@@ -113,9 +113,9 @@ export default function InstagramPostPage() {
           transformOrigin: "center center",
         }}
       >
-        {/* Post at design resolution */}
+        {/* Story at design resolution */}
         <div
-          id="promo-ig-export"
+          id="promo-story-export"
           style={{
             width: POST_WIDTH,
             height: POST_HEIGHT,
