@@ -25,13 +25,13 @@ export async function GET() {
   const sold = gaCount ?? 0;
   const vipSold = vipCount ?? 0;
 
-  const tier = sold < 333 ? 1 : sold < 666 ? 2 : 3;
+  const tier = sold < 50 ? 1 : sold < 125 ? 2 : 3;
 
   return Response.json({
     tier,
     sold,
     vipSold,
     generalSoldOut: sold >= 1000,
-    vipSoldOut: vipSold >= 150,
+    vipSoldOut: vipSold >= 50,
   });
 }

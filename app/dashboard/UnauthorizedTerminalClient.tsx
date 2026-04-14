@@ -130,8 +130,13 @@ export default function UnauthorizedTerminalClient() {
 
             {showFinalBlock && (
               <div style={finalBlockStyle}>
-                <div style={finalFirstLineStyle}>
-                  {">"} REQUEST PARTICIPATION OR LOG IN TO OBTAIN TERMINAL ACCESS
+                <div className="modal-status-line" style={finalFirstLineStyle}>
+                  <span className="modal-status-symbol">{">"}</span>
+                  <span className="modal-status-text">REQUEST PARTICIPATION OR LOG IN TO</span>
+                </div>
+                <div className="modal-status-line">
+                  <span className="modal-status-symbol" style={{ visibility: "hidden" }}>{">"}</span>
+                  <span className="modal-status-text">OBTAIN TERMINAL ACCESS</span>
                 </div>
               </div>
             )}
@@ -177,8 +182,13 @@ export default function UnauthorizedTerminalClient() {
 
             {showFinalBlock && (
               <div style={finalBlockStyle}>
-                <div style={finalFirstLineStyle}>
-                  {">"} REQUEST PARTICIPATION OR LOG IN TO OBTAIN TERMINAL ACCESS
+                <div className="modal-status-line" style={finalFirstLineStyle}>
+                  <span className="modal-status-symbol">{">"}</span>
+                  <span className="modal-status-text">REQUEST PARTICIPATION OR LOG IN TO</span>
+                </div>
+                <div className="modal-status-line">
+                  <span className="modal-status-symbol" style={{ visibility: "hidden" }}>{">"}</span>
+                  <span className="modal-status-text">OBTAIN TERMINAL ACCESS</span>
                 </div>
               </div>
             )}

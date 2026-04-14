@@ -14,6 +14,14 @@ export async function POST(req: Request) {
       );
     }
 
+    const phoneRegex = /^\+1\d{10}$/;
+    if (!phoneRegex.test(normalizedPhone)) {
+      return Response.json(
+        { success: false, error: "Invalid phone number." },
+        { status: 400 }
+      );
+    }
+
     const client = Twilio(
       process.env.TWILIO_ACCOUNT_SID!,
       process.env.TWILIO_AUTH_TOKEN!

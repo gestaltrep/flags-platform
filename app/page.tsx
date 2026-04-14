@@ -227,18 +227,26 @@ export default function Home() {
     <>
       <main className="home-desktop">
         <div className="home-desktop-grid">
-          <div className="home-poster-wrap">
-            <img
-              src="/poster-image.png"
-              className="home-poster-image"
-              alt="Event site"
-            />
+          <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
+            <img src="/poster-image.png" className="home-poster-image" alt="Event site" />
+            <div style={{
+              position: "absolute",
+              bottom: 10,
+              right: 12,
+              fontFamily: '"Courier New", monospace',
+              fontSize: 13,
+              letterSpacing: 1.5,
+              color: "#ffffff",
+              pointerEvents: "none",
+            }}>
+              RAVE_Initiation.html
+            </div>
           </div>
 
           <div className="home-desktop-info">
             <div className="home-date-desktop">May 30</div>
-            <div className="home-time-desktop">5 PM – 5 AM</div>
-            <div className="home-location-desktop">Immokalee, FL</div>
+            <div className="home-time-desktop">4:30 PM – 12 AM</div>
+            <div className="home-location-desktop">Port Charlotte, FL</div>
 
             <button
               className="cta-button"
@@ -291,17 +299,29 @@ export default function Home() {
         <div className="home-mobile-frame">
           <div className="home-mobile-text">
             <div className="home-date-mobile">MAY 30</div>
-            <div className="home-time-mobile">5 PM – 5 AM</div>
-            <div className="home-location-mobile">IMMOKALEE, FL</div>
+            <div className="home-time-mobile">4:30 PM – 12 AM</div>
+            <div className="home-location-mobile">PORT CHARLOTTE, FL</div>
           </div>
         </div>
 
-        <div className="home-mobile-poster-wrap">
+        <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
           <img
             src="/poster-image.png"
             className="home-mobile-poster"
             alt="Event site"
           />
+          <div style={{
+            position: "absolute",
+            bottom: 10,
+            right: 6,
+            left: "auto",
+            fontFamily: '"Courier New", monospace',
+            fontSize: 11,
+            letterSpacing: 1.5,
+            color: "#ffffff",
+          }}>
+            RAVE_Initiation.html
+          </div>
         </div>
 
         <div className="home-mobile-cta-wrap">

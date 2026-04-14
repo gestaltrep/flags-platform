@@ -14,8 +14,6 @@ function makeCode() {
 }
 
 export async function POST(req: Request) {
-  console.log("⚡ Stripe webhook received:", req.method);
-
   const rawBody = await req.text();
   const sig = req.headers.get("stripe-signature");
 
@@ -31,30 +29,19 @@ export async function POST(req: Request) {
     return Response.json({ error: "Webhook signature verification failed" }, { status: 400 });
   }
 
-  console.log("✅ Webhook verified, event type:", event.type);
-  console.log("WEBHOOK EVENT TYPE:", event.type);
-
   try {
     if (event.type !== "payment_intent.succeeded") {
       return new Response("ok");
     }
 
-    const session = event.data.object as Stripe.PaymentIntent;
+    const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-    console.log("WEBHOOK SESSION ID:", session.id);
-    console.log("WEBHOOK METADATA:", session.metadata);
-
-    const userId = session.metadata?.user_id;
-    const quantity = parseInt(session.metadata?.quantity || "1", 10);
-    const isVip = session.metadata?.is_vip === "true";
-    const eventId = session.metadata?.event_id || EVENT_ID;
-
-    console.log("PARSED VALUES:", {
-      userId,
-      quantity,
-      isVip,
-      eventId,
-    });
+    const userId = paymentIntent.metadata?.user_id;
+    const quantity = parseInt(paymentIntent.metadata?.quantity || "1", 10);
+    const isVip = paymentIntent.metadata?.is_vip === "true";
+    const eventId = paymentIntent.metadata?.event_id || EVENT_ID;
+    const promoCodeId = paymentIntent.metadata?.promo_code_id || "";
+    const discountApplied = Number(paymentIntent.metadata?.discount_applied ?? 0);
 
     if (!userId) {
       console.error("Missing user_id in metadata");
@@ -69,11 +56,10 @@ export async function POST(req: Request) {
     const { data: existingTransaction } = await supabase
       .from("wallet_transactions")
       .select("id")
-      .eq("stripe_session_id", session.id)
+      .eq("stripe_session_id", paymentIntent.id)
       .maybeSingle();
 
     if (existingTransaction) {
-      console.log("Webhook already processed for session:", session.id);
       return new Response("ok");
     }
 
@@ -84,7 +70,7 @@ export async function POST(req: Request) {
         event_id: eventId,
         amount: quantity,
         type: isVip ? "vip_registration" : "registration",
-        stripe_session_id: session.id,
+        stripe_session_id: paymentIntent.id,
       });
 
     if (walletError) {
@@ -103,18 +89,29 @@ export async function POST(req: Request) {
       claimed_at: null,
     }));
 
-    console.log("ROWS TO INSERT:", rows);
-
     const { error: ticketError } = await supabase
       .from("ticket_codes")
-      .insert(rows);
+      .insert(rows)
+      .select();
 
     if (ticketError) {
       console.error("Ticket insert error:", ticketError);
       return new Response("Ticket insert failed", { status: 500 });
     }
 
-    console.log("Webhook completed successfully");
+    if (promoCodeId) {
+      const { error: promoUseError } = await supabase.from("promo_code_uses").insert({
+        promo_code_id: promoCodeId,
+        user_id: userId,
+        ticket_quantity: quantity,
+        amount_paid: paymentIntent.amount,
+        amount_saved: discountApplied,
+        is_vip: isVip,
+      });
+      if (promoUseError) {
+        console.error("Promo use insert error:", promoUseError);
+      }
+    }
 
     return new Response("ok");
   } catch (err) {

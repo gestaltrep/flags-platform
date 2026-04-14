@@ -13,6 +13,8 @@ interface EmbeddedCheckoutModalProps {
   quantity: number;
   isMobile: boolean;
   onSuccess: () => void;
+  amount: number;
+  promoCode: string;
 }
 
 function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
@@ -31,29 +33,37 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
     setSubmitting(true);
     setError("");
 
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setError(submitError.message || "Payment failed.");
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        console.error("Stripe elements.submit error:", submitError);
+        setError(submitError.message || "Payment failed.");
+        setSubmitting(false);
+        return;
+      }
+
+      const { error: confirmError } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard?purchase=complete`,
+        },
+        redirect: "if_required",
+      });
+
+      if (confirmError) {
+        console.error("Stripe confirmPayment error:", confirmError);
+        setError(confirmError.message || "Payment failed.");
+        setSubmitting(false);
+        return;
+      }
+
+      onSucceeded();
+      onSuccess();
+    } catch (err) {
+      console.error("Unexpected payment error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setSubmitting(false);
-      return;
     }
-
-    const { error: confirmError } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/dashboard?purchase=complete`,
-      },
-      redirect: "if_required",
-    });
-
-    if (confirmError) {
-      setError(confirmError.message || "Payment failed.");
-      setSubmitting(false);
-      return;
-    }
-
-    onSucceeded();
-    onSuccess();
   }
 
   return (
@@ -61,14 +71,9 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
       <PaymentElement
         onReady={() => setReady(true)}
         options={{
-          layout: "tabs",
-          fields: {
-            billingDetails: {
-              email: "never",
-              phone: "never",
-              address: "never",
-              name: "never",
-            },
+          layout: {
+            type: "tabs",
+            defaultCollapsed: false,
           },
         }}
       />
@@ -101,7 +106,7 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
 }
 
 export default function EmbeddedCheckoutModal({
-  isOpen, onClose, type, quantity, isMobile, onSuccess,
+  isOpen, onClose, type, quantity, isMobile, onSuccess, amount, promoCode,
 }: EmbeddedCheckoutModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -117,7 +122,7 @@ export default function EmbeddedCheckoutModal({
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity }),
+        body: JSON.stringify({ quantity, promoCode: promoCode || undefined }),
       });
       const data = await res.json();
       if (!res.ok || !data.clientSecret) {
@@ -125,12 +130,13 @@ export default function EmbeddedCheckoutModal({
         return;
       }
       setClientSecret(data.clientSecret);
-    } catch {
+    } catch (err) {
+      console.error("Checkout request failed:", err);
       setError("Checkout request failed.");
     } finally {
       setLoading(false);
     }
-  }, [type, quantity]);
+  }, [type, quantity, promoCode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -171,12 +177,27 @@ export default function EmbeddedCheckoutModal({
           padding: isMobile ? "14px 18px" : "16px 24px",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div style={{
-            fontFamily: '"Courier New", monospace',
-            fontSize: isMobile ? 11 : 12, letterSpacing: 3,
-            color: "white", textTransform: "uppercase",
-          }}>
-            GENERATE {qtyLabel}
+          <div>
+            <div style={{
+              fontFamily: '"Courier New", monospace',
+              fontSize: isMobile ? 11 : 12, letterSpacing: 3,
+              color: "white", textTransform: "uppercase",
+            }}>
+              GENERATE {qtyLabel}
+            </div>
+            {amount > 0 && (
+              <div style={{
+                fontFamily: '"Courier New", monospace',
+                fontSize: isMobile ? 11 : 12,
+                letterSpacing: 2,
+                color: "#888888",
+                textAlign: "center",
+                marginTop: 4,
+                marginBottom: 0,
+              }}>
+                {`$${(amount / 100).toFixed(2)} USD`}
+              </div>
+            )}
           </div>
           <button onClick={onClose} style={{
             background: "none", border: "none", color: "#666",
