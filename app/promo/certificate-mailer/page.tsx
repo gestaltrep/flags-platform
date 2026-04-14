@@ -291,7 +291,7 @@ export default function CertificateMailerPage() {
                     objectFit: "contain",
                     filter: "invert(1)",
                     position: "relative",
-                    top: 5,
+                    top: -8,
                   }}
                 />
                 <img
@@ -303,6 +303,8 @@ export default function CertificateMailerPage() {
                     objectFit: "contain",
                     filter: "invert(1)",
                     marginLeft: -5,
+                    position: "relative",
+                    top: -8,
                   }}
                 />
               </div>
