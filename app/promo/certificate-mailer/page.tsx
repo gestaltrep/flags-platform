@@ -415,24 +415,21 @@ export default function CertificateMailerPage() {
             </div>
 
             {/* ── BARCODE ── */}
-            <div
-              style={{
-                position: "absolute",
-                left: 106,
-                top: 435,
-                width: 614,
-                textAlign: "center",
-              }}
-            >
+            <div style={{
+              position: "absolute",
+              left: 106,
+              top: 430,
+              width: 614,
+              textAlign: "center",
+            }}>
               <svg ref={barcodeRef} />
               <div style={{
                 position: "relative",
-                top: -24,
+                top: -20,
                 fontSize: 17,
                 fontWeight: 700,
                 color: "#333",
                 letterSpacing: "0.02em",
-                textAlign: "center",
                 fontFamily: '"Courier New", monospace',
               }}>
                 296-407-395-401-86-203-913
