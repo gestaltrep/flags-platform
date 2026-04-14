@@ -131,76 +131,80 @@ export default function InstagramPostPage() {
             justifyContent: "center",
           }}
         >
-          {/* Top section — logo as capstone */}
-          <div style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            paddingBottom: 10,
-          }}>
+          {/* Pyramid — centered vertically and horizontally */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 40,
+            }}
+          >
+            {/* Tier 1: Logo capstone (~200px visible) */}
             <img
               src="/logo.png"
               alt="Signo Research Group"
               style={{
-                width: 520,
-                height: 520,
+                width: 310,
+                height: 310,
                 objectFit: "contain",
               }}
             />
-          </div>
 
-          {/* May 30 — next tier of the triangle, wider than the logo */}
-          <div style={{
-            fontSize: 100,
-            fontWeight: 400,
-            lineHeight: 1,
-            letterSpacing: "0.02em",
-            textAlign: "center",
-          }}>
-            May  30
-          </div>
+            {/* Tier 2: May 30 (~350px wide) */}
+            <div
+              style={{
+                fontSize: 94,
+                fontWeight: 400,
+                lineHeight: 1,
+                letterSpacing: "0.02em",
+                textAlign: "center",
+              }}
+            >
+              May  30
+            </div>
 
-          {/* Bottom section */}
-          <div style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingTop: 0,
-            width: "100%",
-          }}>
-            <div style={{
-              fontSize: 64,
-              fontWeight: 500,
-              lineHeight: 1.15,
-              letterSpacing: "0.01em",
-              textAlign: "center",
-            }}>
+            {/* Tier 3: Time (~500px wide) */}
+            <div
+              style={{
+                fontSize: 55,
+                fontWeight: 500,
+                lineHeight: 1,
+                letterSpacing: "0.01em",
+                textAlign: "center",
+              }}
+            >
               4:30 PM - 12 AM
             </div>
-            <div style={{
-              fontSize: 64,
-              fontWeight: 500,
-              lineHeight: 1.15,
-              letterSpacing: "0.01em",
-              textAlign: "center",
-              marginBottom: 14,
-            }}>
+
+            {/* Tier 4: Place (~650px wide) */}
+            <div
+              style={{
+                fontSize: 59,
+                fontWeight: 500,
+                lineHeight: 1,
+                letterSpacing: "0.01em",
+                textAlign: "center",
+              }}
+            >
               Port Charlotte, FL
             </div>
-            {/* Bottom row: Signo logo | URL | Bass Tab logo */}
+
+            {/* Tier 5: Button (~800px wide) */}
             <div
               style={{
                 border: "3px solid #fff",
                 padding: "22px 60px",
+                fontSize: 38,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                textAlign: "center",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 24,
-                marginTop: 14,
               }}
             >
               <img
@@ -209,31 +213,21 @@ export default function InstagramPostPage() {
                 style={{
                   height: 52,
                   width: "auto",
-                  marginLeft: -30,
                   objectFit: "contain",
                   flexShrink: 0,
+                  marginLeft: -30,
                 }}
               />
-              <div
-                style={{
-                  fontSize: 34,
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textAlign: "center",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                SIGNORESEARCHGROUP.COM
-              </div>
+              <span>SIGNORESEARCHGROUP.COM</span>
               <img
                 src="/bass-tab-trimmed.png"
                 alt="Bass Tabernacle"
                 style={{
                   height: 52,
                   width: "auto",
-                  marginRight: -30,
                   objectFit: "contain",
                   flexShrink: 0,
+                  marginRight: -30,
                 }}
               />
             </div>
