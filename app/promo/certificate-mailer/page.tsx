@@ -181,25 +181,18 @@ export default function CertificateMailerPage() {
 
       if (bars.length === 0) return;
 
-      // Get the baseline — all bars should share the same bottom edge
-      const firstBar = bars[0];
-      const baseY = parseFloat(firstBar.getAttribute("y") || "0");
-      const fullHeight = parseFloat(firstBar.getAttribute("height") || "50");
-      const bottomEdge = baseY + fullHeight;
-
-      // Short bar height = 55% of full, guard bars stay at 100%
-      const shortHeight = fullHeight * 0.55;
-
       bars.forEach((bar, i) => {
-        // Guard bars: first 3, last 3, and middle cluster stay full height
-        const isGuard = i < 3 || i >= bars.length - 3 ||
-                         (i >= Math.floor(bars.length / 2) - 2 && i <= Math.floor(bars.length / 2) + 2);
+        const originalHeight = parseFloat(bar.getAttribute("height") || "50");
+        const originalY = parseFloat(bar.getAttribute("y") || "0");
+        const midY = originalY + originalHeight / 2;
 
-        const newHeight = isGuard ? fullHeight : shortHeight;
-        const newY = bottomEdge - newHeight;
+        // Vary height between 60% and 100% of original
+        const seed = ((i * 7 + 3) % 11) / 11;
+        const newHeight = originalHeight * (0.6 + seed * 0.4);
 
+        // Center the bar on the original midline
         bar.setAttribute("height", String(newHeight));
-        bar.setAttribute("y", String(newY));
+        bar.setAttribute("y", String(midY - newHeight / 2));
       });
     }, 100);
 
