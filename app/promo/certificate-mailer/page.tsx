@@ -62,9 +62,9 @@ function RoundedBox() {
       <div
         style={{
           position: "absolute",
-          left: 232,
+          left: 234,
           top: 83,
-          width: 331,
+          width: 327,
           height: 95,
           background: "#fff",
           zIndex: 1,
