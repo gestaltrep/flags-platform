@@ -281,16 +281,16 @@ export default function CertificateMailerPage() {
                 flexDirection: "column",
               }}
             >
-              <div style={{ position: "absolute", top: 26, left: 0, right: 0, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 0, height: 45, overflow: "visible" }}>
+              <div style={{ position: "absolute", top: 26, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 0, height: 45, overflow: "visible" }}>
                 <img
                   src="/logo-trimmed.png"
                   alt="Signo"
-                  style={{ height: 80, width: "auto", filter: "invert(1)", objectFit: "contain", position: "relative", top: 5 }}
+                  style={{ height: 55, width: "auto", filter: "invert(1)", objectFit: "contain", position: "relative", top: 5 }}
                 />
                 <img
                   src="/bass-tab-trimmed.png"
                   alt="Bass Tabernacle"
-                  style={{ height: 80, width: "auto", filter: "invert(1)", objectFit: "contain", marginLeft: -25 }}
+                  style={{ height: 55, width: "auto", filter: "invert(1)", objectFit: "contain", marginLeft: -25 }}
                 />
               </div>
               <div>THE WORLD</div>
