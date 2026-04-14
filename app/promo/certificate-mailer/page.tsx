@@ -85,7 +85,7 @@ function RoundedBox() {
         }}
       >
         <span style={{ WebkitTextStroke: "3px #222", color: "#fff", fontWeight: 700, marginRight: 5 }}>R</span>
-        <span style={{ WebkitTextStroke: "3px #222", color: "#fff", fontWeight: 700, marginRight: -5 }}>A</span>
+        <span style={{ WebkitTextStroke: "3px #222", color: "#fff", fontWeight: 700, marginRight: -8 }}>A</span>
         <span style={{ marginRight: 3, fontSize: 114 }}>V</span>
         <span style={{ fontSize: 114 }}>E</span>
       </div>
