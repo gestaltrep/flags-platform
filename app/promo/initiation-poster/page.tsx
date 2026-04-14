@@ -40,41 +40,47 @@ export default function InitiationPosterPage() {
       const poster = document.getElementById("promo-poster-export");
       if (!poster) return;
 
-      const wrapper = poster.parentElement as HTMLElement;
+      // Create an off-screen container that enforces exact poster dimensions
+      const offscreen = document.createElement("div");
+      offscreen.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: 0;
+        width: ${POSTER_WIDTH}px;
+        height: ${POSTER_HEIGHT}px;
+        overflow: visible;
+        z-index: -9999;
+      `;
 
-      // Save original styles
-      const savedWrapperTransform = wrapper.style.transform;
-      const savedWrapperPosition = wrapper.style.position;
-      const savedWrapperLeft = wrapper.style.left;
-      const savedWrapperTop = wrapper.style.top;
-      const savedWrapperZIndex = wrapper.style.zIndex;
-      const savedBodyOverflow = document.body.style.overflow;
+      // Deep-clone the poster so the original is untouched
+      const clone = poster.cloneNode(true) as HTMLElement;
+      clone.style.transform = "none";
+      clone.style.width = `${POSTER_WIDTH}px`;
+      clone.style.height = `${POSTER_HEIGHT}px`;
+      clone.removeAttribute("id");
 
-      // Pull the wrapper out of flex flow so the poster
-      // renders at true 1080×1770 even if viewport is narrower
-      wrapper.style.transform = "none";
-      wrapper.style.position = "fixed";
-      wrapper.style.left = "0px";
-      wrapper.style.top = "0px";
-      wrapper.style.zIndex = "-1";
-      document.body.style.overflow = "hidden";
+      offscreen.appendChild(clone);
+      document.body.appendChild(offscreen);
 
-      // Wait for reflow
-      await new Promise((r) => setTimeout(r, 400));
+      // Wait for images and reflow
+      await new Promise((r) => setTimeout(r, 800));
 
-      const canvas = await html2canvas(poster, {
+      const canvas = await html2canvas(clone, {
         scale: scaleFactor,
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#000000",
-        width: 1080,
-        height: 1770,
+        width: POSTER_WIDTH,
+        height: POSTER_HEIGHT,
         scrollX: 0,
         scrollY: 0,
         x: 0,
         y: 0,
         logging: false,
       });
+
+      // Clean up
+      document.body.removeChild(offscreen);
 
       // Trigger download
       const link = document.createElement("a");
@@ -83,14 +89,6 @@ export default function InitiationPosterPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Restore everything
-      wrapper.style.transform = savedWrapperTransform;
-      wrapper.style.position = savedWrapperPosition;
-      wrapper.style.left = savedWrapperLeft;
-      wrapper.style.top = savedWrapperTop;
-      wrapper.style.zIndex = savedWrapperZIndex;
-      document.body.style.overflow = savedBodyOverflow;
     } catch (err) {
       console.error("Export failed:", err);
     } finally {
