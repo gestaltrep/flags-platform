@@ -131,7 +131,7 @@ export default function InstagramPostPage() {
             justifyContent: "center",
           }}
         >
-          {/* Dollar bill pyramid composition */}
+          {/* Pyramid — centered vertically and horizontally */}
           <div
             style={{
               flex: 1,
@@ -139,107 +139,97 @@ export default function InstagramPostPage() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              gap: 40,
             }}
           >
-            {/* The Eye — Signo logo floating above the pyramid */}
+            {/* Tier 1: Logo capstone (~200px visible) */}
             <img
               src="/logo.png"
               alt="Signo Research Group"
               style={{
-                width: 200,
-                height: 200,
+                width: 310,
+                height: 310,
                 objectFit: "contain",
-                marginBottom: 60,
               }}
             />
 
-            {/* The Pyramid body — text tiers widening toward base */}
+            {/* Tier 2: May 30 (~350px wide) */}
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 20,
+                fontSize: 94,
+                fontWeight: 400,
+                lineHeight: 1,
+                letterSpacing: "0.02em",
+                textAlign: "center",
               }}
             >
-              {/* Apex tier */}
-              <div
-                style={{
-                  fontSize: 94,
-                  fontWeight: 400,
-                  lineHeight: 1,
-                  letterSpacing: "0.02em",
-                  textAlign: "center",
-                }}
-              >
-                May  30
-              </div>
+              May  30
+            </div>
 
-              {/* Middle tier */}
-              <div
-                style={{
-                  fontSize: 55,
-                  fontWeight: 500,
-                  lineHeight: 1,
-                  letterSpacing: "0.01em",
-                  textAlign: "center",
-                }}
-              >
-                4:30 PM - 12 AM
-              </div>
+            {/* Tier 3: Time (~500px wide) */}
+            <div
+              style={{
+                fontSize: 55,
+                fontWeight: 500,
+                lineHeight: 1,
+                letterSpacing: "0.01em",
+                textAlign: "center",
+              }}
+            >
+              4:30 PM - 12 AM
+            </div>
 
-              {/* Lower tier */}
-              <div
-                style={{
-                  fontSize: 59,
-                  fontWeight: 500,
-                  lineHeight: 1,
-                  letterSpacing: "0.01em",
-                  textAlign: "center",
-                }}
-              >
-                Port Charlotte, FL
-              </div>
+            {/* Tier 4: Place (~650px wide) */}
+            <div
+              style={{
+                fontSize: 59,
+                fontWeight: 500,
+                lineHeight: 1,
+                letterSpacing: "0.01em",
+                textAlign: "center",
+              }}
+            >
+              Port Charlotte, FL
+            </div>
 
-              {/* Base tier — widest */}
-              <div
+            {/* Tier 5: Button (~800px wide) */}
+            <div
+              style={{
+                border: "3px solid #fff",
+                padding: "22px 60px",
+                fontSize: 38,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 24,
+              }}
+            >
+              <img
+                src="/logo-trimmed.png"
+                alt="Signo"
                 style={{
-                  border: "3px solid #fff",
-                  padding: "22px 60px",
-                  fontSize: 38,
-                  fontWeight: 700,
-                  letterSpacing: "0.04em",
-                  textAlign: "center",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 24,
+                  height: 52,
+                  width: "auto",
+                  objectFit: "contain",
+                  flexShrink: 0,
+                  marginLeft: -30,
                 }}
-              >
-                <img
-                  src="/logo-trimmed.png"
-                  alt="Signo"
-                  style={{
-                    height: 52,
-                    width: "auto",
-                    objectFit: "contain",
-                    flexShrink: 0,
-                    marginLeft: -30,
-                  }}
-                />
-                <span>SIGNORESEARCHGROUP.COM</span>
-                <img
-                  src="/bass-tab-trimmed.png"
-                  alt="Bass Tabernacle"
-                  style={{
-                    height: 52,
-                    width: "auto",
-                    objectFit: "contain",
-                    flexShrink: 0,
-                    marginRight: -30,
-                  }}
-                />
-              </div>
+              />
+              <span>SIGNORESEARCHGROUP.COM</span>
+              <img
+                src="/bass-tab-trimmed.png"
+                alt="Bass Tabernacle"
+                style={{
+                  height: 52,
+                  width: "auto",
+                  objectFit: "contain",
+                  flexShrink: 0,
+                  marginRight: -30,
+                }}
+              />
             </div>
           </div>
         </div>
