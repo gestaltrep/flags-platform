@@ -192,10 +192,12 @@ export default function InstagramPostPage() {
             {/* Bottom row: Signo logo | URL | Bass Tab logo */}
             <div
               style={{
+                border: "3px solid #fff",
+                padding: "22px 60px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 32,
+                gap: 24,
                 marginTop: 14,
               }}
             >
@@ -203,7 +205,7 @@ export default function InstagramPostPage() {
                 src="/logo-trimmed.png"
                 alt="Signo"
                 style={{
-                  height: 64,
+                  height: 38,
                   width: "auto",
                   objectFit: "contain",
                   flexShrink: 0,
@@ -224,7 +226,7 @@ export default function InstagramPostPage() {
                 src="/bass-tab-trimmed.png"
                 alt="Bass Tabernacle"
                 style={{
-                  height: 64,
+                  height: 38,
                   width: "auto",
                   objectFit: "contain",
                   flexShrink: 0,
