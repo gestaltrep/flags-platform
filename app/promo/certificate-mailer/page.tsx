@@ -188,7 +188,7 @@ export default function CertificateMailerPage() {
 
         // Vary height between 60% and 100% of original
         const seed = ((i * 7 + 3) % 11) / 11;
-        const newHeight = originalHeight * (0.35 + seed * 0.65);
+        const newHeight = originalHeight * (0.6 + seed * 0.4);
 
         // Center the bar on the original midline
         bar.setAttribute("height", String(newHeight));
