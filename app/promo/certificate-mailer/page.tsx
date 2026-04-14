@@ -285,12 +285,12 @@ export default function CertificateMailerPage() {
                 <img
                   src="/logo-trimmed.png"
                   alt="Signo"
-                  style={{ width: 80, height: 80, filter: "invert(1)", objectFit: "contain", position: "relative", top: 5 }}
+                  style={{ height: 80, width: "auto", filter: "invert(1)", objectFit: "contain", position: "relative", top: 5 }}
                 />
                 <img
                   src="/bass-tab-trimmed.png"
                   alt="Bass Tabernacle"
-                  style={{ width: 80, height: 80, filter: "invert(1)", objectFit: "contain", marginLeft: -25 }}
+                  style={{ height: 80, width: "auto", filter: "invert(1)", objectFit: "contain", marginLeft: -25 }}
                 />
               </div>
               <div>THE WORLD</div>
