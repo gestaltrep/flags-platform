@@ -170,31 +170,36 @@ export default function CertificateMailerPage() {
   useEffect(() => {
     if (!barcodeRef.current) return;
 
-    // Wait a tick for JsBarcode to render
     const timer = setTimeout(() => {
       const rects = barcodeRef.current?.querySelectorAll("rect");
       if (!rects) return;
 
-      // Skip the first rect (background) — only modify bar rects
-      const bars = Array.from(rects).filter(r => r.getAttribute("fill") !== "#ffffff" && r.getAttribute("fill") !== "transparent");
+      const bars = Array.from(rects).filter(r => {
+        const fill = r.getAttribute("fill");
+        return fill !== "#ffffff" && fill !== "transparent" && fill !== "#fff";
+      });
 
-      // Seed a simple pseudo-random from index for consistent look
+      if (bars.length === 0) return;
+
+      // Get the baseline — all bars should share the same bottom edge
+      const firstBar = bars[0];
+      const baseY = parseFloat(firstBar.getAttribute("y") || "0");
+      const fullHeight = parseFloat(firstBar.getAttribute("height") || "50");
+      const bottomEdge = baseY + fullHeight;
+
+      // Short bar height = 55% of full, guard bars stay at 100%
+      const shortHeight = fullHeight * 0.55;
+
       bars.forEach((bar, i) => {
-        const originalHeight = parseFloat(bar.getAttribute("height") || "50");
-        const originalY = parseFloat(bar.getAttribute("y") || "0");
+        // Guard bars: first 3, last 3, and middle cluster stay full height
+        const isGuard = i < 3 || i >= bars.length - 3 ||
+                         (i >= Math.floor(bars.length / 2) - 2 && i <= Math.floor(bars.length / 2) + 2);
 
-        // Vary height between 60% and 100% of original
-        const seed = ((i * 7 + 3) % 11) / 11;
-        const newHeight = originalHeight * (0.6 + seed * 0.4);
-
-        // Alternate between growing from top and bottom
-        if (i % 3 === 0) {
-          // Grow from bottom — shift Y down
-          bar.setAttribute("y", String(originalY + (originalHeight - newHeight)));
-        }
-        // Otherwise keep original Y (grows from top)
+        const newHeight = isGuard ? fullHeight : shortHeight;
+        const newY = bottomEdge - newHeight;
 
         bar.setAttribute("height", String(newHeight));
+        bar.setAttribute("y", String(newY));
       });
     }, 100);
 
