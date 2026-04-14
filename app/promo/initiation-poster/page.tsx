@@ -1,8 +1,8 @@
 "use client";
 
-import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
+import domtoimage from "dom-to-image-more";
 
 const POSTER_WIDTH = 1080;
 const POSTER_HEIGHT = 1770;
@@ -40,57 +40,38 @@ export default function InitiationPosterPage() {
       const poster = document.getElementById("promo-poster-export");
       if (!poster) return;
 
-      // Create an off-screen container that enforces exact poster dimensions
-      const offscreen = document.createElement("div");
-      offscreen.style.cssText = `
-        position: fixed;
-        left: -9999px;
-        top: 0;
-        width: ${POSTER_WIDTH}px;
-        height: ${POSTER_HEIGHT}px;
-        overflow: visible;
-        z-index: -9999;
-      `;
+      const wrapper = poster.parentElement as HTMLElement;
+      const savedTransform = wrapper.style.transform;
 
-      // Deep-clone the poster so the original is untouched
-      const clone = poster.cloneNode(true) as HTMLElement;
-      clone.style.transform = "none";
-      clone.style.width = `${POSTER_WIDTH}px`;
-      clone.style.height = `${POSTER_HEIGHT}px`;
-      clone.removeAttribute("id");
+      // Strip preview scale — poster must be at true 1080x1770
+      wrapper.style.transform = "none";
+      await new Promise((r) => setTimeout(r, 400));
 
-      offscreen.appendChild(clone);
-      document.body.appendChild(offscreen);
+      const w = POSTER_WIDTH * scaleFactor;
+      const h = POSTER_HEIGHT * scaleFactor;
 
-      // Wait for images and reflow
-      await new Promise((r) => setTimeout(r, 800));
-
-      const canvas = await html2canvas(clone, {
-        scale: scaleFactor,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#000000",
-        width: POSTER_WIDTH,
-        height: POSTER_HEIGHT,
-        windowWidth: POSTER_WIDTH,
-        windowHeight: POSTER_HEIGHT,
-        scrollX: 0,
-        scrollY: 0,
-        x: 0,
-        y: 0,
-        logging: false,
+      const dataUrl = await domtoimage.toPng(poster, {
+        width: w,
+        height: h,
+        style: {
+          transform: `scale(${scaleFactor})`,
+          transformOrigin: "top left",
+          width: `${POSTER_WIDTH}px`,
+          height: `${POSTER_HEIGHT}px`,
+        },
+        quality: 1.0,
       });
-
-      // Clean up
-      document.body.removeChild(offscreen);
 
       // Trigger download
       const link = document.createElement("a");
-      link.download = `RAVE_Initiation_poster_${canvas.width}x${canvas.height}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.download = `RAVE_Initiation_poster_${w}x${h}.png`;
+      link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      // Restore preview
+      wrapper.style.transform = savedTransform;
     } catch (err) {
       console.error("Export failed:", err);
     } finally {
@@ -133,10 +114,10 @@ export default function InitiationPosterPage() {
           textTransform: "uppercase",
         }}
       >
-        {exporting ? "Rendering…" : "Export PNG (4×)"}
+        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
       </button>
 
-      {/* ── Preview wrapper (scale for viewport) ── */}
+      {/* ── Preview wrapper ── */}
       <div
         style={{
           transform: `scale(${scale})`,
@@ -168,7 +149,6 @@ export default function InitiationPosterPage() {
               boxSizing: "border-box",
             }}
           >
-            {/* plain <img> so html2canvas renders it correctly */}
             <img
               src="/header.png"
               alt="Signo Research Group"
@@ -193,7 +173,6 @@ export default function InitiationPosterPage() {
               background: "#000",
             }}
           >
-            {/* plain <img> — Next Image's srcset/wrapper breaks html2canvas */}
             <img
               src="/initiation-main.png"
               alt="Rave Initiation poster image"
