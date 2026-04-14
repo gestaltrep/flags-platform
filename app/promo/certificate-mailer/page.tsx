@@ -291,7 +291,7 @@ export default function CertificateMailerPage() {
                     objectFit: "contain",
                     filter: "invert(1)",
                     position: "relative",
-                    top: -20,
+                    top: -14,
                   }}
                 />
                 <img
@@ -304,11 +304,11 @@ export default function CertificateMailerPage() {
                     filter: "invert(1)",
                     marginLeft: 8,
                     position: "relative",
-                    top: -20,
+                    top: -14,
                   }}
                 />
               </div>
-              <div>THE WORLD</div>
+              <div style={{ marginTop: -6 }}>THE WORLD</div>
               <div>IS YOURS</div>
             </div>
 
