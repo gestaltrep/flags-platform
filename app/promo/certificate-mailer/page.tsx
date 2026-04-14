@@ -228,7 +228,7 @@ export default function CertificateMailerPage() {
               style={{
                 position: "absolute",
                 left: 34,
-                top: 28,
+                top: 48,
                 display: "flex",
                 alignItems: "center",
                 gap: 20,
@@ -244,7 +244,7 @@ export default function CertificateMailerPage() {
                   filter: "invert(1)",
                   objectFit: "contain",
                   position: "relative",
-                  top: 12,
+                  top: -30,
                 }}
               />
               <div
