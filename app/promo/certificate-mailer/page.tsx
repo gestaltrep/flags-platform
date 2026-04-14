@@ -173,6 +173,7 @@ export default function CertificateMailerPage() {
       const dataUrl = await domtoimage.toPng(mailer, {
         width: w,
         height: h,
+        bgcolor: "#ffffff",
         style: {
           transform: `scale(${scaleFactor})`,
           transformOrigin: "top left",
@@ -243,7 +244,7 @@ export default function CertificateMailerPage() {
       }}
     >
       <button
-        onClick={() => handleExport(4)}
+        onClick={() => handleExport(1)}
         disabled={exporting}
         style={{
           position: "fixed",
@@ -262,7 +263,7 @@ export default function CertificateMailerPage() {
           textTransform: "uppercase",
         }}
       >
-        {exporting ? "Rendering\u2026" : "Export PNG (4\u00d7)"}
+        {exporting ? "Rendering\u2026" : "Export PNG (1\u00d7)"}
       </button>
 
       <div
