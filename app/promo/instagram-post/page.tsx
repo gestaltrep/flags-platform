@@ -126,81 +126,77 @@ export default function InstagramPostPage() {
             fontFamily: '"Courier New", Courier, monospace',
             boxShadow: "0 18px 60px rgba(0,0,0,0.45)",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            {/* May 30 — above logo */}
-            <div
-              style={{
-                fontSize: 160,
-                fontWeight: 400,
-                lineHeight: 1,
-                letterSpacing: "0.02em",
-                textAlign: "center",
-                marginBottom: 10,
-              }}
-            >
+          {/* Top section — pushes down to center the logo */}
+          <div style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            paddingBottom: 10,
+          }}>
+            <div style={{
+              fontSize: 160,
+              fontWeight: 400,
+              lineHeight: 1,
+              letterSpacing: "0.02em",
+              textAlign: "center",
+            }}>
               May  30
             </div>
+          </div>
 
-            {/* Logo */}
-            <img
-              src="/logo.png"
-              alt="Signo Research Group"
-              style={{
-                width: 520,
-                height: 520,
-                objectFit: "contain",
-                marginBottom: 10,
-              }}
-            />
+          {/* Logo — centered */}
+          <img
+            src="/logo.png"
+            alt="Signo Research Group"
+            style={{
+              width: 520,
+              height: 520,
+              objectFit: "contain",
+            }}
+          />
 
-            {/* Time */}
-            <div
-              style={{
-                fontSize: 64,
-                fontWeight: 500,
-                lineHeight: 1.15,
-                letterSpacing: "0.01em",
-                textAlign: "center",
-              }}
-            >
+          {/* Bottom section — mirrors top to keep logo centered */}
+          <div style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            paddingTop: 10,
+          }}>
+            <div style={{
+              fontSize: 64,
+              fontWeight: 500,
+              lineHeight: 1.15,
+              letterSpacing: "0.01em",
+              textAlign: "center",
+            }}>
               4:30 PM - 12 AM
             </div>
-
-            {/* Place */}
-            <div
-              style={{
-                fontSize: 64,
-                fontWeight: 500,
-                lineHeight: 1.15,
-                letterSpacing: "0.01em",
-                textAlign: "center",
-                marginBottom: 14,
-              }}
-            >
+            <div style={{
+              fontSize: 64,
+              fontWeight: 500,
+              lineHeight: 1.15,
+              letterSpacing: "0.01em",
+              textAlign: "center",
+              marginBottom: 14,
+            }}>
               Port Charlotte, FL
             </div>
-
-            {/* URL button */}
-            <div
-              style={{
-                border: "3px solid #fff",
-                padding: "26px 80px",
-                fontSize: 38,
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                textAlign: "center",
-              }}
-            >
+            <div style={{
+              border: "3px solid #fff",
+              padding: "26px 80px",
+              fontSize: 38,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              textAlign: "center",
+            }}>
               signoresearchgroup.com
             </div>
           </div>
