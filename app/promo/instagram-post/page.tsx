@@ -131,7 +131,7 @@ export default function InstagramPostPage() {
             justifyContent: "center",
           }}
         >
-          {/* Equilateral triangle pyramid — centered on canvas */}
+          {/* Equilateral triangle — 5 tiers, centered on canvas */}
           <div
             style={{
               flex: 1,
@@ -139,16 +139,16 @@ export default function InstagramPostPage() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 42,
+              gap: 39,
             }}
           >
-            {/* Tier 1: Logo capstone (~160px visible) */}
+            {/* Tier 1: Logo capstone (160px wide) */}
             <img
-              src="/logo.png"
+              src="/logo-trimmed.png"
               alt="Signo Research Group"
               style={{
-                width: 246,
-                height: 246,
+                width: 160,
+                height: "auto",
                 objectFit: "contain",
               }}
             />
@@ -192,7 +192,7 @@ export default function InstagramPostPage() {
               Port Charlotte, FL
             </div>
 
-            {/* Tier 5: Button base (~800px wide) */}
+            {/* Tier 5: Button base (800px wide) */}
             <div
               style={{
                 border: "3px solid #fff",
