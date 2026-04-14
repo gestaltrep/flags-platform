@@ -341,7 +341,7 @@ export default function CertificateMailerPage() {
             >
               <svg ref={barcodeRef} />
               <div style={{
-                marginTop: 6,
+                marginTop: 0,
                 fontSize: 17,
                 color: "#333",
                 letterSpacing: "0.02em",
