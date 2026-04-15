@@ -90,7 +90,7 @@ export default function SwampBassProposalPage() {
             II. What We Ask of SwampBass
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            SwampBass shall provide and operate their own full-service bar at the event, including the following:
+            We are proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
