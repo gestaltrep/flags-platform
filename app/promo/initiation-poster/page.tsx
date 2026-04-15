@@ -244,7 +244,7 @@ export default function InitiationPosterPage() {
           <div
             style={{
               position: "relative",
-              height: 460,
+              height: 400,
               boxSizing: "border-box",
             }}
           >
@@ -252,9 +252,9 @@ export default function InitiationPosterPage() {
             <div
               style={{
                 position: "absolute",
-                left: 92,
-                top: 72,
-                width: 460,
+                left: 60,
+                top: 55,
+                width: 480,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -266,8 +266,8 @@ export default function InitiationPosterPage() {
             >
               <div
                 style={{
-                  width: 430,
-                  fontSize: 88,
+                  width: 480,
+                  fontSize: 78,
                   lineHeight: 1,
                   marginBottom: 28,
                   textAlign: "center",
@@ -278,11 +278,11 @@ export default function InitiationPosterPage() {
 
               <div
                 style={{
-                  width: 430,
+                  width: 480,
                   fontSize: 48,
                   fontWeight: 560,
                   lineHeight: 1.08,
-                  marginBottom: 24,
+                  marginBottom: 18,
                   whiteSpace: "nowrap",
                   textAlign: "center",
                 }}
@@ -292,7 +292,7 @@ export default function InitiationPosterPage() {
 
               <div
                 style={{
-                  width: 500,
+                  width: 480,
                   fontSize: 48,
                   fontWeight: 560,
                   lineHeight: 1.08,
@@ -308,9 +308,9 @@ export default function InitiationPosterPage() {
             <div
               style={{
                 position: "absolute",
-                right: 54,
-                top: 66,
-                width: 380,
+                right: 60,
+                top: 55,
+                width: 420,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -322,7 +322,7 @@ export default function InitiationPosterPage() {
             >
               <div
                 style={{
-                  fontSize: 35,
+                  fontSize: 38,
                   lineHeight: 1.18,
                   marginBottom: 16,
                 }}
