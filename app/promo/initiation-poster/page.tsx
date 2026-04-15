@@ -154,10 +154,10 @@ export default function InitiationPosterPage() {
             <img
               src="/header.png"
               alt="Signo Research Group"
-              width={1080}
+              width={1300}
               height={252}
               style={{
-                width: 1080,
+                width: 1300,
                 height: "auto",
                 objectFit: "contain",
                 display: "block",
