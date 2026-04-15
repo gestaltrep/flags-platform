@@ -267,7 +267,7 @@ export default function InitiationPosterPage() {
               <div
                 style={{
                   width: 480,
-                  fontSize: 96,
+                  fontSize: 78,
                   lineHeight: 1,
                   marginBottom: 28,
                   textAlign: "center",
@@ -279,7 +279,7 @@ export default function InitiationPosterPage() {
               <div
                 style={{
                   width: 480,
-                  fontSize: 54,
+                  fontSize: 48,
                   fontWeight: 560,
                   lineHeight: 1.08,
                   marginBottom: 18,
@@ -293,7 +293,7 @@ export default function InitiationPosterPage() {
               <div
                 style={{
                   width: 480,
-                  fontSize: 54,
+                  fontSize: 48,
                   fontWeight: 560,
                   lineHeight: 1.08,
                   whiteSpace: "nowrap",
