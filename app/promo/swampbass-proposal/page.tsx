@@ -1,21 +1,41 @@
 "use client";
 
 import { useRef } from "react";
+import { logoBase64, groupNameBase64 } from "./imageData";
 
 export default function SwampBassProposalPage() {
   const exportRef = useRef<HTMLDivElement>(null);
 
   async function handleExport() {
-    const html2canvas = (await import("html2canvas")).default;
-    const el = exportRef.current;
+    const el = document.getElementById("proposal-export");
     if (!el) return;
+
+    // Preload images to avoid CORS issues
+    const images = el.querySelectorAll("img");
+    await Promise.all(
+      Array.from(images).map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete) {
+              resolve();
+              return;
+            }
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          })
+      )
+    );
+
+    const html2canvas = (await import("html2canvas")).default;
     const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
+      allowTaint: true,
       backgroundColor: "#ffffff",
+      logging: false,
     });
     const link = document.createElement("a");
-    link.download = "swampbass-proposal.png";
+    link.download = "SwampBass_Proposal.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   }
@@ -58,8 +78,8 @@ export default function SwampBassProposalPage() {
           <div style={{ border: "3px solid #000", padding: "40px", height: "100%", boxSizing: "border-box" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <img src="/logo.png" alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
-            <img src="/group-name.png" alt="Signo Research Group" style={{ height: 44, width: "auto", filter: "invert(1)" }} />
+            <img src={logoBase64} alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
+            <img src={groupNameBase64} alt="Signo Research Group" style={{ height: 44, width: "auto", filter: "invert(1)" }} />
           </div>
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 16, marginBottom: 24 }} />
 
