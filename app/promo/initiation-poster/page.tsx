@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 
 const POSTER_WIDTH = 1080;
-const POSTER_HEIGHT = 1500;
+const POSTER_HEIGHT = 1540;
 
 export default function InitiationPosterPage() {
   const [scale, setScale] = useState(1);
@@ -144,7 +144,7 @@ export default function InitiationPosterPage() {
           {/* ── Header ── */}
           <div
             style={{
-              height: 300,
+              height: 340,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -154,10 +154,10 @@ export default function InitiationPosterPage() {
             <img
               src="/header.png"
               alt="Signo Research Group"
-              width={1400}
+              width={1080}
               height={252}
               style={{
-                width: 1400,
+                width: 1080,
                 height: "auto",
                 objectFit: "contain",
                 display: "block",
