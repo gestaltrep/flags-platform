@@ -64,8 +64,8 @@ export default function SwampBassProposalPage() {
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 16, marginBottom: 24 }} />
 
           {/* Title */}
-          <div style={{ fontSize: 18, fontWeight: "bold", letterSpacing: 3, marginBottom: 20, lineHeight: 1.5 }}>
-            SWAMPBASS INVOLVEMENT IN RAVE_Initiation.html
+          <div style={{ fontSize: 18, fontWeight: "bold", letterSpacing: 3, marginBottom: 20, lineHeight: 1.5, textTransform: "uppercase" }}>
+            SwampBass Involvement in RAVE_Initiation.html
           </div>
 
           {/* Section I */}
@@ -73,7 +73,7 @@ export default function SwampBassProposalPage() {
             I. What We Provide
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            Signo Research Group will rent and provide the following equipment at its own expense for the duration of the event:
+            Signo Research Group proposes to rent the following equipment from SwampBass for the duration of the event:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
@@ -90,15 +90,16 @@ export default function SwampBassProposalPage() {
             II. What We Ask of SwampBass
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            In addition to the above, we are asking SwampBass to contribute the following:
+            SwampBass shall provide and operate their own full-service bar at the event, including the following:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
-              "Provide and operate a full-service bar at the event, including all alcoholic and non-alcoholic beverage products",
-              "Handle all alcohol logistics, including purchasing from a licensed distributor, obtaining a valid liquor license, and securing liquor liability insurance for the duration of the event",
-              "Provide all necessary bar equipment, supplies, and staffing",
-              "Lend one (1) video wall for use during the event",
-              "Promote the event through SwampBass channels",
+              "All alcoholic and non-alcoholic beverage products, purchased from a licensed distributor",
+              "A valid liquor license permitting the sale of alcoholic beverages at the event venue",
+              "Liquor liability insurance covering the duration of the event",
+              "All necessary bar equipment, supplies, and staffing",
+              "One (1) video wall for use during the event",
+              "Promotion of the event through SwampBass channels",
             ].map((item, i) => (
               <div key={i} style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; {item}</div>
             ))}
@@ -108,15 +109,9 @@ export default function SwampBassProposalPage() {
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
             III. Revenue Arrangement
           </div>
-          <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            In exchange for the venue, audience, event production, and DJ equipment rental provided by Signo Research Group, SwampBass agrees to the following:
-          </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong></div>
-            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</div>
-          </div>
-          <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.
+            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</div>
           </div>
 
           {/* Closing Divider */}
@@ -128,13 +123,8 @@ export default function SwampBassProposalPage() {
           </div>
 
           {/* Signature Block */}
-          <div style={{ marginTop: 16 }}>
-            <div>Respectfully,</div>
-            <div style={{ marginTop: 36, width: 240, borderBottom: "2px solid rgba(0,0,0,0.5)" }} />
-            <div style={{ marginTop: 12, fontWeight: "bold" }}>Signo Research Group</div>
-            <div style={{ fontStyle: "italic", color: "rgba(0,0,0,0.45)", fontSize: 13, marginTop: 4 }}>
-              on behalf of Azazel_ver1.0.0 LLC
-            </div>
+          <div style={{ marginTop: 24, fontWeight: "bold" }}>
+            Signo Research Group
           </div>
         </div>
 
