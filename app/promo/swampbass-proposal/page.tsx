@@ -63,31 +63,6 @@ export default function SwampBassProposalPage() {
           </div>
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 24, marginBottom: 40 }} />
 
-          {/* Date */}
-          <div style={{ marginBottom: 28 }}>April 15, 2026</div>
-
-          {/* Recipient */}
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ fontWeight: "bold", fontSize: 16 }}>SwampBass</div>
-            <div style={{ fontStyle: "italic", color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
-              Via Electronic Delivery
-            </div>
-          </div>
-
-          {/* Subject */}
-          <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 2, textTransform: "uppercase" }}>
-            RE: Proposal for Bar Services &amp; Equipment Partnership
-          </div>
-          <div style={{ height: 3, backgroundColor: "#000", marginTop: 16, marginBottom: 36 }} />
-
-          {/* Salutation */}
-          <div style={{ marginBottom: 24 }}>Dear SwampBass,</div>
-
-          {/* Intro */}
-          <div style={{ marginBottom: 24 }}>
-            Signo Research Group is pleased to present this proposal for a collaborative partnership in connection with our upcoming event production. We believe this arrangement will be mutually beneficial and look forward to discussing the terms outlined herein.
-          </div>
-
           {/* Section I */}
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 36, marginBottom: 20, textTransform: "uppercase" }}>
             I. Scope of Services
