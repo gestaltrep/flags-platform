@@ -152,27 +152,30 @@ export default function InitiationPosterPage() {
               position: "relative",
             }}
           >
-            <img
-              src="/header.png"
-              alt="Signo Research Group"
-              width={1065}
-              height={252}
-              style={{
-                width: 1065,
-                height: "auto",
-                objectFit: "contain",
-                display: "block",
-              }}
-            />
+            {/* Logo overlay */}
             <img
               src="/logo-trimmed.png"
-              alt=""
+              alt="Signo"
               style={{
                 position: "absolute",
                 top: 58,
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: 87,
+                height: "auto",
+                objectFit: "contain",
+                pointerEvents: "none",
+              }}
+            />
+            {/* Header text */}
+            <img
+              src="/header-text-only.png"
+              alt="Signo Research Group"
+              style={{
+                position: "absolute",
+                left: 207,
+                top: 165,
+                width: 651,
                 height: "auto",
                 objectFit: "contain",
                 pointerEvents: "none",
