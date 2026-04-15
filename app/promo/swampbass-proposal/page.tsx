@@ -80,8 +80,8 @@ export default function SwampBassProposalPage() {
           <div style={{ border: "3px solid #000", padding: "40px", height: "100%", boxSizing: "border-box" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <img src={logoBase64} alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
-            <img src={groupNameBase64} alt="Signo Research Group" style={{ height: 44, width: "auto", filter: "invert(1)" }} />
+            <img src={logoBase64} alt="Signo logo" style={{ width: 80, height: 80, filter: "invert(1)" }} />
+            <img src={groupNameBase64} alt="Signo Research Group" style={{ height: 56, width: "auto", filter: "invert(1)" }} />
           </div>
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 16, marginBottom: 24 }} />
 
