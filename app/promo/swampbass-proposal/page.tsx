@@ -99,10 +99,10 @@ export default function SwampBassProposalPage() {
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
-              "All alcoholic and non-alcoholic beverage products, purchased from a licensed distributor",
-              "A valid liquor license permitting the sale of alcoholic beverages at the event venue",
-              "Liquor liability insurance covering the duration of the event",
-              "All necessary bar equipment, supplies, and staffing",
+              "All alcoholic and non-alcoholic beverage products for SwampBass's own individual bar, purchased from a licensed distributor",
+              "A valid liquor license for SwampBass's own individual bar, permitting the sale of alcoholic beverages at the event venue",
+              "Liquor liability insurance for SwampBass's own individual bar, covering the duration of the event",
+              "All necessary equipment, supplies, and staffing for SwampBass's own individual bar",
               "One (1) video wall for use during the event",
               "Promotion of the event through SwampBass channels",
             ].map((item, i) => (
