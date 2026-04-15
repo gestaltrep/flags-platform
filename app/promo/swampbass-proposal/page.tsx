@@ -11,16 +11,34 @@ export default function SwampBassProposalPage() {
     const el = document.getElementById("proposal-export");
     if (!el) return;
     try {
+      // Force the element to render at its full size regardless of viewport
+      const originalStyle = el.style.cssText;
+      el.style.position = "absolute";
+      el.style.left = "0";
+      el.style.top = "0";
+
+      // Wait for layout to settle
+      await new Promise((r) => setTimeout(r, 100));
+
       const dataUrl = await toPng(el, {
         pixelRatio: 2,
         backgroundColor: "#ffffff",
+        width: el.scrollWidth,
+        height: el.scrollHeight,
       });
+
+      // Restore original positioning
+      el.style.cssText = originalStyle;
+
       const link = document.createElement("a");
       link.download = "SwampBass_Proposal.png";
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error("Export failed:", err);
+      // Restore if error
+      const el2 = document.getElementById("proposal-export");
+      if (el2) el2.style.cssText = "";
     }
   }
 
