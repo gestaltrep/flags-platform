@@ -240,25 +240,25 @@ export default function InitiationPosterPage() {
             </div>
           </div>
 
-          {/* ── Info block ── */}
+          {/* ── Info block — outlined grid ── */}
           <div
             style={{
               position: "relative",
-              height: 400,
+              height: 460,
               boxSizing: "border-box",
+              border: "2px solid #fff",
+              display: "flex",
             }}
           >
-            {/* Left: date / time / location */}
+            {/* Left half — date / time / place */}
             <div
               style={{
-                position: "absolute",
-                left: 60,
-                top: 55,
-                width: 480,
+                flex: 1,
+                borderRight: "2px solid #fff",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "flex-start",
+                justifyContent: "center",
                 color: "#fff",
                 fontWeight: 400,
                 letterSpacing: "0.004em",
@@ -266,34 +266,29 @@ export default function InitiationPosterPage() {
             >
               <div
                 style={{
-                  width: 480,
-                  fontSize: 78,
+                  fontSize: 96,
                   lineHeight: 1,
-                  marginBottom: 28,
+                  marginBottom: 18,
                   textAlign: "center",
                 }}
               >
                 May 30
               </div>
-
               <div
                 style={{
-                  width: 480,
-                  fontSize: 48,
+                  fontSize: 54,
                   fontWeight: 560,
                   lineHeight: 1.08,
-                  marginBottom: 18,
+                  marginBottom: 14,
                   whiteSpace: "nowrap",
                   textAlign: "center",
                 }}
               >
                 4:30 PM - 12 AM
               </div>
-
               <div
                 style={{
-                  width: 480,
-                  fontSize: 48,
+                  fontSize: 54,
                   fontWeight: 560,
                   lineHeight: 1.08,
                   whiteSpace: "nowrap",
@@ -304,52 +299,63 @@ export default function InitiationPosterPage() {
               </div>
             </div>
 
-            {/* Right: CTA + QR */}
+            {/* Right half — CTA + QR stacked */}
             <div
               style={{
-                position: "absolute",
-                right: 60,
-                top: 55,
-                width: 420,
+                flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-                color: "#fff",
-                fontWeight: 560,
-                letterSpacing: "0.004em",
               }}
             >
+              {/* Upper: CTA text */}
               <div
                 style={{
-                  fontSize: 40,
-                  lineHeight: 1.18,
-                  marginBottom: 16,
+                  flex: 1,
+                  borderBottom: "2px solid #fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  color: "#fff",
+                  fontWeight: 560,
+                  letterSpacing: "0.004em",
                 }}
               >
-                To participate in
-                <br />
-                Signo research
-                <br />
-                and purchase
-                <br />
-                Entry Tokens:
+                <div style={{ fontSize: 42, lineHeight: 1.18 }}>
+                  To participate in
+                  <br />
+                  Signo research
+                  <br />
+                  and purchase
+                  <br />
+                  Entry Tokens:
+                </div>
               </div>
 
+              {/* Lower: QR code */}
               <div
                 style={{
-                  background: "#fff",
-                  padding: 8,
-                  lineHeight: 0,
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <QRCodeSVG
-                  value="https://signoresearchgroup.com"
-                  size={118}
-                  bgColor="#ffffff"
-                  fgColor="#000000"
-                  marginSize={0}
-                />
+                <div
+                  style={{
+                    background: "#fff",
+                    padding: 8,
+                    lineHeight: 0,
+                  }}
+                >
+                  <QRCodeSVG
+                    value="https://signoresearchgroup.com"
+                    size={118}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                    marginSize={0}
+                  />
+                </div>
               </div>
             </div>
           </div>
