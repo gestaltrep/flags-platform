@@ -48,14 +48,14 @@ export default function SwampBassProposalPage() {
             margin: "0 auto",
             backgroundColor: "#fff",
             color: "#000",
-            border: "3px solid #000",
-            padding: "40px",
+            padding: "24px",
             fontFamily: '"Courier New", monospace',
             fontSize: 14,
             lineHeight: 1.5,
             boxSizing: "border-box",
           }}
         >
+          <div style={{ border: "3px solid #000", padding: "40px", height: "100%", boxSizing: "border-box" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <img src="/logo.png" alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
@@ -130,6 +130,7 @@ export default function SwampBassProposalPage() {
           {/* Signature Block */}
           <div style={{ marginTop: 24, fontWeight: "bold" }}>
             Signo Research Group
+          </div>
           </div>
         </div>
 
