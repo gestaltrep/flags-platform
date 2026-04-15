@@ -58,13 +58,13 @@ export default function SwampBassProposalPage() {
         >
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <img src="/logo.png" alt="Signo logo" style={{ width: 50, height: 50, filter: "invert(1)" }} />
-            <img src="/group-name.png" alt="Signo Research Group" style={{ height: 34, width: "auto", filter: "invert(1)" }} />
+            <img src="/logo.png" alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
+            <img src="/group-name.png" alt="Signo Research Group" style={{ height: 44, width: "auto", filter: "invert(1)" }} />
           </div>
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 24, marginBottom: 40 }} />
 
           {/* Title */}
-          <div style={{ fontSize: 20, fontWeight: "bold", letterSpacing: 3, textTransform: "uppercase", marginBottom: 36, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 18, fontWeight: "bold", letterSpacing: 3, textTransform: "uppercase", marginBottom: 36, lineHeight: 1.5 }}>
             SwampBass Involvement in RAVE_Initiation.html
           </div>
 
