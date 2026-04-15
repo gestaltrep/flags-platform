@@ -158,7 +158,7 @@ export default function InitiationPosterPage() {
               alt="Signo"
               style={{
                 position: "absolute",
-                top: 42,
+                top: 51,
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: 104,
@@ -175,7 +175,7 @@ export default function InitiationPosterPage() {
                 position: "absolute",
                 left: "50%",
                 transform: "translateX(-50%)",
-                top: 170,
+                top: 179,
                 width: 781,
                 height: "auto",
                 objectFit: "contain",
