@@ -317,14 +317,13 @@ body::before {
   margin-top: 14px;
 }
 
-.home-help-text {
+.global-help-text {
   font-family: "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 1px;
   color: #ffffff;
   text-align: left;
-  margin-top: 16px;
-  padding-bottom: 8px;
+  padding: 12px 20px 24px 20px;
 }
 
 /* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */

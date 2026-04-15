@@ -14,7 +14,10 @@ export default function RootLayout({
 
         <Navbar />
 
-        {children}
+        <div style={{ minHeight: 'calc(100vh - 80px)' }}>
+          {children}
+        </div>
+        <div className="global-help-text">HELP: support.signoresearchgroup@gmail.com</div>
 
       </body>
     </html>
