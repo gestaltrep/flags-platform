@@ -65,7 +65,7 @@ export default function SwampBassProposalPage() {
 
           {/* Title */}
           <div style={{ fontSize: 20, fontWeight: "bold", letterSpacing: 3, textTransform: "uppercase", marginBottom: 36, lineHeight: 1.5 }}>
-            Proposal for SwampBass Involvement in RAVE_Initiation.html
+            SwampBass Involvement in RAVE_Initiation.html
           </div>
 
           {/* Section I */}
