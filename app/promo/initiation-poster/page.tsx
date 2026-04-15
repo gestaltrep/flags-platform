@@ -173,7 +173,8 @@ export default function InitiationPosterPage() {
               alt="Signo Research Group"
               style={{
                 position: "absolute",
-                left: 207,
+                left: "50%",
+                transform: "translateX(-50%)",
                 top: 165,
                 width: 651,
                 height: "auto",
