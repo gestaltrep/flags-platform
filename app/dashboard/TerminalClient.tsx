@@ -588,6 +588,7 @@ export default function TerminalClient() {
     textTransform: "uppercase",
     whiteSpace: "nowrap",
     marginTop: 12,
+    display: "none",
   };
 
   const cancelTriggerStyle: React.CSSProperties = {
@@ -1091,7 +1092,6 @@ export default function TerminalClient() {
                         {ticket.can_send && !isUsed && ticket.id && (
                           <button
                             style={sendTriggerStyle}
-                            onClick={() => openSendModal(ticket)}
                           >
                             SEND TOKEN
                           </button>
@@ -1281,7 +1281,6 @@ export default function TerminalClient() {
                         {ticket.can_send && !isUsed && ticket.id && (
                           <button
                             style={sendTriggerStyle}
-                            onClick={() => openSendModal(ticket)}
                           >
                             SEND TOKEN
                           </button>
