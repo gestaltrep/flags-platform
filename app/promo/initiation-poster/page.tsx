@@ -273,7 +273,7 @@ export default function InitiationPosterPage() {
                   lineHeight: 1,
                   marginBottom: 18,
                   textAlign: "center",
-                  letterSpacing: "0.42em",
+                  letterSpacing: "0.004em",
                 }}
               >
                 May 30
@@ -286,7 +286,7 @@ export default function InitiationPosterPage() {
                   marginBottom: 14,
                   whiteSpace: "nowrap",
                   textAlign: "center",
-                  letterSpacing: "0.01em",
+                  letterSpacing: "0.004em",
                 }}
               >
                 4:30 PM - 12 AM
@@ -298,7 +298,7 @@ export default function InitiationPosterPage() {
                   lineHeight: 1.08,
                   whiteSpace: "nowrap",
                   textAlign: "center",
-                  letterSpacing: "-0.01em",
+                  letterSpacing: "0.004em",
                 }}
               >
                 Port Charlotte, FL
@@ -342,48 +342,63 @@ export default function InitiationPosterPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  overflow: "hidden",
                 }}
               >
                 <div style={{ position: "relative" }}>
                   {/* Vortex rings */}
                   <div style={{
                     position: "absolute",
-                    inset: -40,
+                    inset: -160,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.04)",
+                    transform: "rotate(-15deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -140,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                    transform: "rotate(-30deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -120,
                     borderRadius: "50%",
                     border: "1px solid rgba(255,255,255,0.06)",
                     transform: "rotate(0deg)",
                   }} />
                   <div style={{
                     position: "absolute",
-                    inset: -32,
+                    inset: -100,
                     borderRadius: "50%",
                     border: "1px solid rgba(255,255,255,0.09)",
                     transform: "rotate(15deg)",
                   }} />
                   <div style={{
                     position: "absolute",
-                    inset: -24,
+                    inset: -80,
                     borderRadius: "50%",
                     border: "1px solid rgba(255,255,255,0.12)",
                     transform: "rotate(30deg)",
                   }} />
                   <div style={{
                     position: "absolute",
-                    inset: -18,
+                    inset: -60,
                     borderRadius: "50%",
                     border: "1px solid rgba(255,255,255,0.15)",
                     transform: "rotate(45deg)",
                   }} />
                   <div style={{
                     position: "absolute",
-                    inset: -12,
+                    inset: -40,
                     borderRadius: "50%",
                     border: "1px solid rgba(255,255,255,0.18)",
                     transform: "rotate(60deg)",
                   }} />
                   <div style={{
                     position: "absolute",
-                    inset: -7,
+                    inset: -20,
                     borderRadius: "50%",
                     border: "1px solid rgba(255,255,255,0.22)",
                     transform: "rotate(75deg)",
