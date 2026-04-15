@@ -63,6 +63,11 @@ export default function SwampBassProposalPage() {
           </div>
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 24, marginBottom: 40 }} />
 
+          {/* Title */}
+          <div style={{ fontSize: 20, fontWeight: "bold", letterSpacing: 3, textTransform: "uppercase", marginBottom: 36, lineHeight: 1.5 }}>
+            Proposal for SwampBass Involvement in RAVE_Initiation.html
+          </div>
+
           {/* Section I */}
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 36, marginBottom: 20, textTransform: "uppercase" }}>
             I. Scope of Services
