@@ -16,8 +16,6 @@ export default function RootLayout({
 
         {children}
 
-        <div className="home-help-text">HELP: support.signoresearchgroup@gmail.com</div>
-
       </body>
     </html>
   );

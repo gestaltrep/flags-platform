@@ -32,6 +32,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
+  padding-bottom: 48px;
 }
 
 img,
@@ -315,15 +316,13 @@ body::before {
 }
 
 .home-help-text {
-  position: fixed;
-  bottom: -18px;
-  left: 20px;
   font-family: "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 1px;
   color: #ffffff;
-  z-index: 10;
-  pointer-events: none;
+  text-align: left;
+  margin-top: 16px;
+  padding-bottom: 8px;
 }
 
 /* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */

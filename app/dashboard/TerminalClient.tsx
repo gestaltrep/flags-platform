@@ -1360,6 +1360,8 @@ export default function TerminalClient() {
         </div>
       )}
 
+      <div className="home-help-text">HELP: support.signoresearchgroup@gmail.com</div>
+
       {purchaseOpen && (
         <div className="signup-overlay">
           <div
