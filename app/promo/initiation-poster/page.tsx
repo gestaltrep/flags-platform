@@ -149,6 +149,7 @@ export default function InitiationPosterPage() {
               alignItems: "center",
               justifyContent: "center",
               boxSizing: "border-box",
+              position: "relative",
             }}
           >
             <img
@@ -161,6 +162,20 @@ export default function InitiationPosterPage() {
                 height: "auto",
                 objectFit: "contain",
                 display: "block",
+              }}
+            />
+            <img
+              src="/logo-trimmed.png"
+              alt=""
+              style={{
+                position: "absolute",
+                top: 58,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 87,
+                height: "auto",
+                objectFit: "contain",
+                pointerEvents: "none",
               }}
             />
           </div>
