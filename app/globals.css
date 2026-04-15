@@ -314,6 +314,15 @@ body::before {
   margin-top: 14px;
 }
 
+.home-help-text {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: left;
+  margin-top: 10px;
+}
+
 /* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */
 /* Leaves larger desktops untouched */
 
