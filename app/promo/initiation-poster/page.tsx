@@ -322,7 +322,7 @@ export default function InitiationPosterPage() {
             >
               <div
                 style={{
-                  fontSize: 40,
+                  fontSize: 42,
                   lineHeight: 1.18,
                   marginBottom: 16,
                 }}
