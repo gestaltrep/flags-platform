@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 
 const POSTER_WIDTH = 1080;
-const POSTER_HEIGHT = 1600;
+const POSTER_HEIGHT = 1500;
 
 export default function InitiationPosterPage() {
   const [scale, setScale] = useState(1);
@@ -346,68 +346,20 @@ export default function InitiationPosterPage() {
                   overflow: "hidden",
                 }}
               >
-                {/* Geometric wireframe vortex */}
-                <svg
-                  viewBox="0 0 540 180"
+                <img
+                  src="/7.png"
+                  alt=""
                   style={{
                     position: "absolute",
                     inset: 0,
                     width: "100%",
                     height: "100%",
-                    opacity: 0.12,
+                    objectFit: "cover",
+                    objectPosition: "center center",
+                    opacity: 0.15,
+                    zIndex: 0,
                   }}
-                  preserveAspectRatio="xMidYMid slice"
-                >
-                  {Array.from({ length: 36 }, (_, i) => {
-                    const angle = (i * 10) * Math.PI / 180;
-                    const cx = 270, cy = 90;
-                    const r1 = 20, r2 = 300;
-                    const x1 = cx + r1 * Math.cos(angle);
-                    const y1 = cy + r1 * Math.sin(angle);
-                    const x2 = cx + r2 * Math.cos(angle);
-                    const y2 = cy + r2 * Math.sin(angle);
-                    return (
-                      <line key={`r${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fff" strokeWidth="0.5" />
-                    );
-                  })}
-                  {Array.from({ length: 36 }, (_, i) => {
-                    const angle = (i * 10 + 5) * Math.PI / 180;
-                    const cx = 270, cy = 90;
-                    const r1 = 40, r2 = 280;
-                    const x1 = cx + r1 * Math.cos(angle + 0.3);
-                    const y1 = cy + r1 * Math.sin(angle + 0.3);
-                    const x2 = cx + r2 * Math.cos(angle - 0.3);
-                    const y2 = cy + r2 * Math.sin(angle - 0.3);
-                    return (
-                      <line key={`t${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fff" strokeWidth="0.3" />
-                    );
-                  })}
-                  {[30, 60, 90, 130, 180].map((r, ri) => (
-                    <ellipse key={`e${ri}`} cx={270} cy={90} rx={r} ry={r * 0.6}
-                      fill="none" stroke="#fff" strokeWidth="0.4"
-                      transform={`rotate(${ri * 15}, 270, 90)`}
-                    />
-                  ))}
-                  {[30, 60, 90, 130, 180].map((r, ri) => (
-                    <ellipse key={`e2${ri}`} cx={270} cy={90} rx={r * 0.6} ry={r}
-                      fill="none" stroke="#fff" strokeWidth="0.3"
-                      transform={`rotate(${ri * -12}, 270, 90)`}
-                    />
-                  ))}
-                  {Array.from({ length: 24 }, (_, i) => {
-                    const a1 = (i * 15) * Math.PI / 180;
-                    const a2 = ((i + 12) * 15) * Math.PI / 180;
-                    const r = 120;
-                    const cx = 270, cy = 90;
-                    return (
-                      <line key={`c${i}`}
-                        x1={cx + r * Math.cos(a1)} y1={cy + r * Math.sin(a1)}
-                        x2={cx + r * Math.cos(a2)} y2={cy + r * Math.sin(a2)}
-                        stroke="#fff" strokeWidth="0.3"
-                      />
-                    );
-                  })}
-                </svg>
+                />
                 <div style={{ position: "relative", zIndex: 2 }}>
                   {/* QR code */}
                   <div style={{
