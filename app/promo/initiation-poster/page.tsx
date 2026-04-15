@@ -173,6 +173,7 @@ export default function InitiationPosterPage() {
               height: 840,
               overflow: "hidden",
               background: "#000",
+              borderTop: "2px solid #fff",
             }}
           >
             <img
@@ -272,6 +273,7 @@ export default function InitiationPosterPage() {
                   lineHeight: 1,
                   marginBottom: 18,
                   textAlign: "center",
+                  letterSpacing: "0.42em",
                 }}
               >
                 May 30
@@ -284,6 +286,7 @@ export default function InitiationPosterPage() {
                   marginBottom: 14,
                   whiteSpace: "nowrap",
                   textAlign: "center",
+                  letterSpacing: "0.01em",
                 }}
               >
                 4:30 PM - 12 AM
@@ -295,6 +298,7 @@ export default function InitiationPosterPage() {
                   lineHeight: 1.08,
                   whiteSpace: "nowrap",
                   textAlign: "center",
+                  letterSpacing: "-0.01em",
                 }}
               >
                 Port Charlotte, FL
@@ -323,14 +327,11 @@ export default function InitiationPosterPage() {
                   letterSpacing: "0.004em",
                 }}
               >
-                <div style={{ fontSize: 32, lineHeight: 1.18 }}>
-                  To participate in
-                  <br />
-                  Signo research
-                  <br />
-                  and purchase
-                  <br />
-                  Entry Tokens
+                <div style={{ fontSize: 32, lineHeight: 1.18, textAlign: "center" }}>
+                  <div style={{ letterSpacing: "0.06em" }}>To participate in</div>
+                  <div style={{ letterSpacing: "0.04em" }}>Signo research</div>
+                  <div style={{ letterSpacing: "0.08em" }}>and purchase</div>
+                  <div style={{ letterSpacing: "0.04em" }}>Entry Tokens</div>
                 </div>
               </div>
 
@@ -343,20 +344,66 @@ export default function InitiationPosterPage() {
                   justifyContent: "center",
                 }}
               >
-                <div
-                  style={{
+                <div style={{ position: "relative" }}>
+                  {/* Vortex rings */}
+                  <div style={{
+                    position: "absolute",
+                    inset: -40,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    transform: "rotate(0deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -32,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    transform: "rotate(15deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -24,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    transform: "rotate(30deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -18,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    transform: "rotate(45deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -12,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    transform: "rotate(60deg)",
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    inset: -7,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255,255,255,0.22)",
+                    transform: "rotate(75deg)",
+                  }} />
+                  {/* QR code */}
+                  <div style={{
                     background: "#fff",
                     padding: 8,
                     lineHeight: 0,
-                  }}
-                >
-                  <QRCodeSVG
-                    value="https://signoresearchgroup.com"
-                    size={118}
-                    bgColor="#ffffff"
-                    fgColor="#000000"
-                    marginSize={0}
-                  />
+                    position: "relative",
+                    zIndex: 1,
+                  }}>
+                    <QRCodeSVG
+                      value="https://signoresearchgroup.com"
+                      size={118}
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                      marginSize={0}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
