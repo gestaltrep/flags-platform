@@ -13,6 +13,7 @@
     "@stripe/stripe-js": "^9.0.1",
     "@supabase/supabase-js": "^2.98.0",
     "dom-to-image-more": "^3.7.2",
+    "html2canvas": "^1.4.1",
     "jsbarcode": "^3.12.3",
     "next": "16.1.6",
     "qrcode.react": "^4.2.0",

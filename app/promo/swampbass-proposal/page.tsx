@@ -1,6 +1,25 @@
 "use client";
 
+import { useRef } from "react";
+
 export default function SwampBassProposalPage() {
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  async function handleExport() {
+    const html2canvas = (await import("html2canvas")).default;
+    const el = exportRef.current;
+    if (!el) return;
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
+    const link = document.createElement("a");
+    link.download = "swampbass-proposal.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
+
   return (
     <>
       <style>{`
@@ -10,22 +29,26 @@ export default function SwampBassProposalPage() {
             margin: 0;
           }
           body {
-            background: #000 !important;
+            background: #fff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
         }
       `}</style>
 
-      <div style={{ background: "#000", minHeight: "100vh", padding: "40px 0" }}>
+      <div style={{ background: "#1a1a1a", minHeight: "100vh", padding: "40px 0" }}>
         <div
+          ref={exportRef}
+          id="proposal-export"
           style={{
             width: "8.5in",
-            minHeight: "14in",
+            height: "14in",
+            overflow: "hidden",
+            position: "relative",
             margin: "0 auto",
-            backgroundColor: "#000",
-            color: "#fff",
-            border: "3px solid #fff",
+            backgroundColor: "#fff",
+            color: "#000",
+            border: "3px solid #000",
             padding: "60px",
             fontFamily: '"Courier New", monospace',
             fontSize: 14,
@@ -35,10 +58,10 @@ export default function SwampBassProposalPage() {
         >
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <img src="/logo.png" alt="Signo logo" style={{ width: 50, height: 50 }} />
-            <img src="/group-name.png" alt="Signo Research Group" style={{ height: 34, width: "auto" }} />
+            <img src="/logo.png" alt="Signo logo" style={{ width: 50, height: 50, filter: "invert(1)" }} />
+            <img src="/group-name.png" alt="Signo Research Group" style={{ height: 34, width: "auto", filter: "invert(1)" }} />
           </div>
-          <div style={{ height: 3, backgroundColor: "rgba(255,255,255,0.3)", marginTop: 24, marginBottom: 40 }} />
+          <div style={{ height: 3, backgroundColor: "#000", marginTop: 24, marginBottom: 40 }} />
 
           {/* Date */}
           <div style={{ marginBottom: 28 }}>April 15, 2026</div>
@@ -46,7 +69,7 @@ export default function SwampBassProposalPage() {
           {/* Recipient */}
           <div style={{ marginBottom: 36 }}>
             <div style={{ fontWeight: "bold", fontSize: 16 }}>SwampBass</div>
-            <div style={{ fontStyle: "italic", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+            <div style={{ fontStyle: "italic", color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
               Via Electronic Delivery
             </div>
           </div>
@@ -55,7 +78,7 @@ export default function SwampBassProposalPage() {
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 2, textTransform: "uppercase" }}>
             RE: Proposal for Bar Services &amp; Equipment Partnership
           </div>
-          <div style={{ height: 3, backgroundColor: "rgba(255,255,255,0.3)", marginTop: 16, marginBottom: 36 }} />
+          <div style={{ height: 3, backgroundColor: "#000", marginTop: 16, marginBottom: 36 }} />
 
           {/* Salutation */}
           <div style={{ marginBottom: 24 }}>Dear SwampBass,</div>
@@ -128,7 +151,7 @@ export default function SwampBassProposalPage() {
           </div>
 
           {/* Closing Divider */}
-          <div style={{ height: 3, backgroundColor: "rgba(255,255,255,0.3)", marginTop: 40, marginBottom: 32 }} />
+          <div style={{ height: 3, backgroundColor: "#000", marginTop: 40, marginBottom: 32 }} />
 
           {/* Closing Note */}
           <div style={{ marginBottom: 24 }}>
@@ -138,13 +161,35 @@ export default function SwampBassProposalPage() {
           {/* Signature Block */}
           <div style={{ marginTop: 48 }}>
             <div>Respectfully,</div>
-            <div style={{ marginTop: 60, width: 240, borderBottom: "2px solid rgba(255,255,255,0.5)" }} />
+            <div style={{ marginTop: 60, width: 240, borderBottom: "2px solid rgba(0,0,0,0.5)" }} />
             <div style={{ marginTop: 12, fontWeight: "bold" }}>Signo Research Group</div>
-            <div style={{ fontStyle: "italic", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+            <div style={{ fontStyle: "italic", color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
               on behalf of Azazel_ver1.0.0 LLC
             </div>
           </div>
         </div>
+
+        {/* Export button */}
+        <button
+          onClick={handleExport}
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            fontFamily: '"Courier New", monospace',
+            fontSize: 12,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            background: "#fff",
+            color: "#000",
+            border: "2px solid #fff",
+            padding: "10px 20px",
+            cursor: "pointer",
+            zIndex: 9999,
+          }}
+        >
+          EXPORT PNG
+        </button>
       </div>
     </>
   );
