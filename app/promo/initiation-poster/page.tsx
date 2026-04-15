@@ -358,6 +358,7 @@ export default function InitiationPosterPage() {
                     objectPosition: "center center",
                     opacity: 0.15,
                     zIndex: 0,
+                    transform: "rotate(180deg)",
                   }}
                 />
                 <div style={{ position: "relative", zIndex: 2 }}>
