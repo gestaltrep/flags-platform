@@ -169,7 +169,7 @@ export default function InitiationPosterPage() {
               alt=""
               style={{
                 position: "absolute",
-                top: 68,
+                top: 82,
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: 130,
