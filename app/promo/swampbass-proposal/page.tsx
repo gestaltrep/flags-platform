@@ -70,19 +70,16 @@ export default function SwampBassProposalPage() {
 
           {/* Section I */}
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            I. Scope of Services
+            I. What We Provide
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            SwampBass shall provide and operate a full-service bar at the event, including but not limited to the following:
+            Signo Research Group will rent and provide the following equipment at its own expense for the duration of the event:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
-              "All alcoholic and non-alcoholic beverage products",
-              "A valid liquor license permitting the sale of alcoholic beverages at the event venue",
-              "Liquor liability insurance covering the duration of the event",
-              "All necessary bar equipment, supplies, staffing, and operational infrastructure",
-              "One (1) video wall, to be provided and operated by SwampBass",
-              "One (1) DJ table, to be provided by SwampBass",
+              "Four (4) Pioneer CDJ-2000NXS2 multi-players",
+              "One (1) Pioneer DJM-900NXS2 mixer",
+              "One (1) DJ table",
             ].map((item, i) => (
               <div key={i} style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; {item}</div>
             ))}
@@ -90,44 +87,36 @@ export default function SwampBassProposalPage() {
 
           {/* Section II */}
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            II. Equipment Provided by Signo Research Group
+            II. What We Ask of SwampBass
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            As part of this partnership, Signo Research Group shall rent and provide the following DJ equipment at its own expense:
+            In addition to the above, we are asking SwampBass to contribute the following:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
-              "Four (4) Pioneer CDJ-2000NXS2 multi-players",
-              "One (1) Pioneer DJM-900NXS2 mixer",
+              "Provide and operate a full-service bar at the event, including all alcoholic and non-alcoholic beverage products",
+              "Handle all alcohol logistics, including purchasing from a licensed distributor, obtaining a valid liquor license, and securing liquor liability insurance for the duration of the event",
+              "Provide all necessary bar equipment, supplies, and staffing",
+              "Lend one (1) video wall for use during the event",
+              "Promote the event through SwampBass channels",
             ].map((item, i) => (
               <div key={i} style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; {item}</div>
             ))}
           </div>
-          <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            This equipment will be rented by Signo Research Group and made available for the duration of the event at no cost to SwampBass.
-          </div>
 
           {/* Section III */}
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            III. Revenue Sharing
+            III. Revenue Arrangement
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            In consideration of the event venue, production, audience, and DJ equipment provided by Signo Research Group, SwampBass agrees to the following revenue arrangement:
+            In exchange for the venue, audience, event production, and DJ equipment rental provided by Signo Research Group, SwampBass agrees to the following:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong></div>
-            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass shall retain the remaining eighty-five percent (85%) of gross bar revenue</div>
+            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</div>
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
             Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.
-          </div>
-
-          {/* Section IV */}
-          <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            IV. General Terms
-          </div>
-          <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            This proposal is intended as a summary of the principal terms of the proposed arrangement. Upon mutual agreement, a formal contract incorporating these and other customary terms will be prepared and executed by both parties.
           </div>
 
           {/* Closing Divider */}
