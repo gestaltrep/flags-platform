@@ -137,6 +137,8 @@ export default function InitiationPosterPage() {
             position: "relative",
             fontFamily: '"Courier New", Courier, monospace',
             boxShadow: "0 18px 60px rgba(0,0,0,0.45)",
+            border: "2px solid #fff",
+            boxSizing: "border-box",
           }}
         >
           {/* ── Header ── */}
@@ -246,7 +248,7 @@ export default function InitiationPosterPage() {
               position: "relative",
               height: 460,
               boxSizing: "border-box",
-              border: "2px solid #fff",
+              borderTop: "2px solid #fff",
               display: "flex",
             }}
           >
@@ -266,7 +268,7 @@ export default function InitiationPosterPage() {
             >
               <div
                 style={{
-                  fontSize: 96,
+                  fontSize: 76,
                   lineHeight: 1,
                   marginBottom: 18,
                   textAlign: "center",
@@ -276,7 +278,7 @@ export default function InitiationPosterPage() {
               </div>
               <div
                 style={{
-                  fontSize: 54,
+                  fontSize: 42,
                   fontWeight: 560,
                   lineHeight: 1.08,
                   marginBottom: 14,
@@ -288,7 +290,7 @@ export default function InitiationPosterPage() {
               </div>
               <div
                 style={{
-                  fontSize: 54,
+                  fontSize: 42,
                   fontWeight: 560,
                   lineHeight: 1.08,
                   whiteSpace: "nowrap",
@@ -321,14 +323,14 @@ export default function InitiationPosterPage() {
                   letterSpacing: "0.004em",
                 }}
               >
-                <div style={{ fontSize: 42, lineHeight: 1.18 }}>
+                <div style={{ fontSize: 32, lineHeight: 1.18 }}>
                   To participate in
                   <br />
                   Signo research
                   <br />
                   and purchase
                   <br />
-                  Entry Tokens:
+                  Entry Tokens
                 </div>
               </div>
 
