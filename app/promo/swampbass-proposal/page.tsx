@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { toPng } from "html-to-image";
 import { logoBase64, groupNameBase64 } from "./imageData";
 
 export default function SwampBassProposalPage() {
@@ -9,35 +10,18 @@ export default function SwampBassProposalPage() {
   async function handleExport() {
     const el = document.getElementById("proposal-export");
     if (!el) return;
-
-    // Preload images to avoid CORS issues
-    const images = el.querySelectorAll("img");
-    await Promise.all(
-      Array.from(images).map(
-        (img) =>
-          new Promise<void>((resolve) => {
-            if (img.complete) {
-              resolve();
-              return;
-            }
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-          })
-      )
-    );
-
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-    });
-    const link = document.createElement("a");
-    link.download = "SwampBass_Proposal.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    try {
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
+        backgroundColor: "#ffffff",
+      });
+      const link = document.createElement("a");
+      link.download = "SwampBass_Proposal.png";
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Export failed:", err);
+    }
   }
 
   return (
