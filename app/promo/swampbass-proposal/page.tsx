@@ -68,12 +68,17 @@ export default function SwampBassProposalPage() {
             SwampBass Involvement in RAVE_Initiation.html
           </div>
 
+          {/* Organizer note */}
+          <div style={{ fontStyle: "italic", fontSize: 12, marginBottom: 24, lineHeight: 1.4 }}>
+            Azazel_ver1.0.0 LLC (hereinafter referred to as <strong>&ldquo;the Organizer&rdquo;</strong>) is the organizing entity of this event and shall be referred to as such throughout this proposal.
+          </div>
+
           {/* Section I */}
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            I. What We Provide
+            I. Rentals from SwampBass
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            Signo Research Group proposes to rent the following equipment from SwampBass for the duration of the event:
+            The Organizer proposes to rent the following equipment from SwampBass for the duration of the event:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
@@ -90,7 +95,7 @@ export default function SwampBassProposalPage() {
             II. What We Ask of SwampBass
           </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            We are proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
+            The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
             {[
@@ -110,8 +115,8 @@ export default function SwampBassProposalPage() {
             III. Revenue Arrangement
           </div>
           <div style={{ paddingLeft: 32, marginBottom: 6 }}>
-            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong></div>
-            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</div>
+            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</div>
+            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</div>
           </div>
 
           {/* Closing Divider */}
