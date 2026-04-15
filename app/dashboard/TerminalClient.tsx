@@ -1360,6 +1360,18 @@ export default function TerminalClient() {
         </div>
       )}
 
+      <div style={{
+        fontFamily: '"Courier New", monospace',
+        fontSize: 10,
+        letterSpacing: 1,
+        color: '#ffffff',
+        textAlign: 'left',
+        marginTop: 32,
+        paddingBottom: 12,
+      }}>
+        HELP: support.signoresearchgroup@gmail.com
+      </div>
+
       {purchaseOpen && (
         <div className="signup-overlay">
           <div

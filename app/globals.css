@@ -318,9 +318,10 @@ body::before {
   font-family: "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 1);
   text-align: left;
-  margin-top: 10px;
+  margin-top: 32px;
+  padding-bottom: 12px;
 }
 
 /* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */
