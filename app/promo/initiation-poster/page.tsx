@@ -162,7 +162,7 @@ export default function InitiationPosterPage() {
                 height: "auto",
                 objectFit: "contain",
                 display: "block",
-                marginTop: 60,
+                marginTop: 87,
               }}
             />
             <img
