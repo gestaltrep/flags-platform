@@ -315,13 +315,15 @@ body::before {
 }
 
 .home-help-text {
+  position: fixed;
+  bottom: -18px;
+  left: 20px;
   font-family: "Courier New", monospace;
   font-size: 10px;
   letter-spacing: 1px;
-  color: rgba(255, 255, 255, 1);
-  text-align: left;
-  margin-top: 32px;
-  padding-bottom: 12px;
+  color: #ffffff;
+  z-index: 10;
+  pointer-events: none;
 }
 
 /* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */
