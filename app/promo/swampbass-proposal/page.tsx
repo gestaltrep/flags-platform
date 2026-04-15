@@ -123,6 +123,9 @@ export default function SwampBassProposalPage() {
           <div style={{ height: 3, backgroundColor: "#000", marginTop: 24, marginBottom: 20 }} />
 
           {/* Closing Note */}
+          <div style={{ marginBottom: 12, lineHeight: 1.4 }}>
+            We are open to negotiating this structure further.
+          </div>
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
             Thank you very much for the opportunity to work with you, and we look forward to conducting research together in the near future.
           </div>
