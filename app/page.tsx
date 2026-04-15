@@ -293,8 +293,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="home-help-text">HELP: support.signoresearchgroup@gmail.com</div>
       </main>
+      <div className="home-help-text">HELP: support.signoresearchgroup@gmail.com</div>
 
       <main className="home-mobile">
         <div className="home-mobile-frame">
@@ -369,8 +369,8 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <div className="home-help-text">HELP: support.signoresearchgroup@gmail.com</div>
       </main>
+      <div className="home-help-text">HELP: support.signoresearchgroup@gmail.com</div>
 
       {open && (
         <div className="signup-overlay">
