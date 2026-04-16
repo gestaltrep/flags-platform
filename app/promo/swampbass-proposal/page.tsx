@@ -102,13 +102,16 @@ export default function SwampBassProposalPage() {
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
             The Organizer proposes to rent the following equipment from SwampBass for the duration of the event:
           </div>
-          <div style={{ paddingLeft: 32, marginBottom: 6 }}>
+          <div style={{ marginBottom: 6 }}>
             {[
               "Four (4) Pioneer CDJ-2000NXS2 multi-players",
               "One (1) Pioneer DJM-900NXS2 mixer",
               "One (1) DJ table",
             ].map((item, i) => (
-              <div key={i} style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; {item}</div>
+              <div key={i} style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
+                <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
+                <span>{item}</span>
+              </div>
             ))}
           </div>
 
@@ -119,7 +122,7 @@ export default function SwampBassProposalPage() {
           <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
             The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
           </div>
-          <div style={{ paddingLeft: 32, marginBottom: 6 }}>
+          <div style={{ marginBottom: 6 }}>
             {[
               "All alcoholic and non-alcoholic beverage products for SwampBass's own individual bar, purchased from a licensed distributor",
               "A valid liquor license for SwampBass's own individual bar, permitting the sale of alcoholic beverages at the event venue",
@@ -128,7 +131,10 @@ export default function SwampBassProposalPage() {
               "One (1) video wall for use during the event",
               "Promotion of the event through SwampBass channels",
             ].map((item, i) => (
-              <div key={i} style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; {item}</div>
+              <div key={i} style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
+                <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
+                <span>{item}</span>
+              </div>
             ))}
           </div>
 
@@ -136,9 +142,15 @@ export default function SwampBassProposalPage() {
           <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
             III. Revenue Arrangement
           </div>
-          <div style={{ paddingLeft: 32, marginBottom: 6 }}>
-            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</div>
-            <div style={{ marginBottom: 4, lineHeight: 1.4 }}>&mdash; SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</div>
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
+              <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
+              <span>Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</span>
+            </div>
+            <div style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
+              <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
+              <span>SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</span>
+            </div>
           </div>
 
           {/* Closing Divider */}
