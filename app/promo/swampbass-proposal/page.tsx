@@ -64,7 +64,7 @@ export default function SwampBassProposalPage() {
           id="proposal-export"
           style={{
             width: "8.5in",
-            height: "11.75in",
+            height: "12in",
             overflow: "hidden",
             position: "relative",
             margin: "0 auto",
