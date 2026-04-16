@@ -123,7 +123,7 @@ export default function SwampBassProposalPage() {
             {[
               "All alcoholic and non-alcoholic beverage products for SwampBass's own individual bar, purchased from a licensed distributor",
               "A valid liquor license for SwampBass's own individual bar, permitting the sale of alcoholic beverages at the event venue",
-              "Liquor liability insurance for SwampBass's own individual bar, covering the duration of the event",
+              "Liquor liability insurance covering both bars at the event for the duration of the event. The cost of the liquor liability insurance shall be split evenly between SwampBass and the Organizer.",
               "All necessary equipment, supplies, and staffing for SwampBass's own individual bar",
               "One (1) video wall for use during the event",
               "Promotion of the event through SwampBass channels",
