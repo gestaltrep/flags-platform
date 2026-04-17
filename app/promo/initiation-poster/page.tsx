@@ -375,7 +375,7 @@ export default function InitiationPosterPage() {
                     color: "#fff",
                     fontWeight: 560,
                     letterSpacing: "0.004em",
-                    fontSize: 28,
+                    fontSize: 38,
                     lineHeight: 1.3,
                     fontFamily: '"Courier New", Courier, monospace',
                   }}
