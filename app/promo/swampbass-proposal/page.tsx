@@ -1,6 +1,6 @@
 "use client";
 
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import { logoBase64, groupNameBase64 } from "./imageData";
 
 export default function SwampBassProposalPage() {
@@ -10,19 +10,34 @@ export default function SwampBassProposalPage() {
       const el = document.getElementById(`proposal-page-${i}`);
       if (!el) continue;
       try {
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
+        // html-to-image renders text slightly more compact than the browser,
+        // so lines that barely wrap in the browser fit on one line in the export.
+        // Fix: temporarily add extra padding-right to the inner border div
+        // to force the same wrapping behavior during capture.
+        const innerDiv = el.querySelector("div");
+        const origPaddingRight = innerDiv ? innerDiv.style.paddingRight : "";
+        if (innerDiv) {
+          innerDiv.style.paddingRight = "48px";
+        }
+
+        await new Promise((r) => setTimeout(r, 100));
+
+        const rect = el.getBoundingClientRect();
+        const dataUrl = await toPng(el, {
+          pixelRatio: 2,
           backgroundColor: "#ffffff",
-          width: el.offsetWidth,
-          height: el.offsetHeight,
-          windowWidth: el.offsetWidth,
-          windowHeight: el.offsetHeight,
+          width: rect.width,
+          height: rect.height,
         });
+
+        // Restore original padding
+        if (innerDiv) {
+          innerDiv.style.paddingRight = origPaddingRight;
+        }
+
         const link = document.createElement("a");
         link.download = `SwampBass_Proposal_Page_${i}.png`;
-        link.href = canvas.toDataURL("image/png");
+        link.href = dataUrl;
         link.click();
         await new Promise((r) => setTimeout(r, 500));
       } catch (err) {
