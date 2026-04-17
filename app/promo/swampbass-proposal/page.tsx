@@ -127,7 +127,7 @@ export default function SwampBassProposalPage() {
                 The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
               </div>
               <div style={{ marginBottom: 6 }}>
-                <Bullet>All alcoholic and non-alcoholic beverage products for SwampBass&apos;s own individual bar, purchased from a licensed distributor</Bullet>
+                <Bullet>All alcoholic beverage products for SwampBass&apos;s own individual bar, purchased from a licensed distributor</Bullet>
                 <Bullet>All necessary state and local permits and licenses required to sell alcoholic beverages at the Premises on the event date, including any required one-day or special event permit</Bullet>
                 <Bullet>Liquor liability insurance in SwampBass&apos;s name, with minimum limits of $1,000,000 combined single limit per occurrence and $1,000,000 annual aggregate, covering SwampBass&apos;s bar operations at the event. The policy shall name Azazel_ver1.0.0 LLC, Charlotte County Fair Association, its Board of Directors, agents and employees as additional insureds. A Certificate of Insurance (COI) reflecting this coverage shall be delivered to the Organizer no later than seven (7) days prior to the event. The Organizer agrees to reimburse SwampBass for fifty percent (50%) of the cost of this policy, payable within seven (7) business days of receipt of the COI and a copy of the invoice.</Bullet>
                 <Bullet>All necessary equipment, supplies, and staffing for SwampBass&apos;s own individual bar</Bullet>
@@ -164,7 +164,7 @@ export default function SwampBassProposalPage() {
                 <Bullet>SwampBass shall provide the Organizer with a point-of-sale sales report showing total gross bar revenue for the event, delivered alongside the 15% payment</Bullet>
               </div>
               <div style={{ ...bodyPara, marginBottom: 12 }}>
-                For purposes of this agreement, &ldquo;gross bar revenue&rdquo; means gross receipts from alcoholic and non-alcoholic beverage sales at SwampBass&apos;s bar, exclusive of sales tax and gratuities, with no deduction for credit card processing fees.
+                For purposes of this agreement, &ldquo;gross bar revenue&rdquo; means gross receipts from alcoholic beverage sales at SwampBass&apos;s bar, exclusive of sales tax and gratuities, with no deduction for credit card processing fees.
               </div>
 
               {/* Section IV */}
