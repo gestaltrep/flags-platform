@@ -150,7 +150,7 @@ export default function SwampBassProposalPage() {
               lineHeight: 1.5,
               position: "relative",
               boxSizing: "border-box",
-              padding: "24px 24px 60px 24px",
+              padding: "24px",
               breakBefore: "page",
             }}
           >
