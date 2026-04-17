@@ -110,12 +110,12 @@ export default function SwampBassProposalPage() {
               <div style={{ width: "100%", height: "3px", minHeight: "3px", backgroundColor: "#000", marginTop: "16px", marginBottom: "24px", flexShrink: 0 }} />
 
               {/* Title */}
-              <div style={{ fontSize: 18, fontWeight: "bold", letterSpacing: 3, marginBottom: 20, lineHeight: 1.5, textTransform: "uppercase" }}>
+              <div style={{ fontSize: 18, fontWeight: "bold", letterSpacing: 3, marginBottom: 12, lineHeight: 1.5, textTransform: "uppercase" }}>
                 SwampBass Involvement in RAVE_Initiation.html
               </div>
 
               {/* Organizer note */}
-              <div style={{ fontStyle: "italic", fontSize: 12, marginBottom: 24, lineHeight: 1.4 }}>
+              <div style={{ fontStyle: "italic", fontSize: 12, marginBottom: 16, lineHeight: 1.4 }}>
                 Azazel_ver1.0.0 LLC (hereinafter referred to as <strong>&ldquo;the Organizer&rdquo;</strong>) is the organizing entity of this event and shall be referred to as such throughout this proposal.
               </div>
 
