@@ -2018,7 +2018,7 @@ export default function TerminalClient() {
             className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
             style={{
               ...mobileGenerateModalStyle,
-              ...(!isMobile ? { width: 390 } : {}),
+              ...(!isMobile ? { width: 330 } : {}),
               display: "flex",
               flexDirection: "column",
             }}
@@ -2041,36 +2041,36 @@ export default function TerminalClient() {
 
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
-                <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  <div className="modal-status-line">
+                <div className="modal-status-copy" style={{ ...generateStatusCopyStyle, lineHeight: 1.8 }}>
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">TABLES REMAINING: {10 - tableSold}</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">INCLUDES:</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol" />
                     <span className="modal-status-text--indent">6 VIP TABLE TOKENS</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol" />
                     <span className="modal-status-text--indent">1 FREE BOTTLE</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol" />
                     <span className="modal-status-text--indent">BOTTLE SERVICE</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol" />
                     <span className="modal-status-text--indent">ENDLESS CHASERS</span>
                   </div>
-                  <div className="modal-status-line">
+                  <div className="modal-status-line" style={{ marginBottom: 8 }}>
                     <span className="modal-status-symbol" />
                     <span className="modal-status-text--indent">1 CASE OF WATER ON ICE</span>
                   </div>
