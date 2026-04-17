@@ -13,6 +13,7 @@ export async function GET() {
     .select("*", { count: "exact", head: true })
     .eq("event_id", EVENT_ID)
     .eq("is_vip", false)
+    .eq("comp", false)
     .not("buyer_user_id", "is", null);
 
   const { count: vipCount } = await supabase
@@ -20,6 +21,7 @@ export async function GET() {
     .select("*", { count: "exact", head: true })
     .eq("event_id", EVENT_ID)
     .eq("is_vip", true)
+    .eq("comp", false)
     .not("buyer_user_id", "is", null);
 
   const sold = gaCount ?? 0;
