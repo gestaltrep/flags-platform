@@ -350,7 +350,7 @@ export default function InitiationPosterPage() {
                   <div style={{ letterSpacing: "0.06em" }}>To participate in</div>
                   <div style={{ letterSpacing: "0.04em" }}>Signo research</div>
                   <div style={{ letterSpacing: "0.08em" }}>and purchase</div>
-                  <div style={{ letterSpacing: "0.04em" }}>Entry Tokens</div>
+                  <div style={{ letterSpacing: "0.04em" }}>Entry Tokens:</div>
                 </div>
               </div>
 
@@ -379,7 +379,7 @@ export default function InitiationPosterPage() {
                   }}
                 >
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 24, marginBottom: 6 }}>promo code:</div>
+                    <div style={{ fontSize: 28, marginBottom: 6 }}>promo code:</div>
                     <div style={{ fontSize: 38 }}>SIGNO10</div>
                   </div>
                 </div>
