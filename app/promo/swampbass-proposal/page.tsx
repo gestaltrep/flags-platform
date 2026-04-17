@@ -42,6 +42,29 @@ export default function SwampBassProposalPage() {
     }
   }
 
+  const sectionHeading: React.CSSProperties = {
+    fontWeight: "bold",
+    fontSize: 15,
+    letterSpacing: 3,
+    marginTop: 20,
+    marginBottom: 12,
+    textTransform: "uppercase",
+  };
+
+  const bodyPara: React.CSSProperties = {
+    marginBottom: 8,
+    lineHeight: 1.4,
+  };
+
+  function Bullet({ children }: { children: React.ReactNode }) {
+    return (
+      <div style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
+        <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
+        <span>{children}</span>
+      </div>
+    );
+  }
+
   return (
     <>
       <style>{`
@@ -64,8 +87,7 @@ export default function SwampBassProposalPage() {
           id="proposal-export"
           style={{
             width: "8.5in",
-            height: "12in",
-            overflow: "hidden",
+            minHeight: "12in",
             position: "relative",
             margin: "0 auto",
             backgroundColor: "#fff",
@@ -77,7 +99,8 @@ export default function SwampBassProposalPage() {
             boxSizing: "border-box",
           }}
         >
-          <div style={{ border: "3px solid #000", padding: "40px", height: "100%", boxSizing: "border-box" }}>
+          <div style={{ border: "3px solid #000", padding: "40px", boxSizing: "border-box" }}>
+
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <img src={logoBase64} alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
@@ -96,61 +119,59 @@ export default function SwampBassProposalPage() {
           </div>
 
           {/* Section I */}
-          <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            I. Rentals from SwampBass
-          </div>
-          <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            The Organizer proposes to rent the following equipment from SwampBass for the duration of the event:
+          <div style={sectionHeading}>I. Rentals from SwampBass</div>
+          <div style={bodyPara}>
+            The Organizer proposes to rent the following equipment from SwampBass for the duration of the event, per the headliner&apos;s tech rider:
           </div>
           <div style={{ marginBottom: 6 }}>
-            {[
-              "Four (4) Pioneer CDJ-2000NXS2 multi-players",
-              "One (1) Pioneer DJM-900NXS2 mixer",
-              "One (1) DJ table",
-            ].map((item, i) => (
-              <div key={i} style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
-                <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
-                <span>{item}</span>
-              </div>
-            ))}
+            <Bullet>One (1) Pioneer DJM-900NXS2 mixer (Pioneer DJM-A9 acceptable with Organizer approval)</Bullet>
+            <Bullet>Four (4) Pioneer CDJ-2000NXS2 or CDJ-3000 decks with latest firmware updates</Bullet>
+            <Bullet>All players must be numbered and linked through a networking hub with six (6) or more working ethernet ports, including ethernet cables</Bullet>
+            <Bullet>One (1) microphone</Bullet>
+            <Bullet>One (1) HDMI cable (male-end) run to the DJ booth, connecting to the house video processing hub for visuals</Bullet>
+            <Bullet>One (1) sturdy DJ table with risers, minimum eight (8) feet in length</Bullet>
+          </div>
+          <div style={{ ...bodyPara, marginBottom: 12 }}>
+            The Organizer shall exercise reasonable care in the use of rented equipment. SwampBass shall maintain its own property insurance covering the rented equipment. Responsibility for any damage or loss shall be determined by the cause of damage, with the at-fault party bearing repair or replacement costs.
           </div>
 
           {/* Section II */}
-          <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            II. What We Ask of SwampBass
-          </div>
-          <div style={{ marginBottom: 8, lineHeight: 1.4 }}>
+          <div style={sectionHeading}>II. What We Ask of SwampBass</div>
+          <div style={bodyPara}>
             The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
           </div>
           <div style={{ marginBottom: 6 }}>
-            {[
-              "All alcoholic and non-alcoholic beverage products for SwampBass's own individual bar, purchased from a licensed distributor",
-              "A valid liquor license for SwampBass's own individual bar, permitting the sale of alcoholic beverages at the event venue",
-              "Liquor liability insurance covering both bars at the event for the duration of the event. The cost of the liquor liability insurance shall be split evenly between SwampBass and the Organizer.",
-              "All necessary equipment, supplies, and staffing for SwampBass's own individual bar",
-              "One (1) video wall for use during the event",
-              "Promotion of the event through SwampBass channels",
-            ].map((item, i) => (
-              <div key={i} style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
-                <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
-                <span>{item}</span>
-              </div>
-            ))}
+            <Bullet>All alcoholic and non-alcoholic beverage products for SwampBass&apos;s own individual bar, purchased from a licensed distributor</Bullet>
+            <Bullet>All necessary state and local permits and licenses required to sell alcoholic beverages at the Premises on the event date, including any required one-day or special event permit</Bullet>
+            <Bullet>Liquor liability insurance in SwampBass&apos;s name, with minimum limits of $1,000,000 combined single limit per occurrence and $1,000,000 annual aggregate, covering SwampBass&apos;s bar operations at the event. The policy shall name Azazel_ver1.0.0 LLC, Charlotte County Fair Association, its Board of Directors, agents and employees as additional insureds. A Certificate of Insurance (COI) reflecting this coverage shall be delivered to the Organizer no later than seven (7) days prior to the event. The Organizer agrees to reimburse SwampBass for fifty percent (50%) of the cost of this policy, payable within seven (7) business days of receipt of the COI and a copy of the invoice.</Bullet>
+            <Bullet>All necessary equipment, supplies, and staffing for SwampBass&apos;s own individual bar</Bullet>
+            <Bullet>Promotion of the event through SwampBass channels, including at minimum one (1) collaboration post and two (2) Instagram stories per week leading up to the event, with timing and content coordinated with the Organizer</Bullet>
           </div>
 
           {/* Section III */}
-          <div style={{ fontWeight: "bold", fontSize: 15, letterSpacing: 3, marginTop: 20, marginBottom: 12, textTransform: "uppercase" }}>
-            III. Revenue Arrangement
+          <div style={sectionHeading}>III. Revenue Arrangement</div>
+          <div style={{ marginBottom: 6 }}>
+            <Bullet>Fifteen percent (15%) of gross bar revenue shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</Bullet>
+            <Bullet>SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</Bullet>
+            <Bullet>SwampBass shall provide the Organizer with a point-of-sale sales report showing total gross bar revenue for the event, delivered alongside the 15% payment</Bullet>
+          </div>
+          <div style={{ ...bodyPara, marginBottom: 12 }}>
+            For purposes of this agreement, &ldquo;gross bar revenue&rdquo; means gross receipts from alcoholic and non-alcoholic beverage sales at SwampBass&apos;s bar, exclusive of sales tax and gratuities, with no deduction for credit card processing fees.
+          </div>
+
+          {/* Section IV */}
+          <div style={sectionHeading}>IV. Additional Interests</div>
+          <div style={bodyPara}>
+            Beyond the deliverables above, the Organizer is interested in exploring the following with SwampBass. These items are not required and are open to discussion:
           </div>
           <div style={{ marginBottom: 6 }}>
-            <div style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
-              <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
-              <span>Fifteen percent (15%) of gross revenue generated from bar sales shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</span>
-            </div>
-            <div style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
-              <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
-              <span>SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</span>
-            </div>
+            <Bullet><strong>Video wall lending.</strong> The Organizer is interested in SwampBass lending their video wall, or smaller portions thereof, for use during the event.</Bullet>
+            <Bullet><strong>VIP seating equipment rental.</strong> The Organizer is interested in renting SwampBass&apos;s VIP seating equipment in order to set up VIP tables at the event.</Bullet>
+          </div>
+
+          {/* Sponsorship note */}
+          <div style={{ ...bodyPara, marginBottom: 20 }}>
+            The Organizer would like to inform SwampBass that American Made, a distillery, has expressed interest in sponsoring this event. The Organizer is open to exploring how this sponsorship could integrate with SwampBass&apos;s bar operations, and welcomes SwampBass&apos;s input on the arrangement.
           </div>
 
           {/* Closing Divider */}
@@ -168,6 +189,27 @@ export default function SwampBassProposalPage() {
           <div style={{ marginTop: 24, fontWeight: "bold" }}>
             Signo Research Group
           </div>
+
+          <div style={{ marginTop: 48, fontFamily: '"Courier New", monospace', fontSize: 14, lineHeight: 1.8 }}>
+            {/* Azazel block */}
+            <div style={{ marginBottom: 36 }}>
+              <div style={{ fontWeight: "bold", marginBottom: 8 }}>Azazel_ver1.0.0 LLC</div>
+              <div>By: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
+              <div>Name:</div>
+              <div>Title:</div>
+              <div>Date: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
+            </div>
+
+            {/* SwampBass block */}
+            <div>
+              <div style={{ fontWeight: "bold", marginBottom: 8 }}>SwampBass</div>
+              <div>By: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
+              <div>Name: <span style={{ display: "inline-block", width: 220, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
+              <div>Title: <span style={{ display: "inline-block", width: 228, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
+              <div>Date: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
+            </div>
+          </div>
+
           </div>
         </div>
 
