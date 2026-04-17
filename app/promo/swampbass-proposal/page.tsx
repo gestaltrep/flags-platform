@@ -9,23 +9,26 @@ export default function SwampBassProposalPage() {
     for (let i = 1; i <= 2; i++) {
       const el = document.getElementById(`proposal-page-${i}`);
       if (!el) continue;
-      const originalStyle = el.style.cssText;
-      el.style.position = "absolute";
-      el.style.left = "0";
-      el.style.top = "0";
-      await new Promise((r) => setTimeout(r, 100));
-      const dataUrl = await toPng(el, {
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-        width: el.scrollWidth,
-        height: el.scrollHeight,
-      });
-      el.style.cssText = originalStyle;
-      const link = document.createElement("a");
-      link.download = `SwampBass_Proposal_Page_${i}.png`;
-      link.href = dataUrl;
-      link.click();
-      await new Promise((r) => setTimeout(r, 500));
+      try {
+        const rect = el.getBoundingClientRect();
+        const dataUrl = await toPng(el, {
+          pixelRatio: 2,
+          backgroundColor: "#ffffff",
+          width: rect.width,
+          height: rect.height,
+          style: {
+            transform: "none",
+            position: "static",
+          },
+        });
+        const link = document.createElement("a");
+        link.download = `SwampBass_Proposal_Page_${i}.png`;
+        link.href = dataUrl;
+        link.click();
+        await new Promise((r) => setTimeout(r, 500));
+      } catch (err) {
+        console.error("Export failed:", err);
+      }
     }
   };
 
