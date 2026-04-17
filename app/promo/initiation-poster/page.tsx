@@ -354,39 +354,72 @@ export default function InitiationPosterPage() {
                 </div>
               </div>
 
-              {/* Lower: QR code */}
+              {/* Lower: promo code + QR code */}
               <div
                 style={{
                   flex: 1,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
+                  flexDirection: "row",
                   overflow: "hidden",
                 }}
               >
-                <img
-                  src="/7.png"
-                  alt=""
+                {/* Left half: promo code */}
+                <div
                   style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center center",
-                    opacity: 0.15,
-                    zIndex: 0,
-                    transform: "rotate(180deg)",
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRight: "2px solid #fff",
+                    textAlign: "center",
+                    color: "#fff",
+                    fontWeight: 560,
+                    letterSpacing: "0.004em",
+                    fontSize: 28,
+                    lineHeight: 1.3,
+                    fontFamily: '"Courier New", Courier, monospace',
                   }}
-                />
-                <div style={{ position: "relative", zIndex: 2 }}>
-                  {/* QR code */}
-                  <div style={{
-                    background: "#fff",
-                    padding: 8,
-                    lineHeight: 0,
-                  }}>
+                >
+                  promo code:
+                  <br />
+                  SIGNO10
+                </div>
+
+                {/* Right half: QR code with background */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src="/7.png"
+                    alt=""
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center center",
+                      opacity: 0.15,
+                      transform: "rotate(180deg)",
+                      zIndex: 0,
+                    }}
+                  />
+                  <div
+                    style={{
+                      background: "#fff",
+                      padding: 8,
+                      lineHeight: 0,
+                      position: "relative",
+                      zIndex: 2,
+                    }}
+                  >
                     <QRCodeSVG
                       value="https://signoresearchgroup.com"
                       size={118}
