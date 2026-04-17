@@ -2018,7 +2018,7 @@ export default function TerminalClient() {
             className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
             style={{
               ...mobileGenerateModalStyle,
-              ...(!isMobile ? { width: 450 } : {}),
+              ...(!isMobile ? { width: 390 } : {}),
               display: "flex",
               flexDirection: "column",
             }}
