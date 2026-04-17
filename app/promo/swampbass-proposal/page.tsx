@@ -211,7 +211,7 @@ export default function SwampBassProposalPage() {
                   <div>Date: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
                 </div>
                 <div>
-                  <div style={{ fontWeight: "bold", marginBottom: 8 }}>SwampBass</div>
+                  <div style={{ fontWeight: "bold", marginBottom: 8 }}>SwampBass LLC</div>
                   <div>By: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
                   <div>Name: <span style={{ display: "inline-block", width: 220, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
                   <div>Title: <span style={{ display: "inline-block", width: 228, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
