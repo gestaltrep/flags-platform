@@ -198,8 +198,11 @@ export default function SwampBassProposalPage() {
                 Signo Research Group
               </div>
 
+              {/* Signature divider */}
+              <div style={{ height: 3, backgroundColor: "#000", marginTop: 32, marginBottom: 24 }} />
+
               {/* Signature blocks */}
-              <div style={{ marginTop: 48, fontFamily: '"Courier New", monospace', fontSize: 14, lineHeight: 1.8 }}>
+              <div style={{ fontFamily: '"Courier New", monospace', fontSize: 14, lineHeight: 1.8 }}>
                 <div style={{ marginBottom: 36 }}>
                   <div style={{ fontWeight: "bold", marginBottom: 8 }}>Azazel_ver1.0.0 LLC</div>
                   <div>By: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
