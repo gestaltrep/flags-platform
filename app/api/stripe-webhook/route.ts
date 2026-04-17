@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     const userId = paymentIntent.metadata?.user_id;
     const quantity = parseInt(paymentIntent.metadata?.quantity || "1", 10);
     const isVip = paymentIntent.metadata?.is_vip === "true";
+    const isTable = paymentIntent.metadata?.is_table === "true";
     const eventId = paymentIntent.metadata?.event_id || EVENT_ID;
     const promoCodeId = paymentIntent.metadata?.promo_code_id || "";
     const discountApplied = Number(paymentIntent.metadata?.discount_applied ?? 0);
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
       code: makeCode(),
       is_vip: isVip,
       vip: isVip,
+      is_table: isTable,
       claimed: false,
       claimed_by_user: null,
       claimed_at: null,

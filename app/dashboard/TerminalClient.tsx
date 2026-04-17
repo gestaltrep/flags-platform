@@ -10,6 +10,7 @@ type Ticket = {
   code: string;
   vip?: boolean;
   is_vip?: boolean;
+  is_table?: boolean;
   claimed?: boolean;
   claimed_at?: string | null;
   created_at?: string;
@@ -40,7 +41,7 @@ export default function TerminalClient() {
   const [vipOpen, setVipOpen] = useState(false);
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [checkoutType, setCheckoutType] = useState<"ga" | "vip">("ga");
+  const [checkoutType, setCheckoutType] = useState<"ga" | "vip" | "table">("ga");
 
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
@@ -56,6 +57,12 @@ export default function TerminalClient() {
   const [vipPromoValid, setVipPromoValid] = useState<boolean | null>(null);
   const [vipPromoChecking, setVipPromoChecking] = useState(false);
 
+  const [tableOpen, setTableOpen] = useState(false);
+  const [tablePromoCode, setTablePromoCode] = useState("");
+  const [tablePromoValid, setTablePromoValid] = useState<boolean | null>(null);
+  const [tablePromoChecking, setTablePromoChecking] = useState(false);
+  const [tableSold, setTableSold] = useState(0);
+
   const [sendPhones, setSendPhones] = useState<Record<string, string>>({});
   const [sendMessages, setSendMessages] = useState<Record<string, string>>({});
   const [sendingTicketId, setSendingTicketId] = useState<string | null>(null);
@@ -65,6 +72,7 @@ export default function TerminalClient() {
   const timeoutIdsRef = useRef<number[]>([]);
   const gaPromoTimer = useRef<number | null>(null);
   const vipPromoTimer = useRef<number | null>(null);
+  const tablePromoTimer = useRef<number | null>(null);
 
   const bootScript = [
     "> INITIALIZING SESSION",
@@ -113,6 +121,14 @@ export default function TerminalClient() {
       setVipSold(data.vipSold ?? 0);
     } catch (err) {
       console.error("Tier load failed", err);
+    }
+
+    try {
+      const tableRes = await fetch("/api/table-status", { cache: "no-store" });
+      const tableData = await tableRes.json();
+      setTableSold(tableData.sold ?? 0);
+    } catch (err) {
+      console.error("Table status load failed", err);
     }
   }
 
@@ -286,6 +302,29 @@ export default function TerminalClient() {
     }, 800);
   }
 
+  function handleTablePromoChange(value: string) {
+    setTablePromoCode(value);
+    setTablePromoValid(null);
+    if (tablePromoTimer.current) clearTimeout(tablePromoTimer.current);
+    if (!value.trim()) {
+      setTablePromoChecking(false);
+      return;
+    }
+    setTablePromoChecking(true);
+    tablePromoTimer.current = window.setTimeout(async () => {
+      const res = await fetch("/api/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: value }),
+      });
+      const data = await res.json();
+      setTablePromoValid(data.valid);
+      setTablePromoChecking(false);
+    }, 800);
+  }
+
+  const tableSoldOut = tableSold >= 10;
+
   function generateTokens() {
     if (gaPromoCode.trim() && (gaPromoChecking || gaPromoValid !== true)) {
       setGaPromoValid(false);
@@ -311,6 +350,18 @@ export default function TerminalClient() {
     setCheckoutAmount(vipPromoValid ? Math.round(base * 0.9) : base);
     setCheckoutOpen(true);
     setVipOpen(false);
+  }
+
+  function generateTableTokens() {
+    if (tablePromoCode.trim() && (tablePromoChecking || tablePromoValid !== true)) {
+      setTablePromoValid(false);
+      return;
+    }
+    setCheckoutMessage("");
+    setCheckoutType("table");
+    setCheckoutAmount(tablePromoValid ? 60000 : 66667);
+    setCheckoutOpen(true);
+    setTableOpen(false);
   }
 
   function setSendPhone(ticketId: string, value: string) {
@@ -1032,6 +1083,7 @@ export default function TerminalClient() {
                 <div style={mobileEntryCardGridStyle}>
                   {tickets.map((ticket, index) => {
                     const isVip = ticket.is_vip || ticket.vip;
+                    const isTable = ticket.is_table;
                     const isUsed = !!ticket.claimed;
                     const isPending = !!ticket.can_cancel;
 
@@ -1050,7 +1102,13 @@ export default function TerminalClient() {
                             letterSpacing: 2,
                           }}
                         >
-                          <span>{isVip ? "VIP" : "GA"}</span>
+                          <span>{isTable ? (
+                            <span style={{ color: '#ff3333', fontWeight: 'bold' }}>VIP TABLE</span>
+                          ) : isVip ? (
+                            <span>VIP</span>
+                          ) : (
+                            <span>GA</span>
+                          )}</span>
                           <span style={{ color: isUsed ? "#888" : "#fff" }}>
                             {isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
                           </span>
@@ -1137,6 +1195,22 @@ export default function TerminalClient() {
                   >
                     GENERATE VIP TOKENS
                   </button>
+
+                  <div
+                    onClick={() => !tableSoldOut && setTableOpen(true)}
+                    style={{
+                      fontFamily: '"Courier New", monospace',
+                      fontSize: 11,
+                      letterSpacing: 2,
+                      color: tableSoldOut ? '#444' : '#ffffff',
+                      cursor: tableSoldOut ? 'default' : 'pointer',
+                      textAlign: 'left',
+                      marginTop: 12,
+                      textDecoration: tableSoldOut ? 'none' : 'underline',
+                    }}
+                  >
+                    {tableSoldOut ? '> TABLES SOLD OUT' : '> RESERVE A TABLE'}
+                  </div>
                 </div>
               )}
             </div>
@@ -1219,6 +1293,7 @@ export default function TerminalClient() {
                 <div style={mobileEntryCardGridStyle}>
                   {tickets.map((ticket, index) => {
                     const isVip = ticket.is_vip || ticket.vip;
+                    const isTable = ticket.is_table;
                     const isUsed = !!ticket.claimed;
                     const isPending = !!ticket.can_cancel;
 
@@ -1237,7 +1312,13 @@ export default function TerminalClient() {
                             letterSpacing: 1.8,
                           }}
                         >
-                          <span>{isVip ? "VIP" : "GA"}</span>
+                          <span>{isTable ? (
+                            <span style={{ color: '#ff3333', fontWeight: 'bold' }}>VIP TABLE</span>
+                          ) : isVip ? (
+                            <span>VIP</span>
+                          ) : (
+                            <span>GA</span>
+                          )}</span>
                           <span style={{ color: isUsed ? "#888" : "#fff" }}>
                             {isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
                           </span>
@@ -1352,6 +1433,22 @@ export default function TerminalClient() {
                   >
                     GENERATE VIP TOKENS
                   </button>
+
+                  <div
+                    onClick={() => !tableSoldOut && setTableOpen(true)}
+                    style={{
+                      fontFamily: '"Courier New", monospace',
+                      fontSize: 11,
+                      letterSpacing: 2,
+                      color: tableSoldOut ? '#444' : '#ffffff',
+                      cursor: tableSoldOut ? 'default' : 'pointer',
+                      textAlign: 'left',
+                      marginTop: 12,
+                      textDecoration: tableSoldOut ? 'none' : 'underline',
+                    }}
+                  >
+                    {tableSoldOut ? '> TABLES SOLD OUT' : '> RESERVE A TABLE'}
+                  </div>
                 </div>
               )}
             </>
@@ -1917,14 +2014,271 @@ export default function TerminalClient() {
         </div>
       )}
 
+      {tableOpen && (
+        <div className="signup-overlay">
+          <div
+            className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
+            style={{
+              ...mobileGenerateModalStyle,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
+              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+                alt="Signo Research Group"
+              />
+            </div>
+
+            <div
+              className="signup-title signup-title-large"
+              style={generateTitleStyle}
+            >
+              VIP Table Reservation
+            </div>
+
+            {isMobile ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
+                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">TABLES REMAINING: {10 - tableSold}</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">INCLUDES:</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">6 VIP TABLE TOKENS</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">1 FREE BOTTLE</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">BOTTLE SERVICE</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">ENDLESS CHASERS</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">1 CASE OF WATER ON ICE</span>
+                  </div>
+                </div>
+
+                <div style={{
+                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: isMobile ? 22 : 30,
+                  marginBottom: isMobile ? 22 : 30,
+                }}>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      value={tablePromoCode}
+                      onChange={(e) => handleTablePromoChange(e.target.value.toUpperCase())}
+                      placeholder="PROMO CODE (OPTIONAL)"
+                      style={{
+                        ...sendInputStyle,
+                        paddingRight: 36,
+                        fontSize: isMobile ? 13 : 12,
+                        letterSpacing: 2,
+                        width: "100%",
+                      }}
+                    />
+                    {tablePromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#555",
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      }}>...</span>
+                    )}
+                    {tablePromoValid === true && !tablePromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#ffffff",
+                        fontSize: 14,
+                      }}>✓</span>
+                    )}
+                  </div>
+                  <div style={{
+                    minHeight: isMobile ? 18 : 16,
+                    marginTop: 8,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: "#c8c8c8",
+                    textAlign: "center",
+                    width: "100%",
+                  }}>
+                    {tablePromoValid === false && tablePromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">TABLES REMAINING: {10 - tableSold}</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">INCLUDES:</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">6 VIP TABLE TOKENS</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">1 FREE BOTTLE</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">BOTTLE SERVICE</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">ENDLESS CHASERS</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol" />
+                    <span className="modal-status-text--indent">1 CASE OF WATER ON ICE</span>
+                  </div>
+                </div>
+
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: 30,
+                  marginBottom: 30,
+                }}>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      value={tablePromoCode}
+                      onChange={(e) => handleTablePromoChange(e.target.value.toUpperCase())}
+                      placeholder="PROMO CODE (OPTIONAL)"
+                      style={{
+                        ...sendInputStyle,
+                        paddingRight: 36,
+                        fontSize: 12,
+                        letterSpacing: 2,
+                        width: "100%",
+                      }}
+                    />
+                    {tablePromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#555",
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      }}>...</span>
+                    )}
+                    {tablePromoValid === true && !tablePromoChecking && (
+                      <span style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#ffffff",
+                        fontSize: 14,
+                      }}>✓</span>
+                    )}
+                  </div>
+                  <div style={{
+                    minHeight: 16,
+                    marginTop: 8,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: "#c8c8c8",
+                    textAlign: "center",
+                    width: "100%",
+                  }}>
+                    {tablePromoValid === false && tablePromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {checkoutMessage && (
+              <div className="modal-checkout-message">{checkoutMessage}</div>
+            )}
+
+            <div
+              className="signup-generate-button-wrap"
+              style={generateButtonWrapStyle}
+            >
+              <button
+                className="cta-button"
+                style={{
+                  width: isMobile ? "100%" : 300,
+                  maxWidth: "100%",
+                  minHeight: 54,
+                  lineHeight: 1.02,
+                  color: "white",
+                  fontSize: isMobile ? 13 : 17,
+                  fontWeight: 700,
+                  letterSpacing: isMobile ? 3.4 : 4.8,
+                  whiteSpace: "nowrap",
+                  fontFamily: "Arial, Helvetica, sans-serif",
+                  textTransform: "uppercase",
+                  ...generateButtonStyle,
+                }}
+                onClick={generateTableTokens}
+              >
+                GENERATE
+              </button>
+            </div>
+
+            <button
+              className="signup-close"
+              style={generateCancelStyle}
+              onClick={() => {
+                setCheckoutMessage("");
+                setTableOpen(false);
+              }}
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+
       <EmbeddedCheckoutModal
         isOpen={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
         type={checkoutType}
-        quantity={checkoutType === "vip" ? vipQuantity : gaQuantity}
+        quantity={checkoutType === "table" ? 6 : checkoutType === "vip" ? vipQuantity : gaQuantity}
         isMobile={isMobile}
         amount={checkoutAmount}
-        promoCode={checkoutType === "vip" ? vipPromoCode : gaPromoCode}
+        promoCode={checkoutType === "table" ? tablePromoCode : checkoutType === "vip" ? vipPromoCode : gaPromoCode}
         onSuccess={() => {
           setCheckoutMessage("PAYMENT RECEIVED. TOKEN GENERATING...");
           let attempts = 0;

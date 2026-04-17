@@ -9,7 +9,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 interface EmbeddedCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: "ga" | "vip";
+  type: "ga" | "vip" | "table";
   quantity: number;
   isMobile: boolean;
   onSuccess: () => void;
@@ -118,7 +118,7 @@ export default function EmbeddedCheckoutModal({
     setError("");
     setClientSecret(null);
     try {
-      const endpoint = type === "vip" ? "/api/create-vip-checkout" : "/api/create-checkout";
+      const endpoint = type === "table" ? "/api/create-table-checkout" : type === "vip" ? "/api/create-vip-checkout" : "/api/create-checkout";
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -154,7 +154,7 @@ export default function EmbeddedCheckoutModal({
 
   if (!isOpen) return null;
 
-  const label = type === "vip" ? "VIP TOKEN" : "TOKEN";
+  const label = type === "table" ? "VIP TABLE TOKEN" : type === "vip" ? "VIP TOKEN" : "TOKEN";
   const qtyLabel = quantity === 1 ? `${quantity} ${label}` : `${quantity} ${label}S`;
 
   return (
@@ -221,7 +221,7 @@ export default function EmbeddedCheckoutModal({
               lineHeight: 2,
             }}>
               {(() => {
-                const tokenLabel = type === "vip" ? "VIP TOKEN" : "TOKEN";
+                const tokenLabel = type === "table" ? "VIP TABLE TOKEN" : type === "vip" ? "VIP TOKEN" : "TOKEN";
                 const tokenPlural = quantity > 1 ? `${quantity} ${tokenLabel}S` : tokenLabel;
                 return (
                   <>
