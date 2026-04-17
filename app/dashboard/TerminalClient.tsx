@@ -1206,10 +1206,9 @@ export default function TerminalClient() {
                       cursor: tableSoldOut ? 'default' : 'pointer',
                       textAlign: 'left',
                       marginTop: 12,
-                      textDecoration: tableSoldOut ? 'none' : 'underline',
-                    }}
+                      }}
                   >
-                    {tableSoldOut ? '> TABLES SOLD OUT' : '> RESERVE A TABLE'}
+                    {tableSoldOut ? 'TABLES SOLD OUT' : 'RESERVE A TABLE'}
                   </div>
                 </div>
               )}
@@ -1444,10 +1443,9 @@ export default function TerminalClient() {
                       cursor: tableSoldOut ? 'default' : 'pointer',
                       textAlign: 'left',
                       marginTop: 12,
-                      textDecoration: tableSoldOut ? 'none' : 'underline',
-                    }}
+                      }}
                   >
-                    {tableSoldOut ? '> TABLES SOLD OUT' : '> RESERVE A TABLE'}
+                    {tableSoldOut ? 'TABLES SOLD OUT' : 'RESERVE A TABLE'}
                   </div>
                 </div>
               )}
@@ -2135,7 +2133,7 @@ export default function TerminalClient() {
               </div>
             ) : (
               <>
-                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                <div className="modal-status-copy" style={{ marginBottom: 6, lineHeight: 1.5 }}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
@@ -2174,8 +2172,8 @@ export default function TerminalClient() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  marginTop: 30,
-                  marginBottom: 30,
+                  marginTop: 14,
+                  marginBottom: 14,
                 }}>
                   <div style={{ position: "relative", width: "100%" }}>
                     <input
