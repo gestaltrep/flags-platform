@@ -1,6 +1,6 @@
 "use client";
 
-import { toPng } from "html-to-image";
+import html2canvas from "html2canvas";
 import { logoBase64, groupNameBase64 } from "./imageData";
 
 export default function SwampBassProposalPage() {
@@ -10,36 +10,23 @@ export default function SwampBassProposalPage() {
       const el = document.getElementById(`proposal-page-${i}`);
       if (!el) continue;
       try {
-        // Lock to exact browser-computed pixel dimensions
-        const computedWidth = el.offsetWidth;
-        const computedHeight = el.offsetHeight;
-
-        // Temporarily set explicit pixel width to prevent reflow
-        const origWidth = el.style.width;
-        const origHeight = el.style.height;
-        el.style.width = computedWidth + "px";
-        el.style.height = computedHeight + "px";
-
-        const dataUrl = await toPng(el, {
-          pixelRatio: 2,
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
           backgroundColor: "#ffffff",
-          width: computedWidth,
-          height: computedHeight,
+          width: el.offsetWidth,
+          height: el.offsetHeight,
+          windowWidth: el.offsetWidth,
+          windowHeight: el.offsetHeight,
         });
-
-        // Restore original styles
-        el.style.width = origWidth;
-        el.style.height = origHeight;
-
         const link = document.createElement("a");
         link.download = `SwampBass_Proposal_Page_${i}.png`;
-        link.href = dataUrl;
+        link.href = canvas.toDataURL("image/png");
         link.click();
         await new Promise((r) => setTimeout(r, 500));
       } catch (err) {
         console.error("Export failed:", err);
-        const el2 = document.getElementById(`proposal-page-${i}`);
-        if (el2) { el2.style.width = ""; el2.style.height = ""; }
       }
     }
   };
