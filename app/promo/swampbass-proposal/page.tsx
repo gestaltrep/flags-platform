@@ -90,7 +90,7 @@ export default function SwampBassProposalPage() {
                 <img src={logoBase64} alt="Signo logo" style={{ width: 64, height: 64, filter: "invert(1)" }} />
                 <img src={groupNameBase64} alt="Signo Research Group" style={{ height: 44, width: "auto", filter: "invert(1)" }} />
               </div>
-              <div style={{ height: 3, backgroundColor: "#000", marginTop: 16, marginBottom: 24 }} />
+              <div style={{ width: "100%", height: "3px", minHeight: "3px", backgroundColor: "#000", marginTop: "16px", marginBottom: "24px", flexShrink: 0 }} />
 
               {/* Title */}
               <div style={{ fontSize: 18, fontWeight: "bold", letterSpacing: 3, marginBottom: 20, lineHeight: 1.5, textTransform: "uppercase" }}>
