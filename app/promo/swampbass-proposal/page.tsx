@@ -6,7 +6,7 @@ import { logoBase64, groupNameBase64 } from "./imageData";
 export default function SwampBassProposalPage() {
 
   const exportPages = async () => {
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 2; i++) {
       const el = document.getElementById(`proposal-page-${i}`);
       if (!el) continue;
       const originalStyle = el.style.cssText;
@@ -27,29 +27,6 @@ export default function SwampBassProposalPage() {
       link.click();
       await new Promise((r) => setTimeout(r, 500));
     }
-  };
-
-  const pageStyle: React.CSSProperties = {
-    width: "8.5in",
-    height: "14in",
-    backgroundColor: "#fff",
-    color: "#000",
-    fontFamily: '"Courier New", monospace',
-    fontSize: 14,
-    lineHeight: 1.5,
-    position: "relative",
-    overflow: "hidden",
-    boxSizing: "border-box",
-    padding: "24px",
-  };
-
-  const innerBorderStyle: React.CSSProperties = {
-    border: "3px solid #000",
-    padding: "40px",
-    height: "100%",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
   };
 
   const sectionHeading: React.CSSProperties = {
@@ -87,9 +64,26 @@ export default function SwampBassProposalPage() {
       <div style={{ background: "#1a1a1a", minHeight: "100vh", padding: "40px 0" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-          {/* ── PAGE 1 ── */}
-          <div id="proposal-page-1" style={{ ...pageStyle, breakAfter: "page", marginBottom: "40px" }}>
-            <div style={innerBorderStyle}>
+          {/* ── PAGE 1 — fixed legal height ── */}
+          <div
+            id="proposal-page-1"
+            style={{
+              width: "8.5in",
+              height: "14in",
+              backgroundColor: "#fff",
+              color: "#000",
+              fontFamily: '"Courier New", monospace',
+              fontSize: 14,
+              lineHeight: 1.5,
+              position: "relative",
+              overflow: "hidden",
+              boxSizing: "border-box",
+              padding: "24px",
+              breakAfter: "page",
+              marginBottom: "40px",
+            }}
+          >
+            <div style={{ border: "3px solid #000", padding: "40px", height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
 
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -127,15 +121,8 @@ export default function SwampBassProposalPage() {
                 The Organizer shall exercise reasonable care in the use of rented equipment. SwampBass shall maintain its own property insurance covering the rented equipment. Responsibility for any damage or loss shall be determined by the cause of damage, with the at-fault party bearing repair or replacement costs.
               </div>
 
-            </div>
-          </div>
-
-          {/* ── PAGE 2 ── */}
-          <div id="proposal-page-2" style={{ ...pageStyle, breakAfter: "page", marginBottom: "40px" }}>
-            <div style={innerBorderStyle}>
-
               {/* Section II */}
-              <div style={{ ...sectionHeading, marginTop: 0 }}>II. What We Ask of SwampBass</div>
+              <div style={sectionHeading}>II. What We Ask of SwampBass</div>
               <div style={bodyPara}>
                 The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
               </div>
@@ -147,8 +134,30 @@ export default function SwampBassProposalPage() {
                 <Bullet>Promotion of the event through SwampBass channels, including at minimum one (1) collaboration post and two (2) Instagram stories per week leading up to the event, with timing and content coordinated with the Organizer</Bullet>
               </div>
 
+            </div>
+          </div>
+
+          {/* ── PAGE 2 — auto height, fits to content ── */}
+          <div
+            id="proposal-page-2"
+            style={{
+              width: "8.5in",
+              height: "auto",
+              backgroundColor: "#fff",
+              color: "#000",
+              fontFamily: '"Courier New", monospace',
+              fontSize: 14,
+              lineHeight: 1.5,
+              position: "relative",
+              boxSizing: "border-box",
+              padding: "24px",
+              breakBefore: "page",
+            }}
+          >
+            <div style={{ border: "3px solid #000", padding: "40px", boxSizing: "border-box" }}>
+
               {/* Section III */}
-              <div style={sectionHeading}>III. Revenue Arrangement</div>
+              <div style={{ ...sectionHeading, marginTop: 0 }}>III. Revenue Arrangement</div>
               <div style={{ marginBottom: 6 }}>
                 <Bullet>Fifteen percent (15%) of gross bar revenue shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</Bullet>
                 <Bullet>SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</Bullet>
@@ -158,15 +167,8 @@ export default function SwampBassProposalPage() {
                 For purposes of this agreement, &ldquo;gross bar revenue&rdquo; means gross receipts from alcoholic and non-alcoholic beverage sales at SwampBass&apos;s bar, exclusive of sales tax and gratuities, with no deduction for credit card processing fees.
               </div>
 
-            </div>
-          </div>
-
-          {/* ── PAGE 3 ── */}
-          <div id="proposal-page-3" style={{ ...pageStyle, breakBefore: "page" }}>
-            <div style={innerBorderStyle}>
-
               {/* Section IV */}
-              <div style={{ ...sectionHeading, marginTop: 0 }}>IV. Additional Interests</div>
+              <div style={sectionHeading}>IV. Additional Interests</div>
               <div style={bodyPara}>
                 Beyond the deliverables above, the Organizer is interested in exploring the following with SwampBass. These items are not required and are open to discussion:
               </div>
