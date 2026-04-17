@@ -395,21 +395,6 @@ export default function InitiationPosterPage() {
                     overflow: "hidden",
                   }}
                 >
-                  <img
-                    src="/7.png"
-                    alt=""
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center center",
-                      opacity: 0.15,
-                      transform: "rotate(180deg)",
-                      zIndex: 0,
-                    }}
-                  />
                   <div
                     style={{
                       background: "#fff",
