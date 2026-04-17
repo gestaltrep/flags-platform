@@ -1596,7 +1596,7 @@ export default function TerminalClient() {
                     textAlign: "center",
                     width: "100%",
                   }}>
-                    {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                    {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
               </div>
@@ -1687,7 +1687,7 @@ export default function TerminalClient() {
                     textAlign: "center",
                     width: "100%",
                   }}>
-                    {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                    {gaPromoValid === false && gaPromoCode.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
               </>
@@ -1867,7 +1867,7 @@ export default function TerminalClient() {
                     textAlign: "center",
                     width: "100%",
                   }}>
-                    {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                    {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
               </div>
@@ -1962,7 +1962,7 @@ export default function TerminalClient() {
                     textAlign: "center",
                     width: "100%",
                   }}>
-                    {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                    {vipPromoValid === false && vipPromoCode.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
               </>
@@ -2018,6 +2018,7 @@ export default function TerminalClient() {
             className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
             style={{
               ...mobileGenerateModalStyle,
+              ...(!isMobile ? { width: 450 } : {}),
               display: "flex",
               flexDirection: "column",
             }}
@@ -2127,7 +2128,7 @@ export default function TerminalClient() {
                     textAlign: "center",
                     width: "100%",
                   }}>
-                    {tablePromoValid === false && tablePromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                    {tablePromoValid === false && tablePromoCode.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
               </div>
@@ -2219,7 +2220,7 @@ export default function TerminalClient() {
                     textAlign: "center",
                     width: "100%",
                   }}>
-                    {tablePromoValid === false && tablePromoCode.trim() ? "INVALID PROMO CODE." : ""}
+                    {tablePromoValid === false && tablePromoCode.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
               </>
