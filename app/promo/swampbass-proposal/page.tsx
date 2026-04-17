@@ -10,17 +10,27 @@ export default function SwampBassProposalPage() {
       const el = document.getElementById(`proposal-page-${i}`);
       if (!el) continue;
       try {
-        const rect = el.getBoundingClientRect();
+        // Lock to exact browser-computed pixel dimensions
+        const computedWidth = el.offsetWidth;
+        const computedHeight = el.offsetHeight;
+
+        // Temporarily set explicit pixel width to prevent reflow
+        const origWidth = el.style.width;
+        const origHeight = el.style.height;
+        el.style.width = computedWidth + "px";
+        el.style.height = computedHeight + "px";
+
         const dataUrl = await toPng(el, {
           pixelRatio: 2,
           backgroundColor: "#ffffff",
-          width: rect.width,
-          height: rect.height,
-          style: {
-            transform: "none",
-            position: "static",
-          },
+          width: computedWidth,
+          height: computedHeight,
         });
+
+        // Restore original styles
+        el.style.width = origWidth;
+        el.style.height = origHeight;
+
         const link = document.createElement("a");
         link.download = `SwampBass_Proposal_Page_${i}.png`;
         link.href = dataUrl;
@@ -28,6 +38,8 @@ export default function SwampBassProposalPage() {
         await new Promise((r) => setTimeout(r, 500));
       } catch (err) {
         console.error("Export failed:", err);
+        const el2 = document.getElementById(`proposal-page-${i}`);
+        if (el2) { el2.style.width = ""; el2.style.height = ""; }
       }
     }
   };
