@@ -130,6 +130,8 @@ export default function SwampBassProposalPage() {
             <Bullet>One (1) microphone</Bullet>
             <Bullet>One (1) HDMI cable (male-end) run to the DJ booth, connecting to the house video processing hub for visuals</Bullet>
             <Bullet>One (1) sturdy DJ table with risers, minimum eight (8) feet in length</Bullet>
+            <Bullet>All cables, connectors, adapters, and power distribution necessary to fully install and operate the equipment listed above in working condition</Bullet>
+            <Bullet>Reasonable quantities of spare cables for critical signal paths (RCA, ethernet, HDMI)</Bullet>
           </div>
           <div style={{ ...bodyPara, marginBottom: 12 }}>
             The Organizer shall exercise reasonable care in the use of rented equipment. SwampBass shall maintain its own property insurance covering the rented equipment. Responsibility for any damage or loss shall be determined by the cause of damage, with the at-fault party bearing repair or replacement costs.
