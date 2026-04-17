@@ -2041,7 +2041,7 @@ export default function TerminalClient() {
 
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
-                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                <div className="modal-status-copy" style={{ ...generateStatusCopyStyle, lineHeight: 1.6 }}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
