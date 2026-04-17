@@ -371,18 +371,17 @@ export default function InitiationPosterPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRight: "2px solid #fff",
-                    textAlign: "center",
                     color: "#fff",
                     fontWeight: 560,
                     letterSpacing: "0.004em",
-                    fontSize: 38,
                     lineHeight: 1.3,
                     fontFamily: '"Courier New", Courier, monospace',
                   }}
                 >
-                  promo code:
-                  <br />
-                  SIGNO10
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>promo code:</div>
+                    <div style={{ fontSize: 38 }}>SIGNO10</div>
+                  </div>
                 </div>
 
                 {/* Right half: QR code with background */}
