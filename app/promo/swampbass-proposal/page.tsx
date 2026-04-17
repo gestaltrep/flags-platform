@@ -6,7 +6,7 @@ import { logoBase64, groupNameBase64 } from "./imageData";
 export default function SwampBassProposalPage() {
 
   const exportPages = async () => {
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= 3; i++) {
       const el = document.getElementById(`proposal-page-${i}`);
       if (!el) continue;
       const originalStyle = el.style.cssText;
@@ -35,6 +35,8 @@ export default function SwampBassProposalPage() {
     backgroundColor: "#fff",
     color: "#000",
     fontFamily: '"Courier New", monospace',
+    fontSize: 14,
+    lineHeight: 1.5,
     position: "relative",
     overflow: "hidden",
     boxSizing: "border-box",
@@ -64,17 +66,7 @@ export default function SwampBassProposalPage() {
     lineHeight: 1.4,
   };
 
-  // Page 1 uses tighter spacing to fit Sections I & II
-  function Bullet1({ children }: { children: React.ReactNode }) {
-    return (
-      <div style={{ display: "flex", paddingLeft: 32, marginBottom: 3, lineHeight: 1.35 }}>
-        <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
-        <span>{children}</span>
-      </div>
-    );
-  }
-
-  function Bullet2({ children }: { children: React.ReactNode }) {
+  function Bullet({ children }: { children: React.ReactNode }) {
     return (
       <div style={{ display: "flex", paddingLeft: 32, marginBottom: 4, lineHeight: 1.4 }}>
         <span style={{ flexShrink: 0, marginRight: 8 }}>&mdash;</span>
@@ -93,15 +85,10 @@ export default function SwampBassProposalPage() {
       `}</style>
 
       <div style={{ background: "#1a1a1a", minHeight: "100vh", padding: "40px 0" }}>
-
-        {/* Centering wrapper */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
           {/* ── PAGE 1 ── */}
-          <div
-            id="proposal-page-1"
-            style={{ ...pageStyle, breakAfter: "page", marginBottom: "40px" }}
-          >
+          <div id="proposal-page-1" style={{ ...pageStyle, breakAfter: "page", marginBottom: "40px" }}>
             <div style={innerBorderStyle}>
 
               {/* Header */}
@@ -117,71 +104,75 @@ export default function SwampBassProposalPage() {
               </div>
 
               {/* Organizer note */}
-              <div style={{ fontStyle: "italic", fontSize: 12, marginBottom: 20, lineHeight: 1.35 }}>
+              <div style={{ fontStyle: "italic", fontSize: 12, marginBottom: 24, lineHeight: 1.4 }}>
                 Azazel_ver1.0.0 LLC (hereinafter referred to as <strong>&ldquo;the Organizer&rdquo;</strong>) is the organizing entity of this event and shall be referred to as such throughout this proposal.
               </div>
 
               {/* Section I */}
-              <div style={{ ...sectionHeading, marginTop: 16 }}>I. Rentals from SwampBass</div>
-              <div style={{ ...bodyPara, lineHeight: 1.35 }}>
+              <div style={sectionHeading}>I. Rentals from SwampBass</div>
+              <div style={bodyPara}>
                 The Organizer proposes to rent the following equipment from SwampBass for the duration of the event, per the headliner&apos;s tech rider:
               </div>
               <div style={{ marginBottom: 6 }}>
-                <Bullet1>One (1) Pioneer DJM-900NXS2 mixer (Pioneer DJM-A9 acceptable with Organizer approval)</Bullet1>
-                <Bullet1>Four (4) Pioneer CDJ-2000NXS2 or CDJ-3000 decks with latest firmware updates</Bullet1>
-                <Bullet1>All players must be numbered and linked through a networking hub with six (6) or more working ethernet ports, including ethernet cables</Bullet1>
-                <Bullet1>One (1) microphone</Bullet1>
-                <Bullet1>One (1) HDMI cable (male-end) run to the DJ booth, connecting to the house video processing hub for visuals</Bullet1>
-                <Bullet1>One (1) sturdy DJ table with risers, minimum eight (8) feet in length</Bullet1>
-                <Bullet1>All cables, connectors, adapters, and power distribution necessary to fully install and operate the equipment listed above in working condition</Bullet1>
-                <Bullet1>Reasonable quantities of spare cables for critical signal paths (RCA, ethernet, HDMI)</Bullet1>
+                <Bullet>One (1) Pioneer DJM-900NXS2 mixer (Pioneer DJM-A9 acceptable with Organizer approval)</Bullet>
+                <Bullet>Four (4) Pioneer CDJ-2000NXS2 or CDJ-3000 decks with latest firmware updates</Bullet>
+                <Bullet>All players must be numbered and linked through a networking hub with six (6) or more working ethernet ports, including ethernet cables</Bullet>
+                <Bullet>One (1) microphone</Bullet>
+                <Bullet>One (1) HDMI cable (male-end) run to the DJ booth, connecting to the house video processing hub for visuals</Bullet>
+                <Bullet>One (1) sturdy DJ table with risers, minimum eight (8) feet in length</Bullet>
+                <Bullet>All cables, connectors, adapters, and power distribution necessary to fully install and operate the equipment listed above in working condition</Bullet>
+                <Bullet>Reasonable quantities of spare cables for critical signal paths (RCA, ethernet, HDMI)</Bullet>
               </div>
-              <div style={{ ...bodyPara, lineHeight: 1.35, marginBottom: 12 }}>
+              <div style={{ ...bodyPara, marginBottom: 12 }}>
                 The Organizer shall exercise reasonable care in the use of rented equipment. SwampBass shall maintain its own property insurance covering the rented equipment. Responsibility for any damage or loss shall be determined by the cause of damage, with the at-fault party bearing repair or replacement costs.
-              </div>
-
-              {/* Section II */}
-              <div style={{ ...sectionHeading, marginTop: 16 }}>II. What We Ask of SwampBass</div>
-              <div style={{ ...bodyPara, lineHeight: 1.35 }}>
-                The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
-              </div>
-              <div style={{ marginBottom: 6 }}>
-                <Bullet1>All alcoholic and non-alcoholic beverage products for SwampBass&apos;s own individual bar, purchased from a licensed distributor</Bullet1>
-                <Bullet1>All necessary state and local permits and licenses required to sell alcoholic beverages at the Premises on the event date, including any required one-day or special event permit</Bullet1>
-                <Bullet1>Liquor liability insurance in SwampBass&apos;s name, with minimum limits of $1,000,000 combined single limit per occurrence and $1,000,000 annual aggregate, covering SwampBass&apos;s bar operations at the event. The policy shall name Azazel_ver1.0.0 LLC, Charlotte County Fair Association, its Board of Directors, agents and employees as additional insureds. A Certificate of Insurance (COI) reflecting this coverage shall be delivered to the Organizer no later than seven (7) days prior to the event. The Organizer agrees to reimburse SwampBass for fifty percent (50%) of the cost of this policy, payable within seven (7) business days of receipt of the COI and a copy of the invoice.</Bullet1>
-                <Bullet1>All necessary equipment, supplies, and staffing for SwampBass&apos;s own individual bar</Bullet1>
-                <Bullet1>Promotion of the event through SwampBass channels, including at minimum one (1) collaboration post and two (2) Instagram stories per week leading up to the event, with timing and content coordinated with the Organizer</Bullet1>
               </div>
 
             </div>
           </div>
 
           {/* ── PAGE 2 ── */}
-          <div
-            id="proposal-page-2"
-            style={{ ...pageStyle, breakBefore: "page" }}
-          >
+          <div id="proposal-page-2" style={{ ...pageStyle, breakAfter: "page", marginBottom: "40px" }}>
             <div style={innerBorderStyle}>
 
-              {/* Section III */}
-              <div style={{ ...sectionHeading, marginTop: 0 }}>III. Revenue Arrangement</div>
+              {/* Section II */}
+              <div style={{ ...sectionHeading, marginTop: 0 }}>II. What We Ask of SwampBass</div>
+              <div style={bodyPara}>
+                The Organizer is proposing that SwampBass provides and operates their own full-service bar at the event, including the following:
+              </div>
               <div style={{ marginBottom: 6 }}>
-                <Bullet2>Fifteen percent (15%) of gross bar revenue shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</Bullet2>
-                <Bullet2>SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</Bullet2>
-                <Bullet2>SwampBass shall provide the Organizer with a point-of-sale sales report showing total gross bar revenue for the event, delivered alongside the 15% payment</Bullet2>
+                <Bullet>All alcoholic and non-alcoholic beverage products for SwampBass&apos;s own individual bar, purchased from a licensed distributor</Bullet>
+                <Bullet>All necessary state and local permits and licenses required to sell alcoholic beverages at the Premises on the event date, including any required one-day or special event permit</Bullet>
+                <Bullet>Liquor liability insurance in SwampBass&apos;s name, with minimum limits of $1,000,000 combined single limit per occurrence and $1,000,000 annual aggregate, covering SwampBass&apos;s bar operations at the event. The policy shall name Azazel_ver1.0.0 LLC, Charlotte County Fair Association, its Board of Directors, agents and employees as additional insureds. A Certificate of Insurance (COI) reflecting this coverage shall be delivered to the Organizer no later than seven (7) days prior to the event. The Organizer agrees to reimburse SwampBass for fifty percent (50%) of the cost of this policy, payable within seven (7) business days of receipt of the COI and a copy of the invoice.</Bullet>
+                <Bullet>All necessary equipment, supplies, and staffing for SwampBass&apos;s own individual bar</Bullet>
+                <Bullet>Promotion of the event through SwampBass channels, including at minimum one (1) collaboration post and two (2) Instagram stories per week leading up to the event, with timing and content coordinated with the Organizer</Bullet>
+              </div>
+
+              {/* Section III */}
+              <div style={sectionHeading}>III. Revenue Arrangement</div>
+              <div style={{ marginBottom: 6 }}>
+                <Bullet>Fifteen percent (15%) of gross bar revenue shall be remitted to <strong>Azazel_ver1.0.0 LLC</strong>. Payment of the 15% share shall be settled no later than seven (7) business days following the conclusion of the event.</Bullet>
+                <Bullet>SwampBass retains the remaining eighty-five percent (85%) of gross bar revenue</Bullet>
+                <Bullet>SwampBass shall provide the Organizer with a point-of-sale sales report showing total gross bar revenue for the event, delivered alongside the 15% payment</Bullet>
               </div>
               <div style={{ ...bodyPara, marginBottom: 12 }}>
                 For purposes of this agreement, &ldquo;gross bar revenue&rdquo; means gross receipts from alcoholic and non-alcoholic beverage sales at SwampBass&apos;s bar, exclusive of sales tax and gratuities, with no deduction for credit card processing fees.
               </div>
 
+            </div>
+          </div>
+
+          {/* ── PAGE 3 ── */}
+          <div id="proposal-page-3" style={{ ...pageStyle, breakBefore: "page" }}>
+            <div style={innerBorderStyle}>
+
               {/* Section IV */}
-              <div style={sectionHeading}>IV. Additional Interests</div>
+              <div style={{ ...sectionHeading, marginTop: 0 }}>IV. Additional Interests</div>
               <div style={bodyPara}>
                 Beyond the deliverables above, the Organizer is interested in exploring the following with SwampBass. These items are not required and are open to discussion:
               </div>
               <div style={{ marginBottom: 6 }}>
-                <Bullet2><strong>Video wall lending.</strong> The Organizer is interested in SwampBass lending their video wall, or smaller portions thereof, for use during the event.</Bullet2>
-                <Bullet2><strong>VIP seating equipment rental.</strong> The Organizer is interested in renting SwampBass&apos;s VIP seating equipment in order to set up VIP tables at the event.</Bullet2>
+                <Bullet><strong>Video wall lending.</strong> The Organizer is interested in SwampBass lending their video wall, or smaller portions thereof, for use during the event.</Bullet>
+                <Bullet><strong>VIP seating equipment rental.</strong> The Organizer is interested in renting SwampBass&apos;s VIP seating equipment in order to set up VIP tables at the event.</Bullet>
               </div>
 
               {/* Sponsorship note */}
@@ -207,7 +198,6 @@ export default function SwampBassProposalPage() {
 
               {/* Signature blocks */}
               <div style={{ marginTop: 48, fontFamily: '"Courier New", monospace', fontSize: 14, lineHeight: 1.8 }}>
-                {/* Azazel block */}
                 <div style={{ marginBottom: 36 }}>
                   <div style={{ fontWeight: "bold", marginBottom: 8 }}>Azazel_ver1.0.0 LLC</div>
                   <div>By: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
@@ -215,8 +205,6 @@ export default function SwampBassProposalPage() {
                   <div>Title:</div>
                   <div>Date: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
                 </div>
-
-                {/* SwampBass block */}
                 <div>
                   <div style={{ fontWeight: "bold", marginBottom: 8 }}>SwampBass</div>
                   <div>By: <span style={{ display: "inline-block", width: 240, borderBottom: "1px solid #000", marginLeft: 8 }} /></div>
