@@ -325,50 +325,6 @@ export default function ClaimTokenPage({
           </div>
 
           {lookup.kind === "ok" && step === "phone" && (
-            <div style={checkboxWrapStyle}>
-              <label style={checkboxRowStyle} htmlFor="claim-terms-consent">
-                <input
-                  id="claim-terms-consent"
-                  type="checkbox"
-                  checked={termsChecked}
-                  onChange={(e) => setTermsChecked(e.target.checked)}
-                  style={checkboxStyle}
-                />
-                <span style={checkboxTextStyle}>
-                  I agree to the{" "}
-                  <a
-                    href="/terms"
-                    style={{ color: "white", textDecoration: "underline" }}
-                  >
-                    Terms &amp; Conditions
-                  </a>
-                  .
-                </span>
-              </label>
-
-              <label style={checkboxRowStyle} htmlFor="claim-privacy-consent">
-                <input
-                  id="claim-privacy-consent"
-                  type="checkbox"
-                  checked={privacyChecked}
-                  onChange={(e) => setPrivacyChecked(e.target.checked)}
-                  style={checkboxStyle}
-                />
-                <span style={checkboxTextStyle}>
-                  I agree to the{" "}
-                  <a
-                    href="/privacy"
-                    style={{ color: "white", textDecoration: "underline" }}
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </span>
-              </label>
-            </div>
-          )}
-
-          {lookup.kind === "ok" && step === "phone" && (
             <form
               onSubmit={sendCode}
               style={{ display: "flex", flexDirection: "column", flex: 1 }}
@@ -389,6 +345,48 @@ export default function ClaimTokenPage({
                     placeholder="PHONE NUMBER"
                     style={inputStyle}
                   />
+                </div>
+
+                <div style={checkboxWrapStyle}>
+                  <label style={checkboxRowStyle} htmlFor="claim-terms-consent">
+                    <input
+                      id="claim-terms-consent"
+                      type="checkbox"
+                      checked={termsChecked}
+                      onChange={(e) => setTermsChecked(e.target.checked)}
+                      style={checkboxStyle}
+                    />
+                    <span style={checkboxTextStyle}>
+                      I agree to the{" "}
+                      <a
+                        href="/terms"
+                        style={{ color: "white", textDecoration: "underline" }}
+                      >
+                        Terms &amp; Conditions
+                      </a>
+                      .
+                    </span>
+                  </label>
+
+                  <label style={checkboxRowStyle} htmlFor="claim-privacy-consent">
+                    <input
+                      id="claim-privacy-consent"
+                      type="checkbox"
+                      checked={privacyChecked}
+                      onChange={(e) => setPrivacyChecked(e.target.checked)}
+                      style={checkboxStyle}
+                    />
+                    <span style={checkboxTextStyle}>
+                      I agree to the{" "}
+                      <a
+                        href="/privacy"
+                        style={{ color: "white", textDecoration: "underline" }}
+                      >
+                        Privacy Policy
+                      </a>
+                      .
+                    </span>
+                  </label>
                 </div>
 
                 <div style={messageReserveStyle}>{message || " "}</div>
