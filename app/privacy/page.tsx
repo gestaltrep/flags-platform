@@ -9,7 +9,7 @@ export default function Privacy() {
       }}
     >
       <h1>Privacy Policy</h1>
-      <p>Last Updated: March 2026</p>
+      <p>Last Updated: April 2026</p>
 
       <h2>Overview</h2>
       <p>
@@ -37,40 +37,32 @@ export default function Privacy() {
         <li>Account creation and verification</li>
         <li>Participant registration confirmation</li>
         <li>Event participation instructions</li>
-        <li>Check-in reminders</li>
         <li>Event updates related to participation</li>
       </ul>
 
-      <h2>SMS Messaging</h2>
+      <h2>SMS Verification</h2>
       <p>
-        If you provide your phone number and check the SMS consent box during
-        registration, you consent to receive SMS messages from Signo Research
-        Group related to account verification, participant registration
-        confirmation, event participation instructions, check-in reminders, and
-        event updates related to your participation.
+        Signo Research Group sends one-time verification codes via SMS for the
+        purpose of completing phone verification when creating an account,
+        signing in to an existing account, or claiming a transferred token.
+        These are transactional messages sent only in direct response to
+        user-initiated actions.
       </p>
-
-      <p>These messages may include:</p>
-      <ul>
-        <li>Account verification codes</li>
-        <li>Participant registration confirmations</li>
-        <li>Event participation instructions</li>
-        <li>Check-in reminders</li>
-        <li>Event updates related to participation</li>
-      </ul>
-
-      <p>Message frequency varies by user activity and event status.</p>
-      <p>Message and data rates may apply.</p>
       <p>
-        You may opt out of SMS messages at any time by replying <b>STOP</b>. For
+        Message frequency is limited to user-initiated verification events.
+        Message and data rates may apply depending on your mobile carrier.
+      </p>
+      <p>
+        You may reply <b>STOP</b> to opt out of verification messages, though
+        doing so will prevent future account access via phone verification. For
         assistance, reply <b>HELP</b>.
       </p>
 
       <h2>Information Sharing</h2>
       <p>We do not sell or rent personal information to third parties.</p>
       <p>
-        SMS consent is collected directly by Signo Research Group and is not
-        shared with third parties or affiliates for marketing purposes.
+        Phone numbers are not shared with third parties or affiliates for
+        marketing purposes.
       </p>
       <p>
         Information may be processed by service providers required to operate
