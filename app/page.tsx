@@ -394,7 +394,7 @@ export default function Home() {
                   className="signup-input"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  style={{ marginBottom: 8 }}
+                  style={{ marginBottom: 22 }}
                 />
 
                 <label className="signup-checkbox">

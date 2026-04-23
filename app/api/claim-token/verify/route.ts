@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     // Re-resolve the transfer and ticket before burning a Verify check.
     const { data: transfer, error: transferError } = await supabase
       .from("pending_token_transfers")
-      .select("id, ticket_code_id, status, expires_at")
+      .select("id, ticket_code_id, status, expires_at, sender_user_id")
       .eq("claim_token", normalizedClaimToken)
       .maybeSingle();
 
@@ -98,6 +98,21 @@ export async function POST(req: Request) {
         { success: false, error: "This token has already been claimed." },
         { status: 409 }
       );
+    }
+
+    if (transfer.sender_user_id) {
+      const { data: sender } = await supabase
+        .from("users")
+        .select("phone")
+        .eq("id", transfer.sender_user_id)
+        .maybeSingle();
+
+      if (sender?.phone && normalizeUSPhone(sender.phone) === normalizedPhone) {
+        return Response.json(
+          { success: false, error: "You cannot claim your own transfer. Cancel the send from your dashboard instead." },
+          { status: 400 }
+        );
+      }
     }
 
     // Burn the Verify check.
