@@ -63,9 +63,10 @@ export default function TerminalClient() {
   const [tablePromoChecking, setTablePromoChecking] = useState(false);
   const [tableSold, setTableSold] = useState(0);
 
-  const [sendPhones, setSendPhones] = useState<Record<string, string>>({});
+  const [sendClaimUrls, setSendClaimUrls] = useState<Record<string, string>>({});
   const [sendMessages, setSendMessages] = useState<Record<string, string>>({});
-  const [sendingTicketId, setSendingTicketId] = useState<string | null>(null);
+  const [sendGeneratingTicketId, setSendGeneratingTicketId] = useState<string | null>(null);
+  const [sendCopiedTicketId, setSendCopiedTicketId] = useState<string | null>(null);
   const [cancellingTicketId, setCancellingTicketId] = useState<string | null>(null);
   const [sendModalTicket, setSendModalTicket] = useState<Ticket | null>(null);
 
@@ -364,80 +365,71 @@ export default function TerminalClient() {
     setTableOpen(false);
   }
 
-  function setSendPhone(ticketId: string, value: string) {
-    setSendPhones((prev) => ({
-      ...prev,
-      [ticketId]: value,
-    }));
-  }
-
-  function openSendModal(ticket: Ticket) {
+  async function openSendModal(ticket: Ticket) {
     if (!ticket.id) return;
-    setSendMessages((prev) => ({
-      ...prev,
-      [ticket.id!]: "",
-    }));
+    const ticketId = ticket.id;
+
     setSendModalTicket(ticket);
-  }
+    setSendMessages((prev) => ({ ...prev, [ticketId]: "" }));
 
-  function closeSendModal() {
-    setSendModalTicket(null);
-  }
+    // If we already have the claim URL cached in this session, don't
+    // re-fetch. The API is idempotent so re-fetching is safe, but
+    // avoiding it keeps the modal snappy on reopen.
+    if (sendClaimUrls[ticketId]) return;
 
-  async function sendToken(ticketId: string) {
-    const phone = (sendPhones[ticketId] || "").trim();
-
-    if (!phone) {
-      setSendMessages((prev) => ({
-        ...prev,
-        [ticketId]: "Enter a phone number.",
-      }));
-      return;
-    }
-
-    setSendingTicketId(ticketId);
-    setSendMessages((prev) => ({
-      ...prev,
-      [ticketId]: "",
-    }));
+    setSendGeneratingTicketId(ticketId);
 
     try {
       const res = await fetch("/api/send-token", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ticketId,
-          phone,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId }),
       });
 
       const data = await res.json();
 
-      if (!res.ok || !data.success) {
+      if (!res.ok || !data.success || !data.claim_url) {
         setSendMessages((prev) => ({
           ...prev,
-          [ticketId]: data.error || "Send failed.",
+          [ticketId]: data.error || "Could not generate link.",
         }));
         return;
       }
 
-      setSendPhones((prev) => ({
-        ...prev,
-        [ticketId]: "",
-      }));
-
+      setSendClaimUrls((prev) => ({ ...prev, [ticketId]: data.claim_url }));
       await loadTickets();
-      setSendModalTicket(null);
     } catch (err) {
-      console.error("Send token failed", err);
+      console.error("Generate claim URL failed", err);
       setSendMessages((prev) => ({
         ...prev,
-        [ticketId]: "Send failed.",
+        [ticketId]: "Could not generate link.",
       }));
     } finally {
-      setSendingTicketId(null);
+      setSendGeneratingTicketId(null);
+    }
+  }
+
+  function closeSendModal() {
+    setSendModalTicket(null);
+    setSendCopiedTicketId(null);
+  }
+
+  async function copyClaimUrl(ticketId: string) {
+    const url = sendClaimUrls[ticketId];
+    if (!url) return;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setSendCopiedTicketId(ticketId);
+      setTimeout(() => {
+        setSendCopiedTicketId((current) => (current === ticketId ? null : current));
+      }, 2000);
+    } catch (err) {
+      console.error("Copy failed", err);
+      setSendMessages((prev) => ({
+        ...prev,
+        [ticketId]: "Copy failed — select and copy manually.",
+      }));
     }
   }
 
@@ -639,7 +631,6 @@ export default function TerminalClient() {
     textTransform: "uppercase",
     whiteSpace: "nowrap",
     marginTop: 12,
-    display: "none",
   };
 
   const cancelTriggerStyle: React.CSSProperties = {
@@ -1141,17 +1132,12 @@ export default function TerminalClient() {
                           {ticket.code}
                         </div>
 
-                        {isPending && ticket.pending_recipient_phone && (
-                          <div style={pendingInfoStyle}>
-                            {ticket.pending_recipient_phone}
-                          </div>
-                        )}
-
-                        {ticket.can_send && !isUsed && ticket.id && (
+                        {(ticket.can_send || ticket.can_cancel) && !isUsed && ticket.id && (
                           <button
                             style={sendTriggerStyle}
+                            onClick={() => openSendModal(ticket)}
                           >
-                            SEND TOKEN
+                            {ticket.can_cancel ? "VIEW CLAIM LINK" : "SEND TOKEN"}
                           </button>
                         )}
 
@@ -1352,17 +1338,12 @@ export default function TerminalClient() {
                           {ticket.code}
                         </div>
 
-                        {isPending && ticket.pending_recipient_phone && (
-                          <div style={pendingInfoStyle}>
-                            {ticket.pending_recipient_phone}
-                          </div>
-                        )}
-
-                        {ticket.can_send && !isUsed && ticket.id && (
+                        {(ticket.can_send || ticket.can_cancel) && !isUsed && ticket.id && (
                           <button
                             style={sendTriggerStyle}
+                            onClick={() => openSendModal(ticket)}
                           >
-                            SEND TOKEN
+                            {ticket.can_cancel ? "VIEW CLAIM LINK" : "SEND TOKEN"}
                           </button>
                         )}
 
@@ -2329,7 +2310,11 @@ export default function TerminalClient() {
               <div className="modal-status-line">
                 <span className="modal-status-symbol">{">"}</span>
                 <span className="modal-status-text">
-                  TRANSMIT THIS TOKEN BY ENTERING THE RECIPIENT&apos;S PHONE NUMBER.
+                  {sendGeneratingTicketId === sendModalTicket.id
+                    ? "GENERATING CLAIM LINK..."
+                    : sendClaimUrls[sendModalTicket.id]
+                    ? "SHARE THIS LINK TO TRANSMIT THIS TOKEN."
+                    : "LINK NOT READY."}
                 </span>
               </div>
             </div>
@@ -2346,7 +2331,11 @@ export default function TerminalClient() {
                 }}
               >
                 <span>
-                  {sendModalTicket.is_vip || sendModalTicket.vip ? "VIP" : "GA"}
+                  {sendModalTicket.is_table
+                    ? "VIP TABLE"
+                    : sendModalTicket.is_vip || sendModalTicket.vip
+                    ? "VIP"
+                    : "GA"}
                 </span>
                 <span style={{ color: "#fff" }}>ACTIVE</span>
               </div>
@@ -2382,12 +2371,20 @@ export default function TerminalClient() {
             </div>
 
             <input
-              value={sendPhones[sendModalTicket.id] || ""}
-              onChange={(e) => setSendPhone(sendModalTicket.id!, e.target.value)}
-              placeholder="RECIPIENT PHONE"
+              readOnly
+              value={sendClaimUrls[sendModalTicket.id] || ""}
+              placeholder={
+                sendGeneratingTicketId === sendModalTicket.id
+                  ? "GENERATING..."
+                  : "LINK UNAVAILABLE"
+              }
+              onFocus={(e) => e.currentTarget.select()}
               style={{
                 ...sendInputStyle,
                 ...mobileModalInnerStyle,
+                fontSize: 10,
+                letterSpacing: 0.8,
+                cursor: "text",
               }}
             />
 
@@ -2424,12 +2421,15 @@ export default function TerminalClient() {
                       }
                     : {}),
                 }}
-                onClick={() => sendToken(sendModalTicket.id!)}
-                disabled={sendingTicketId === sendModalTicket.id}
+                onClick={() => copyClaimUrl(sendModalTicket.id!)}
+                disabled={
+                  !sendClaimUrls[sendModalTicket.id] ||
+                  sendGeneratingTicketId === sendModalTicket.id
+                }
               >
-                {sendingTicketId === sendModalTicket.id
-                  ? "SENDING..."
-                  : "SEND TOKEN"}
+                {sendCopiedTicketId === sendModalTicket.id
+                  ? "COPIED"
+                  : "COPY LINK"}
               </button>
             </div>
 
@@ -2438,7 +2438,7 @@ export default function TerminalClient() {
               style={sendCancelStyle}
               onClick={closeSendModal}
             >
-              CANCEL
+              CLOSE
             </button>
           </div>
         </div>
