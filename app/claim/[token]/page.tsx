@@ -319,7 +319,7 @@ export default function ClaimTokenPage({
                   ? "VERIFYING CLAIM LINK..."
                   : lookup.kind === "error"
                   ? lookup.message.toUpperCase()
-                  : `${tokenTypeLabel(lookup.tokenType)} INCOMING. VERIFY PHONE TO CLAIM.`}
+                  : `${tokenTypeLabel(lookup.tokenType)} INCOMING. ENTER NAME AND VERIFY PHONE TO CLAIM.`}
               </span>
             </div>
           </div>
