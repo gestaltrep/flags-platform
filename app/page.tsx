@@ -383,18 +383,18 @@ export default function Home() {
                 </div>
 
                 <input
-                  placeholder="Name"
+                  placeholder="NAME"
                   className="signup-input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
 
                 <input
-                  placeholder="Phone Number"
+                  placeholder="PHONE NUMBER"
                   className="signup-input"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  style={{ marginBottom: 8 }}
+                  style={{ marginBottom: 22 }}
                 />
 
                 <label className="signup-checkbox">
@@ -481,7 +481,7 @@ export default function Home() {
                 </div>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
                   <input
-                    placeholder="Phone Number"
+                    placeholder="PHONE NUMBER"
                     className="signup-input"
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value)}

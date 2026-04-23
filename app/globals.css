@@ -444,7 +444,7 @@ body::before {
 
 .signup-modal-request {
   width: 418px;
-  min-height: 548px;
+  min-height: 606px;
   padding: 0 30px 22px 30px;
 }
 
@@ -509,8 +509,8 @@ body::before {
 }
 
 .signup-modal-request .signup-title-large {
-  margin-top: 6px;
-  margin-bottom: 32px;
+  margin-top: 0;
+  margin-bottom: 30px;
 }
 
 .signup-modal-ticket .signup-title-large {
@@ -720,7 +720,7 @@ body::before {
 
   .signup-modal-request {
     width: min(100%, 418px);
-    min-height: 548px;
+    min-height: 606px;
     padding: 0 30px 22px 30px;
   }
 
@@ -768,8 +768,8 @@ body::before {
   }
 
   .signup-modal-request .signup-title-large {
-    margin-top: 6px;
-    margin-bottom: 32px;
+    margin-top: 0;
+    margin-bottom: 30px;
     transform: none;
   }
 
