@@ -5,11 +5,12 @@ import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
-    const { phone, code, ticketId } = await req.json();
+    const { phone, code, claimToken, name } = await req.json();
 
     const normalizedPhone = normalizeUSPhone(String(phone || ""));
     const normalizedCode = String(code || "").trim();
-    const normalizedTicketId = String(ticketId || "").trim();
+    const normalizedClaimToken = String(claimToken || "").trim();
+    const normalizedName = String(name || "").trim();
 
     if (!normalizedPhone) {
       return Response.json(
@@ -25,9 +26,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!normalizedTicketId) {
+    if (!normalizedClaimToken) {
       return Response.json(
-        { success: false, error: "This claim link is missing a token." },
+        { success: false, error: "This claim link is invalid." },
+        { status: 400 }
+      );
+    }
+
+    if (!normalizedName) {
+      return Response.json(
+        { success: false, error: "Please enter your name." },
         { status: 400 }
       );
     }
@@ -37,10 +45,38 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // Re-resolve the transfer and ticket before burning a Verify check.
+    const { data: transfer, error: transferError } = await supabase
+      .from("pending_token_transfers")
+      .select("id, ticket_code_id, status, expires_at")
+      .eq("claim_token", normalizedClaimToken)
+      .maybeSingle();
+
+    if (transferError || !transfer) {
+      return Response.json(
+        { success: false, error: "This claim link is invalid." },
+        { status: 404 }
+      );
+    }
+
+    if (transfer.status !== "pending") {
+      return Response.json(
+        { success: false, error: "This claim link is no longer active." },
+        { status: 409 }
+      );
+    }
+
+    if (transfer.expires_at && new Date(transfer.expires_at) < new Date()) {
+      return Response.json(
+        { success: false, error: "This claim link has expired." },
+        { status: 410 }
+      );
+    }
+
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
-      .select("id, buyer_user_id, claimed, claimed_by_user")
-      .eq("id", normalizedTicketId)
+      .select("id, claimed, claimed_by_user")
+      .eq("id", transfer.ticket_code_id)
       .maybeSingle();
 
     if (ticketError || !ticket) {
@@ -57,27 +93,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: pendingTransfer, error: transferError } = await supabase
-      .from("pending_token_transfers")
-      .select("id, recipient_phone, status")
-      .eq("ticket_code_id", normalizedTicketId)
-      .eq("status", "pending")
-      .maybeSingle();
-
-    if (transferError || !pendingTransfer) {
+    if (ticket.claimed_by_user) {
       return Response.json(
-        { success: false, error: "No active transfer exists for this token." },
+        { success: false, error: "This token has already been claimed." },
         { status: 409 }
       );
     }
 
-    if (pendingTransfer.recipient_phone !== normalizedPhone) {
-      return Response.json(
-        { success: false, error: "Enter the correct phone number." },
-        { status: 403 }
-      );
-    }
-
+    // Burn the Verify check.
     const client = Twilio(
       process.env.TWILIO_ACCOUNT_SID!,
       process.env.TWILIO_AUTH_TOKEN!
@@ -97,18 +120,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // Upsert user by phone. Updates the name only if we didn't already
+    // have one — preserves a returning user's existing name over whatever
+    // was typed in the claim form.
     let userId: string;
 
     const { data: existingUser } = await supabase
       .from("users")
-      .select("id")
+      .select("id, name")
       .eq("phone", normalizedPhone)
       .maybeSingle();
 
     if (existingUser?.id) {
+      const shouldUpdateName = !existingUser.name && normalizedName;
       const { data: updatedUser, error: updateUserError } = await supabase
         .from("users")
-        .update({ phone_verified: true })
+        .update({
+          phone_verified: true,
+          ...(shouldUpdateName ? { name: normalizedName } : {}),
+        })
         .eq("id", existingUser.id)
         .select("id")
         .single();
@@ -125,6 +155,7 @@ export async function POST(req: Request) {
       const { data: insertedUser, error: insertUserError } = await supabase
         .from("users")
         .insert({
+          name: normalizedName,
           phone: normalizedPhone,
           phone_verified: true,
         })
@@ -141,34 +172,59 @@ export async function POST(req: Request) {
       userId = insertedUser.id;
     }
 
-    const { error: ticketUpdateError } = await supabase
-      .from("ticket_codes")
-      .update({
-        claimed_by_user: userId,
-      })
-      .eq("id", normalizedTicketId)
-      .eq("claimed", false);
-
-    if (ticketUpdateError) {
-      return Response.json(
-        { success: false, error: "Could not finalize token claim." },
-        { status: 500 }
-      );
-    }
-
-    const { error: transferUpdateError } = await supabase
+    // Atomic first-verify-wins. Flip the transfer row from pending to
+    // accepted with an optimistic WHERE status='pending' guard. If zero
+    // rows update, another claim beat us to it.
+    const { data: acceptedTransfer, error: acceptError } = await supabase
       .from("pending_token_transfers")
       .update({
         status: "accepted",
         accepted_at: new Date().toISOString(),
+        recipient_phone: normalizedPhone,
+        recipient_name: normalizedName,
       })
-      .eq("id", pendingTransfer.id)
-      .eq("status", "pending");
+      .eq("id", transfer.id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
-    if (transferUpdateError) {
+    if (acceptError) {
       return Response.json(
         { success: false, error: "Could not finalize transfer." },
         { status: 500 }
+      );
+    }
+
+    if (!acceptedTransfer) {
+      // Another claim already flipped it. Don't also try to update the
+      // ticket — whoever won already did that.
+      return Response.json(
+        { success: false, error: "This token has already been claimed." },
+        { status: 409 }
+      );
+    }
+
+    // Now assign the ticket. Use the claimed=false guard so a simultaneous
+    // checkin scan doesn't race us.
+    const { data: assignedTicket, error: ticketUpdateError } = await supabase
+      .from("ticket_codes")
+      .update({ claimed_by_user: userId })
+      .eq("id", ticket.id)
+      .eq("claimed", false)
+      .select("id")
+      .maybeSingle();
+
+    if (ticketUpdateError || !assignedTicket) {
+      // Ticket got checked in between our transfer-accept and this update.
+      // Roll back the transfer accept so state stays coherent.
+      await supabase
+        .from("pending_token_transfers")
+        .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+        .eq("id", transfer.id);
+
+      return Response.json(
+        { success: false, error: "This token was used before claim completed." },
+        { status: 409 }
       );
     }
 
@@ -177,6 +233,7 @@ export async function POST(req: Request) {
       httpOnly: false,
       sameSite: "lax",
       path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
     return Response.json({ success: true });
