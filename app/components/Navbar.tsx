@@ -7,7 +7,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const hideNavbarCompletely =
-    pathname === "/claim-token" || pathname === "/checkin";
+    pathname?.startsWith("/claim") || pathname === "/checkin";
 
   const hideNavLinks =
     pathname === "/signup" ||

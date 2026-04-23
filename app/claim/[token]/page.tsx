@@ -1,15 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 
 type Step = "phone" | "code" | "success";
+type LookupState =
+  | { kind: "loading" }
+  | { kind: "ok"; tokenType: "ga" | "vip" | "table" }
+  | { kind: "error"; message: string };
 
 function normalizePhoneInput(value: string) {
   return value.replace(/[^\d+]/g, "");
 }
 
-export default function ClaimTokenPage() {
-  const [ticketId, setTicketId] = useState("");
+function tokenTypeLabel(t: "ga" | "vip" | "table") {
+  if (t === "table") return "VIP TABLE TOKEN";
+  if (t === "vip") return "VIP TOKEN";
+  return "GA TOKEN";
+}
+
+export default function ClaimTokenPage({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token: claimToken } = use(params);
+
+  const [lookup, setLookup] = useState<LookupState>({ kind: "loading" });
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<Step>("phone");
@@ -24,15 +41,39 @@ export default function ClaimTokenPage() {
     function handleResize() {
       setIsMobile(window.innerWidth < 900);
     }
-
     handleResize();
     window.addEventListener("resize", handleResize);
-
-    const params = new URLSearchParams(window.location.search);
-    setTicketId((params.get("ticket") || "").trim());
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function runLookup() {
+      try {
+        const res = await fetch(
+          `/api/claim-token/lookup?token=${encodeURIComponent(claimToken)}`
+        );
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok || !data.success) {
+          setLookup({
+            kind: "error",
+            message: data.error || "This claim link is invalid.",
+          });
+          return;
+        }
+        setLookup({ kind: "ok", tokenType: data.token_type });
+      } catch {
+        if (!cancelled) {
+          setLookup({ kind: "error", message: "This claim link is invalid." });
+        }
+      }
+    }
+    runLookup();
+    return () => {
+      cancelled = true;
+    };
+  }, [claimToken]);
 
   const inputStyle: React.CSSProperties = useMemo(
     () => ({
@@ -71,72 +112,38 @@ export default function ClaimTokenPage() {
   );
 
   function validatePhoneStep() {
-    if (!ticketId) {
-      return "Missing token.";
-    }
-
-    if (!phone.trim()) {
-      return "Enter your phone number.";
-    }
-
-    if (!termsChecked) {
-      return "Agree to Terms & Conditions.";
-    }
-
-    if (!privacyChecked) {
-      return "Agree to Privacy Policy.";
-    }
-
+    if (!name.trim()) return "Enter your name.";
+    if (!phone.trim()) return "Enter your phone number.";
+    if (!termsChecked) return "Agree to Terms & Conditions.";
+    if (!privacyChecked) return "Agree to Privacy Policy.";
     return "";
   }
 
   function validateCodeStep() {
-    if (!ticketId) {
-      return "Missing token.";
-    }
-
-    if (!phone.trim()) {
-      return "Enter your phone number.";
-    }
-
-    if (!code.trim()) {
-      return "Enter verification code.";
-    }
-
+    if (!code.trim()) return "Enter verification code.";
     return "";
   }
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
-
     const validationError = validatePhoneStep();
     if (validationError) {
       setMessage(validationError);
       return;
     }
-
     setLoading(true);
     setMessage("");
-
     try {
       const res = await fetch("/api/claim-token/send-code", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone,
-          ticketId,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, claimToken }),
       });
-
       const data = await res.json();
-
       if (!res.ok || !data.success) {
         setMessage(data.error || "Couldn't send code.");
         return;
       }
-
       setStep("code");
       setMessage("VERIFICATION CODE TRANSMITTED.");
     } catch {
@@ -148,36 +155,24 @@ export default function ClaimTokenPage() {
 
   async function verifyAndClaim(e: React.FormEvent) {
     e.preventDefault();
-
     const validationError = validateCodeStep();
     if (validationError) {
       setMessage(validationError);
       return;
     }
-
     setLoading(true);
     setMessage("");
-
     try {
       const res = await fetch("/api/claim-token/verify", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone,
-          code,
-          ticketId,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code, claimToken, name }),
       });
-
       const data = await res.json();
-
       if (!res.ok || !data.success) {
         setMessage(data.error || "Verification failed.");
         return;
       }
-
       setStep("success");
       setMessage("TOKEN CLAIMED. REDIRECTING...");
       window.location.href = "/dashboard";
@@ -320,12 +315,16 @@ export default function ClaimTokenPage() {
             <div className="modal-status-line">
               <span className="modal-status-symbol">{">"}</span>
               <span className="modal-status-text">
-                VERIFY PHONE TO CLAIM TRANSMITTED TOKEN.
+                {lookup.kind === "loading"
+                  ? "VERIFYING CLAIM LINK..."
+                  : lookup.kind === "error"
+                  ? lookup.message.toUpperCase()
+                  : `${tokenTypeLabel(lookup.tokenType)} INCOMING. VERIFY PHONE TO CLAIM.`}
               </span>
             </div>
           </div>
 
-          {step === "phone" && (
+          {lookup.kind === "ok" && step === "phone" && (
             <div style={checkboxWrapStyle}>
               <label style={checkboxRowStyle} htmlFor="claim-terms-consent">
                 <input
@@ -339,10 +338,7 @@ export default function ClaimTokenPage() {
                   I agree to the{" "}
                   <a
                     href="/terms"
-                    style={{
-                      color: "white",
-                      textDecoration: "underline",
-                    }}
+                    style={{ color: "white", textDecoration: "underline" }}
                   >
                     Terms &amp; Conditions
                   </a>
@@ -362,10 +358,7 @@ export default function ClaimTokenPage() {
                   I agree to the{" "}
                   <a
                     href="/privacy"
-                    style={{
-                      color: "white",
-                      textDecoration: "underline",
-                    }}
+                    style={{ color: "white", textDecoration: "underline" }}
                   >
                     Privacy Policy
                   </a>
@@ -375,20 +368,24 @@ export default function ClaimTokenPage() {
             </div>
           )}
 
-          {step === "phone" && (
+          {lookup.kind === "ok" && step === "phone" && (
             <form
               onSubmit={sendCode}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
+              style={{ display: "flex", flexDirection: "column", flex: 1 }}
             >
               <div style={formInnerOffsetStyle}>
                 <div style={fieldWrapStyle}>
                   <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="NAME"
+                    style={{ ...inputStyle, marginBottom: 12 }}
+                  />
+                  <input
                     value={phone}
-                    onChange={(e) => setPhone(normalizePhoneInput(e.target.value))}
+                    onChange={(e) =>
+                      setPhone(normalizePhoneInput(e.target.value))
+                    }
                     placeholder="PHONE NUMBER"
                     style={inputStyle}
                   />
@@ -403,14 +400,10 @@ export default function ClaimTokenPage() {
             </form>
           )}
 
-          {step === "code" && (
+          {lookup.kind === "ok" && step === "code" && (
             <form
               onSubmit={verifyAndClaim}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
+              style={{ display: "flex", flexDirection: "column", flex: 1 }}
             >
               <div style={formInnerOffsetStyle}>
                 <div style={fieldWrapStyle}>
@@ -423,7 +416,6 @@ export default function ClaimTokenPage() {
                       marginBottom: 12,
                     }}
                   />
-
                   <input
                     value={code}
                     onChange={(e) => setCode(e.target.value.trim())}
