@@ -35,9 +35,7 @@ export default function Privacy() {
       </p>
       <ul>
         <li>Account creation and verification</li>
-        <li>Participant registration confirmation</li>
-        <li>Event participation instructions</li>
-        <li>Event updates related to participation</li>
+        <li>Phone verification when signing in or claiming a transferred token</li>
       </ul>
 
       <h2>SMS Verification</h2>
