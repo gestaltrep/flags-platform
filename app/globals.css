@@ -509,8 +509,8 @@ body::before {
 }
 
 .signup-modal-request .signup-title-large {
-  margin-top: 0;
-  margin-bottom: 28px;
+  margin-top: 6px;
+  margin-bottom: 32px;
 }
 
 .signup-modal-ticket .signup-title-large {
@@ -768,8 +768,8 @@ body::before {
   }
 
   .signup-modal-request .signup-title-large {
-    margin-top: 0;
-    margin-bottom: 28px;
+    margin-top: 6px;
+    margin-bottom: 32px;
     transform: none;
   }
 
