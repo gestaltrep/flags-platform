@@ -7,5 +7,5 @@ export async function GET() {
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   const { count } = await supabase.from("ticket_codes").select("*", { count: "exact", head: true }).eq("event_id", EVENT_ID).eq("is_table", true).eq("comp", false);
   const tablesSold = Math.floor((count || 0) / 6);
-  return Response.json({ sold: tablesSold, remaining: 10 - tablesSold, soldOut: tablesSold >= 10 });
+  return Response.json({ sold: tablesSold, remaining: 5 - tablesSold, soldOut: tablesSold >= 5 });
 }

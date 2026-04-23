@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       .eq("is_table", true);
 
     const tablesSold = Math.floor((count ?? 0) / 6);
-    if (tablesSold >= 10) return Response.json({ error: "TABLES SOLD OUT" }, { status: 400 });
+    if (tablesSold >= 5) return Response.json({ error: "TABLES SOLD OUT" }, { status: 400 });
 
     const quantity = 6;
     const baseAmount = 66667;
