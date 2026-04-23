@@ -457,6 +457,11 @@ export default function TerminalClient() {
         return;
       }
 
+      setSendClaimUrls((prev) => {
+        const next = { ...prev };
+        delete next[ticketId];
+        return next;
+      });
       await loadTickets();
     } catch (err) {
       console.error("Cancel transfer failed", err);
