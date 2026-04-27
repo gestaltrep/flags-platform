@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 const SLICE_COUNT = 6;
 const GLITCH_DURATION_MS = 2000;
+const LINEUP_GLITCH_MS = 350;
 
-function GlitchCanvas({ posterSrc }: { posterSrc: string }) {
+type Phase = "poster-glitch" | "lineup-glitch" | "settled";
+
+function GlitchCanvas({ src, fitMode }: { src: string; fitMode: "cover-30pct" | "cover-center" }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -16,11 +19,11 @@ function GlitchCanvas({ posterSrc }: { posterSrc: string }) {
 
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = posterSrc;
+    img.src = src;
 
     let raf = 0;
     let lastDisplace = 0;
-    const DISPLACE_INTERVAL = 80;
+    const DISPLACE_INTERVAL = 50;
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -44,7 +47,7 @@ function GlitchCanvas({ posterSrc }: { posterSrc: string }) {
         drawW = w;
         drawH = w / imgRatio;
         drawX = 0;
-        drawY = (h - drawH) * 0.3;
+        drawY = (h - drawH) * (fitMode === "cover-30pct" ? 0.3 : 0.5);
       }
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
@@ -53,14 +56,14 @@ function GlitchCanvas({ posterSrc }: { posterSrc: string }) {
     const displaceBlocks = () => {
       const w = canvas.width;
       const h = canvas.height;
-      const blockCount = 4 + Math.floor(Math.random() * 5);
+      const blockCount = 8 + Math.floor(Math.random() * 8);
       for (let i = 0; i < blockCount; i++) {
-        const blockW = 20 + Math.floor(Math.random() * 60);
+        const blockW = 15 + Math.floor(Math.random() * 90);
         const blockH = 8 + Math.floor(Math.random() * 25);
         const sx = Math.floor(Math.random() * (w - blockW));
         const sy = Math.floor(Math.random() * (h - blockH));
-        const dx = sx + (Math.random() - 0.5) * 80;
-        const dy = sy + (Math.random() - 0.5) * 30;
+        const dx = sx + (Math.random() - 0.5) * 140;
+        const dy = sy + (Math.random() - 0.5) * 50;
         try {
           const slice = ctx.getImageData(sx, sy, blockW, blockH);
           ctx.putImageData(slice, dx, dy);
@@ -89,7 +92,7 @@ function GlitchCanvas({ posterSrc }: { posterSrc: string }) {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
     };
-  }, [posterSrc]);
+  }, [src, fitMode]);
 
   return (
     <canvas
@@ -117,29 +120,27 @@ export default function HeroGlitch({
   className?: string;
   posterObjectPosition?: string;
 }) {
-  const [revealed, setRevealed] = useState(false);
+  const [phase, setPhase] = useState<Phase>("poster-glitch");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      setRevealed(true);
+      setPhase("settled");
       return;
     }
-    const t = setTimeout(() => setRevealed(true), GLITCH_DURATION_MS);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setPhase("lineup-glitch"), GLITCH_DURATION_MS);
+    const t2 = setTimeout(() => setPhase("settled"), GLITCH_DURATION_MS + LINEUP_GLITCH_MS);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   // Pre-mount (SSR + first paint): show lineup directly. No layout shift, crawler-friendly.
-  if (!mounted || revealed) {
+  if (!mounted || phase === "settled") {
     return (
       <div
         className={className}
-        style={{
-          position: "relative",
-          overflow: "hidden",
-        }}
+        style={{ position: "relative", overflow: "hidden", background: "transparent" }}
       >
         <img
           src={lineupSrc}
@@ -156,6 +157,32 @@ export default function HeroGlitch({
     );
   }
 
+  if (phase === "lineup-glitch") {
+    return (
+      <div
+        className={className}
+        style={{ position: "relative", overflow: "hidden", background: "#000" }}
+      >
+        <img
+          src={lineupSrc}
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center center",
+            display: "block",
+          }}
+        />
+        <GlitchCanvas src={lineupSrc} fitMode="cover-center" />
+      </div>
+    );
+  }
+
+  // phase === "poster-glitch"
   return (
     <div
       className={className}
@@ -184,7 +211,7 @@ export default function HeroGlitch({
           />
         );
       })}
-      <GlitchCanvas posterSrc={posterSrc} />
+      <GlitchCanvas src={posterSrc} fitMode="cover-30pct" />
     </div>
   );
 }
