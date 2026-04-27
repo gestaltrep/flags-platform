@@ -874,6 +874,10 @@ body::before {
   .modal-arrow-glyph-up {
     transform: none;
   }
+
+  .home-mobile-poster-wrap > div:last-child {
+    display: none;
+  }
 }
 
 /* ---------- Hero glitch effect (homepage only) ---------- */
