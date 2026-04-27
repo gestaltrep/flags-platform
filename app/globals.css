@@ -197,6 +197,8 @@ body::before {
   max-width: 100%;
   height: 420px;
   overflow: hidden;
+  border: 2px solid #666;
+  box-sizing: border-box;
 }
 
 .home-poster-image {
@@ -872,4 +874,43 @@ body::before {
   .modal-arrow-glyph-up {
     transform: none;
   }
+}
+
+/* ---------- Hero glitch effect (homepage only) ---------- */
+@keyframes hero-glitch-slice-0 {
+  0%, 100%   { transform: translateX(0); filter: none; }
+  12%, 13%   { transform: translateX(-14px); filter: hue-rotate(60deg); }
+  42%, 43%   { transform: translateX(8px); filter: hue-rotate(40deg) saturate(1.3); }
+  71%, 72%   { transform: translateX(-22px); filter: hue-rotate(80deg); }
+}
+@keyframes hero-glitch-slice-1 {
+  0%, 100%   { transform: translateX(0); }
+  23%, 24%   { transform: translateX(11px); filter: hue-rotate(70deg) saturate(1.4); }
+  55%, 56%   { transform: translateX(-6px); }
+  88%, 89%   { transform: translateX(18px); filter: hue-rotate(-50deg); }
+}
+@keyframes hero-glitch-slice-2 {
+  0%, 100%   { transform: translateX(0); }
+  8%, 9%     { transform: translateX(-5px); filter: hue-rotate(90deg); }
+  34%, 36%   { transform: translateX(20px); filter: contrast(1.4) hue-rotate(50deg); }
+  62%, 63%   { transform: translateX(-10px); filter: hue-rotate(70deg) saturate(1.5); }
+  91%, 92%   { transform: translateX(15px); filter: hue-rotate(40deg); }
+}
+@keyframes hero-glitch-slice-3 {
+  0%, 100%   { transform: translateX(0); }
+  18%, 19%   { transform: translateX(7px); filter: hue-rotate(80deg); }
+  47%, 49%   { transform: translateX(-25px); filter: hue-rotate(100deg) saturate(1.8); }
+  77%, 78%   { transform: translateX(4px); filter: hue-rotate(60deg); }
+}
+@keyframes hero-glitch-slice-4 {
+  0%, 100%   { transform: translateX(0); }
+  28%, 29%   { transform: translateX(-9px); filter: hue-rotate(50deg) saturate(1.4); }
+  51%, 52%   { transform: translateX(13px); filter: hue-rotate(75deg); }
+  83%, 84%   { transform: translateX(-17px); filter: hue-rotate(-60deg) saturate(1.3); }
+}
+@keyframes hero-glitch-slice-5 {
+  0%, 100%   { transform: translateX(0); }
+  15%, 16%   { transform: translateX(6px); filter: hue-rotate(70deg); }
+  39%, 40%   { transform: translateX(-11px); filter: hue-rotate(90deg) saturate(1.5); }
+  68%, 70%   { transform: translateX(24px); filter: contrast(1.3) hue-rotate(80deg); }
 }
