@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import HeroGlitch from "./components/HeroGlitch";
 
 export default function Home() {
   const [open, setOpen] = useState(false);
@@ -222,7 +223,7 @@ export default function Home() {
       <main className="home-desktop">
         <div className="home-desktop-grid">
           <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
-            <img src="/poster-image.png" className="home-poster-image" alt="Event site" />
+            <HeroGlitch className="home-poster-image" />
             <div style={{
               position: "absolute",
               bottom: 3,
@@ -240,7 +241,7 @@ export default function Home() {
           <div className="home-desktop-info">
             <div className="home-date-desktop">May 30</div>
             <div className="home-time-desktop">4:30 PM – 12 AM</div>
-            <div className="home-location-desktop">Port Charlotte, FL</div>
+            <div className="home-location-desktop">Charlotte County Fairgrounds</div>
 
             <button
               className="cta-button"
@@ -294,16 +295,12 @@ export default function Home() {
           <div className="home-mobile-text">
             <div className="home-date-mobile">MAY 30</div>
             <div className="home-time-mobile">4:30 PM – 12 AM</div>
-            <div className="home-location-mobile">PORT CHARLOTTE, FL</div>
+            <div className="home-location-mobile">CHARLOTTE COUNTY FAIRGROUNDS</div>
           </div>
         </div>
 
         <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
-          <img
-            src="/poster-image.png"
-            className="home-mobile-poster"
-            alt="Event site"
-          />
+          <HeroGlitch className="home-mobile-poster" />
           <div style={{
             position: "absolute",
             bottom: 10,
