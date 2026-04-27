@@ -104,8 +104,10 @@ function GlitchCanvas({
     };
 
     const drawBase = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (mode === "poster-chaos" && posterCanvas) {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      if (mode === "poster-chaos" && posterCanvas && posterCanvas.width > 0 && posterCanvas.height > 0) {
         ctx.drawImage(posterCanvas, 0, 0);
       }
       // assembly mode: canvas stays transparent — lineup <img> shows through beneath
@@ -130,7 +132,7 @@ function GlitchCanvas({
 
         const fromLineup = Math.random() < share;
         const sourceCanvas = fromLineup ? lineupCanvas : posterCanvas;
-        if (!sourceCanvas) continue;
+        if (!sourceCanvas || sourceCanvas.width === 0 || sourceCanvas.height === 0) continue;
 
         const settling = fromLineup && mode === "assembly" ? 0.4 : 1.0;
         const dx = sx + (Math.random() - 0.5) * 140 * dispScale * settling;
@@ -165,8 +167,8 @@ function GlitchCanvas({
     };
     posterImg.onload = onLoad;
     lineupImg.onload = onLoad;
-    if (posterImg.complete) onLoad();
-    if (lineupImg.complete) onLoad();
+    if (posterImg.complete && posterImg.naturalWidth > 0) onLoad();
+    if (lineupImg.complete && lineupImg.naturalWidth > 0) onLoad();
 
     window.addEventListener("resize", resize);
     return () => {
