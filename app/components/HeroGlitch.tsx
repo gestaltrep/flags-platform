@@ -23,8 +23,9 @@ export default function HeroGlitch({
   useEffect(() => {
     setMounted(true);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const force = new URLSearchParams(window.location.search).has("glitch");
     const seen = sessionStorage.getItem(SESSION_KEY);
-    if (reduced || seen) {
+    if (reduced || (seen && !force)) {
       setRevealed(true);
       return;
     }
@@ -43,10 +44,6 @@ export default function HeroGlitch({
         style={{
           position: "relative",
           overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "transparent",
         }}
       >
         <img
@@ -54,7 +51,9 @@ export default function HeroGlitch({
           alt="RAVE_Initiation lineup"
           style={{
             width: "100%",
-            height: "auto",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center center",
             display: "block",
           }}
         />
