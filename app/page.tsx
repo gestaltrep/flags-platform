@@ -241,7 +241,7 @@ export default function Home() {
           <div className="home-desktop-info">
             <div className="home-date-desktop">May 30</div>
             <div className="home-time-desktop">4:30 PM – 12 AM</div>
-            <div className="home-location-desktop">Charlotte County<br />Fairgrounds</div>
+            <div className="home-location-desktop">Charlotte County Fair</div>
 
             <button
               className="cta-button"
@@ -295,7 +295,7 @@ export default function Home() {
           <div className="home-mobile-text">
             <div className="home-date-mobile">MAY 30</div>
             <div className="home-time-mobile">4:30 PM – 12 AM</div>
-            <div className="home-location-mobile">CHARLOTTE COUNTY<br />FAIRGROUNDS</div>
+            <div className="home-location-mobile">CHARLOTTE COUNTY FAIR</div>
           </div>
         </div>
 
