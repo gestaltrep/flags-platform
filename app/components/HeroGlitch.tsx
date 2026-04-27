@@ -42,6 +42,7 @@ function GlitchCanvas({
     let raf = 0;
     let lastDisplace = 0;
     const DISPLACE_INTERVAL = 50;
+    const BAND_HEIGHT = 40;
 
     const buildOffscreen = (img: HTMLImageElement, fit: "cover-30pct" | "cover-center") => {
       const off = document.createElement("canvas");
@@ -81,75 +82,176 @@ function GlitchCanvas({
       }
     };
 
+    // Returns 0..1 for assembly progress, or 0 in poster-chaos mode
     const assemblyProgress = (now: number): number => {
       if (mode !== "assembly") return 0;
       const elapsed = now - startTimeRef.current;
       return Math.min(1, Math.max(0, elapsed / ASSEMBLY_MS));
     };
 
-    const lineupShare = (progress: number): number => {
-      if (mode === "poster-chaos") return 0;
-      return 0.05 + 0.95 * (progress * progress * (3 - 2 * progress));
+    // Ease-in-out cubic — slow start, fast middle, slow end
+    const easeInOutCubic = (t: number): number => {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
 
-    const chaosIntensity = (progress: number): number => {
-      if (mode === "poster-chaos") return 1;
-      if (progress < 0.61) return 1;
-      return Math.max(0, 1 - (progress - 0.61) / 0.39);
+    // Lock band Y-position in canvas-pixel space.
+    // Starts above canvas (-BAND_HEIGHT) so band enters from top.
+    // Ends below canvas (h + BAND_HEIGHT) so band fully exits before settle.
+    const lockBandY = (progress: number, h: number): number => {
+      const eased = easeInOutCubic(progress);
+      const totalTravel = h + BAND_HEIGHT * 2;
+      return -BAND_HEIGHT + eased * totalTravel;
     };
 
-    const displacementScale = (progress: number): number => {
-      if (mode === "poster-chaos") return 1;
-      return Math.max(0, 1 - progress * progress);
+    // Final-stage degauss flash: triggers in last 8% of assembly (~100ms)
+    const isDegaussFlash = (progress: number): boolean => {
+      return progress >= 0.92 && progress < 1.0;
     };
 
-    const drawBase = () => {
+    const drawBase = (now: number) => {
       const w = canvas.width;
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
+
       if (mode === "poster-chaos" && posterCanvas && posterCanvas.width > 0 && posterCanvas.height > 0) {
         ctx.drawImage(posterCanvas, 0, 0);
+        return;
       }
-      // assembly mode: canvas stays transparent — lineup <img> shows through beneath
+
+      if (mode === "assembly" && posterCanvas && posterCanvas.width > 0 && posterCanvas.height > 0) {
+        const progress = assemblyProgress(now);
+
+        // Degauss flash at very end: full white-ish flash fading over last 8%
+        if (isDegaussFlash(progress)) {
+          const flashStrength = 1 - (progress - 0.92) / 0.08;
+          ctx.fillStyle = `rgba(255, 255, 255, ${flashStrength * 0.6})`;
+          ctx.fillRect(0, 0, w, h);
+          return;
+        }
+
+        const bandY = lockBandY(progress, h);
+        const halfBand = BAND_HEIGHT / 2;
+
+        // Below the band: paint poster chaos texture (clipped)
+        const belowStart = Math.max(0, bandY + halfBand);
+        if (belowStart < h) {
+          ctx.drawImage(
+            posterCanvas,
+            0, belowStart, w, h - belowStart,
+            0, belowStart, w, h - belowStart
+          );
+        }
+
+        // Above the band: leave canvas transparent so lineup <img> shows through. (no-op)
+
+        // Inside the band: 60% poster blended in — canvas blocks will overlay in displaceBlocks
+        const bandTop = Math.max(0, bandY - halfBand);
+        const bandBot = Math.min(h, bandY + halfBand);
+        if (bandBot > bandTop) {
+          ctx.save();
+          ctx.globalAlpha = 0.6;
+          ctx.drawImage(
+            posterCanvas,
+            0, bandTop, w, bandBot - bandTop,
+            0, bandTop, w, bandBot - bandTop
+          );
+          ctx.restore();
+        }
+      }
     };
 
     const displaceBlocks = (now: number) => {
       const w = canvas.width;
       const h = canvas.height;
+
+      if (mode === "poster-chaos") {
+        // Full-canvas chaos — high density, large throws
+        const blockCount = 8 + Math.floor(Math.random() * 8);
+        for (let i = 0; i < blockCount; i++) {
+          const blockW = 15 + Math.floor(Math.random() * 90);
+          const blockH = 8 + Math.floor(Math.random() * 25);
+          const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
+          const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
+          const dx = sx + (Math.random() - 0.5) * 140;
+          const dy = sy + (Math.random() - 0.5) * 50;
+          if (!posterCanvas || posterCanvas.width === 0 || posterCanvas.height === 0) continue;
+          try {
+            const slice = posterCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+            if (slice) ctx.putImageData(slice, dx, dy);
+          } catch { /* ignore */ }
+        }
+        return;
+      }
+
+      if (mode !== "assembly") return;
+
       const progress = assemblyProgress(now);
-      const intensity = chaosIntensity(progress);
-      if (intensity <= 0) return;
-      const baseCount = 8 + Math.floor(Math.random() * 8);
-      const blockCount = Math.max(1, Math.floor(baseCount * intensity));
-      const dispScale = displacementScale(progress);
-      const share = lineupShare(progress);
+      if (isDegaussFlash(progress)) return; // no chaos during flash
 
-      for (let i = 0; i < blockCount; i++) {
+      const bandY = lockBandY(progress, h);
+      const halfBand = BAND_HEIGHT / 2;
+      const bandTop = bandY - halfBand;
+      const bandBot = bandY + halfBand;
+
+      // (a) Heavy chaos INSIDE band: ~10 blocks, 50/50 poster+lineup, big displacement
+      for (let i = 0; i < 10; i++) {
         const blockW = 15 + Math.floor(Math.random() * 90);
-        const blockH = 8 + Math.floor(Math.random() * 25);
+        const blockH = 6 + Math.floor(Math.random() * 20);
         const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
-        const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
-
-        const fromLineup = Math.random() < share;
+        const sy = Math.max(0, Math.floor(bandTop + Math.random() * BAND_HEIGHT));
+        const clampedH = Math.min(blockH, Math.max(1, bandBot - sy));
+        if (clampedH < 1) continue;
+        const dx = sx + (Math.random() - 0.5) * 140;
+        const dy = sy + (Math.random() - 0.5) * 30;
+        const fromLineup = Math.random() < 0.5;
         const sourceCanvas = fromLineup ? lineupCanvas : posterCanvas;
         if (!sourceCanvas || sourceCanvas.width === 0 || sourceCanvas.height === 0) continue;
-
-        const settling = fromLineup && mode === "assembly" ? 0.4 : 1.0;
-        const dx = sx + (Math.random() - 0.5) * 140 * dispScale * settling;
-        const dy = sy + (Math.random() - 0.5) * 50 * dispScale * settling;
-
         try {
-          const slice = sourceCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+          const slice = sourceCanvas.getContext("2d")?.getImageData(sx, sy, blockW, clampedH);
           if (slice) ctx.putImageData(slice, dx, dy);
-        } catch {
-          // tainted canvas, image not ready, etc.
+        } catch { /* ignore */ }
+      }
+
+      // (b) Above the band — occasional lineup leakage: 2 small blocks, slight displacement
+      if (bandTop > 20) {
+        for (let i = 0; i < 2; i++) {
+          const blockW = 10 + Math.floor(Math.random() * 50);
+          const blockH = 4 + Math.floor(Math.random() * 12);
+          const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
+          const sy = Math.floor(Math.random() * Math.max(1, bandTop - blockH));
+          const dx = sx + (Math.random() - 0.5) * 30;
+          const dy = sy + (Math.random() - 0.5) * 8;
+          if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) continue;
+          try {
+            const slice = lineupCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+            if (slice) ctx.putImageData(slice, dx, dy);
+          } catch { /* ignore */ }
+        }
+      }
+
+      // (c) Below the band — poster chaos continues
+      if (bandBot < h - 20) {
+        for (let i = 0; i < 6; i++) {
+          const blockW = 15 + Math.floor(Math.random() * 90);
+          const blockH = 8 + Math.floor(Math.random() * 25);
+          const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
+          const sy = Math.floor(bandBot + Math.random() * Math.max(1, h - bandBot - blockH));
+          const dx = sx + (Math.random() - 0.5) * 140;
+          const dy = sy + (Math.random() - 0.5) * 50;
+          if (!posterCanvas || posterCanvas.width === 0 || posterCanvas.height === 0) continue;
+          try {
+            const slice = posterCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+            if (slice) ctx.putImageData(slice, dx, dy);
+          } catch { /* ignore */ }
         }
       }
     };
 
     const tick = (now: number) => {
       if (startTimeRef.current === 0) startTimeRef.current = now;
-      drawBase();
+      drawBase(now);
       if (now - lastDisplace >= DISPLACE_INTERVAL) {
         displaceBlocks(now);
         lastDisplace = now;
