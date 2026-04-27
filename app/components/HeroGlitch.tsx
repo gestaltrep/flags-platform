@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const SLICE_COUNT = 6;
-const TOTAL_DURATION_MS = 2600;
+const MAIN_DURATION_MS = 2600;
+const EPILOGUE_DURATION_MS = 600;
+const TOTAL_DURATION_MS = MAIN_DURATION_MS + EPILOGUE_DURATION_MS; // 3200
 
 type Phase = "chaos" | "settled";
 
@@ -75,21 +77,36 @@ function GlitchCanvas({
       }
     };
 
-    // Animation progress 0..1 over the full chaos duration
-    const progress = (now: number): number => {
+    // Returns 0..1 over the main 2.6s animation. Caps at 1 during epilogue.
+    const mainProgress = (now: number): number => {
       const elapsed = now - startTimeRef.current;
-      return Math.min(1, Math.max(0, elapsed / TOTAL_DURATION_MS));
+      return Math.min(1, Math.max(0, elapsed / MAIN_DURATION_MS));
     };
 
-    // Sigmoid curve, crossover at t=0.5 (1.3s of 2.6s). Returns lineup share 0..1.
+    // Returns 0..1 over the 600ms epilogue. Returns 0 during main animation.
+    const epilogueProgress = (now: number): number => {
+      const elapsed = now - startTimeRef.current;
+      if (elapsed < MAIN_DURATION_MS) return 0;
+      return Math.min(1, (elapsed - MAIN_DURATION_MS) / EPILOGUE_DURATION_MS);
+    };
+
+    // Sigmoid curve, crossover at t=0.5. Returns lineup share 0..1.
     const lineupShare = (t: number): number => {
       return 1 / (1 + Math.exp(-10 * (t - 0.5)));
     };
 
-    // Full intensity through 88%, then ramps to 0 over the last 12%
-    const chaosIntensity = (t: number): number => {
-      if (t < 0.88) return 1;
-      return Math.max(0, 1 - (t - 0.88) / 0.12);
+    // Main chaos intensity: full through 88%, decays to 0 at end of main
+    const mainChaosIntensity = (mainT: number): number => {
+      if (mainT >= 1) return 0;
+      if (mainT < 0.88) return 1;
+      return Math.max(0, 1 - (mainT - 0.88) / 0.12);
+    };
+
+    // Epilogue chaos intensity: starts at ~0.4, decays quadratically to 0
+    const epilogueChaosIntensity = (epT: number): number => {
+      if (epT <= 0 || epT >= 1) return 0;
+      const remaining = 1 - epT;
+      return 0.4 * remaining * remaining;
     };
 
     // Pseudo-random per-stripe assignment shifting with time
@@ -103,7 +120,8 @@ function GlitchCanvas({
     const drawStripes = (now: number) => {
       const w = canvas.width;
       const h = canvas.height;
-      const t = progress(now);
+      const mainT = mainProgress(now);
+      const epT = epilogueProgress(now);
       ctx.clearRect(0, 0, w, h);
 
       const stripeCount = Math.ceil(h / STRIPE_HEIGHT);
@@ -111,28 +129,61 @@ function GlitchCanvas({
         const y = i * STRIPE_HEIGHT;
         const stripeH = Math.min(STRIPE_HEIGHT, h - y);
         if (stripeH <= 0) continue;
-        const useLineup = stripeIsLineup(i, t);
+        // During epilogue, all stripes are lineup
+        const useLineup = epT > 0 ? true : stripeIsLineup(i, mainT);
         const sourceCanvas = useLineup ? lineupCanvas : posterCanvas;
         if (!sourceCanvas || sourceCanvas.width === 0 || sourceCanvas.height === 0) continue;
-        ctx.drawImage(
-          sourceCanvas,
-          0, y, w, stripeH,
-          0, y, w, stripeH
-        );
+        ctx.drawImage(sourceCanvas, 0, y, w, stripeH, 0, y, w, stripeH);
       }
     };
 
     const displaceBlocks = (now: number) => {
       const w = canvas.width;
       const h = canvas.height;
-      const t = progress(now);
-      const intensity = chaosIntensity(t);
+      const mainT = mainProgress(now);
+      const epT = epilogueProgress(now);
+
+      if (epT > 0) {
+        // EPILOGUE: small chaos squares + occasional wide bar, sourced from lineup, decaying
+        const intensity = epilogueChaosIntensity(epT);
+        if (intensity <= 0) return;
+        const blockCount = Math.max(0, Math.floor((3 + Math.random() * 4) * intensity));
+        for (let i = 0; i < blockCount; i++) {
+          const blockW = 10 + Math.floor(Math.random() * 40);
+          const blockH = 5 + Math.floor(Math.random() * 12);
+          const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
+          const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
+          const dx = sx + (Math.random() - 0.5) * 50 * intensity;
+          const dy = sy + (Math.random() - 0.5) * 15 * intensity;
+          if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) continue;
+          try {
+            const slice = lineupCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+            if (slice) ctx.putImageData(slice, dx, dy);
+          } catch { /* ignore */ }
+        }
+
+        // Occasional wide horizontal bar jitter (~15% chance per frame)
+        if (Math.random() < 0.15 * intensity) {
+          const barH = 4 + Math.floor(Math.random() * 8);
+          const sy = Math.floor(Math.random() * Math.max(1, h - barH));
+          const dx = (Math.random() - 0.5) * 60 * intensity;
+          if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) return;
+          try {
+            const bar = lineupCanvas.getContext("2d")?.getImageData(0, sy, w, barH);
+            if (bar) ctx.putImageData(bar, dx, sy);
+          } catch { /* ignore */ }
+        }
+        return;
+      }
+
+      // MAIN: stripe-interleaved chaos
+      const intensity = mainChaosIntensity(mainT);
       if (intensity <= 0) return;
 
       const baseCount = 8 + Math.floor(Math.random() * 8);
       const blockCount = Math.max(0, Math.floor(baseCount * intensity));
       const dispMagnitude = intensity;
-      const lineupShareNow = lineupShare(t);
+      const lineupShareNow = lineupShare(mainT);
 
       for (let i = 0; i < blockCount; i++) {
         const blockW = 15 + Math.floor(Math.random() * 90);
@@ -141,11 +192,9 @@ function GlitchCanvas({
         const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
         const dx = sx + (Math.random() - 0.5) * 140 * dispMagnitude;
         const dy = sy + (Math.random() - 0.5) * 50 * dispMagnitude;
-
         const fromLineup = Math.random() < lineupShareNow;
         const sourceCanvas = fromLineup ? lineupCanvas : posterCanvas;
         if (!sourceCanvas || sourceCanvas.width === 0 || sourceCanvas.height === 0) continue;
-
         try {
           const slice = sourceCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
           if (slice) ctx.putImageData(slice, dx, dy);
