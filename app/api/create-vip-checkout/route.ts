@@ -25,7 +25,8 @@ export async function POST(req: Request) {
       .select("*", { count: "exact", head: true })
       .eq("event_id", EVENT_ID)
       .eq("is_vip", true)
-      .not("buyer_user_id", "is", null);
+      .not("buyer_user_id", "is", null)
+      .is("refunded_at", null);
 
     const vipSold = count ?? 0;
     const remaining = 50 - vipSold;
