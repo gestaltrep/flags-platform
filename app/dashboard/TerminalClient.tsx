@@ -1491,11 +1491,10 @@ export default function TerminalClient() {
                       {(() => {
                         const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
                         const orig = `$${(base / 100).toFixed(2)}`;
-                        if (gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0) {
-                          const disc = `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`;
-                          return `TIER ${tier} ACTIVE — ${orig} → ${disc}`;
-                        }
-                        return `TIER ${tier} ACTIVE — ${orig}`;
+                        const disc = gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0
+                          ? `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`
+                          : orig;
+                        return `TIER ${tier} ACTIVE — ${disc}`;
                       })()}
                     </span>
                   </div>
@@ -1619,11 +1618,10 @@ export default function TerminalClient() {
                       {(() => {
                         const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
                         const orig = `$${(base / 100).toFixed(2)}`;
-                        if (gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0) {
-                          const disc = `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`;
-                          return `TIER ${tier} ACTIVE — ${orig} → ${disc}`;
-                        }
-                        return `TIER ${tier} ACTIVE — ${orig}`;
+                        const disc = gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0
+                          ? `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`
+                          : orig;
+                        return `TIER ${tier} ACTIVE — ${disc}`;
                       })()}
                     </span>
                   </div>
@@ -1789,7 +1787,7 @@ export default function TerminalClient() {
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
                       {vipPromoValid && vipPromoDiscount != null && vipPromoDiscount > 0
-                        ? `VIP CHANNEL ACTIVE — $66.67 → $${(Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)}`
+                        ? `VIP CHANNEL ACTIVE — $${(Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)}`
                         : "VIP CHANNEL ACTIVE — $66.67"}
                     </span>
                   </div>
@@ -1901,7 +1899,7 @@ export default function TerminalClient() {
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
                       {vipPromoValid && vipPromoDiscount != null && vipPromoDiscount > 0
-                        ? `VIP CHANNEL ACTIVE — $66.67 → $${(Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)}`
+                        ? `VIP CHANNEL ACTIVE — $${(Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)}`
                         : "VIP CHANNEL ACTIVE — $66.67"}
                     </span>
                   </div>
@@ -2074,7 +2072,7 @@ export default function TerminalClient() {
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
                       {tablePromoValid && tablePromoDiscount != null && tablePromoDiscount > 0
-                        ? `VIP TABLE RESERVATION — $666.67 → $${(Math.round(66667 * (1 - tablePromoDiscount / 100)) / 100).toFixed(2)}`
+                        ? `VIP TABLE RESERVATION — $${(Math.round(66667 * (1 - tablePromoDiscount / 100)) / 100).toFixed(2)}`
                         : "VIP TABLE RESERVATION — $666.67"}
                     </span>
                   </div>
@@ -2171,7 +2169,7 @@ export default function TerminalClient() {
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
                       {tablePromoValid && tablePromoDiscount != null && tablePromoDiscount > 0
-                        ? `VIP TABLE RESERVATION — $666.67 → $${(Math.round(66667 * (1 - tablePromoDiscount / 100)) / 100).toFixed(2)}`
+                        ? `VIP TABLE RESERVATION — $${(Math.round(66667 * (1 - tablePromoDiscount / 100)) / 100).toFixed(2)}`
                         : "VIP TABLE RESERVATION — $666.67"}
                     </span>
                   </div>
