@@ -54,14 +54,17 @@ export default function TerminalClient() {
   const [gaPromoCode, setGaPromoCode] = useState("");
   const [gaPromoValid, setGaPromoValid] = useState<boolean | null>(null);
   const [gaPromoChecking, setGaPromoChecking] = useState(false);
+  const [gaPromoDiscount, setGaPromoDiscount] = useState<number | null>(null);
   const [vipPromoCode, setVipPromoCode] = useState("");
   const [vipPromoValid, setVipPromoValid] = useState<boolean | null>(null);
   const [vipPromoChecking, setVipPromoChecking] = useState(false);
+  const [vipPromoDiscount, setVipPromoDiscount] = useState<number | null>(null);
 
   const [tableOpen, setTableOpen] = useState(false);
   const [tablePromoCode, setTablePromoCode] = useState("");
   const [tablePromoValid, setTablePromoValid] = useState<boolean | null>(null);
   const [tablePromoChecking, setTablePromoChecking] = useState(false);
+  const [tablePromoDiscount, setTablePromoDiscount] = useState<number | null>(null);
   const [tableSold, setTableSold] = useState(0);
 
   const [sendClaimUrls, setSendClaimUrls] = useState<Record<string, string>>({});
@@ -265,6 +268,7 @@ export default function TerminalClient() {
   function handleGaPromoChange(value: string) {
     setGaPromoCode(value);
     setGaPromoValid(null);
+    setGaPromoDiscount(null);
     if (gaPromoTimer.current) clearTimeout(gaPromoTimer.current);
     if (!value.trim()) {
       setGaPromoChecking(false);
@@ -279,6 +283,7 @@ export default function TerminalClient() {
       });
       const data = await res.json();
       setGaPromoValid(data.valid);
+      setGaPromoDiscount(data.valid ? (data.discount_percent ?? null) : null);
       setGaPromoChecking(false);
     }, 800);
   }
@@ -286,6 +291,7 @@ export default function TerminalClient() {
   function handleVipPromoChange(value: string) {
     setVipPromoCode(value);
     setVipPromoValid(null);
+    setVipPromoDiscount(null);
     if (vipPromoTimer.current) clearTimeout(vipPromoTimer.current);
     if (!value.trim()) {
       setVipPromoChecking(false);
@@ -300,6 +306,7 @@ export default function TerminalClient() {
       });
       const data = await res.json();
       setVipPromoValid(data.valid);
+      setVipPromoDiscount(data.valid ? (data.discount_percent ?? null) : null);
       setVipPromoChecking(false);
     }, 800);
   }
@@ -307,6 +314,7 @@ export default function TerminalClient() {
   function handleTablePromoChange(value: string) {
     setTablePromoCode(value);
     setTablePromoValid(null);
+    setTablePromoDiscount(null);
     if (tablePromoTimer.current) clearTimeout(tablePromoTimer.current);
     if (!value.trim()) {
       setTablePromoChecking(false);
@@ -321,6 +329,7 @@ export default function TerminalClient() {
       });
       const data = await res.json();
       setTablePromoValid(data.valid);
+      setTablePromoDiscount(data.valid ? (data.discount_percent ?? null) : null);
       setTablePromoChecking(false);
     }, 800);
   }
@@ -336,7 +345,8 @@ export default function TerminalClient() {
     setCheckoutType("ga");
     const pricePerToken = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
     const base = pricePerToken * gaQuantity;
-    setCheckoutAmount(gaPromoValid ? Math.round(base * 0.9) : base);
+    const disc = gaPromoDiscount ?? 0;
+    setCheckoutAmount(gaPromoValid && disc > 0 ? Math.round(base * (1 - disc / 100)) : base);
     setCheckoutOpen(true);
     setPurchaseOpen(false);
   }
@@ -349,7 +359,8 @@ export default function TerminalClient() {
     setCheckoutMessage("");
     setCheckoutType("vip");
     const base = 6667 * vipQuantity;
-    setCheckoutAmount(vipPromoValid ? Math.round(base * 0.9) : base);
+    const disc = vipPromoDiscount ?? 0;
+    setCheckoutAmount(vipPromoValid && disc > 0 ? Math.round(base * (1 - disc / 100)) : base);
     setCheckoutOpen(true);
     setVipOpen(false);
   }
@@ -361,7 +372,8 @@ export default function TerminalClient() {
     }
     setCheckoutMessage("");
     setCheckoutType("table");
-    setCheckoutAmount(tablePromoValid ? 60000 : 66667);
+    const disc = tablePromoDiscount ?? 0;
+    setCheckoutAmount(tablePromoValid && disc > 0 ? Math.round(66667 * (1 - disc / 100)) : 66667);
     setCheckoutOpen(true);
     setTableOpen(false);
   }
@@ -1476,7 +1488,15 @@ export default function TerminalClient() {
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
-                      {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.78" : tier === 2 ? "$38.89" : "$50.00"}`}
+                      {(() => {
+                        const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
+                        const orig = `$${(base / 100).toFixed(2)}`;
+                        if (gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0) {
+                          const disc = `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`;
+                          return `TIER ${tier} ACTIVE — ${orig} → ${disc}`;
+                        }
+                        return `TIER ${tier} ACTIVE — ${orig}`;
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -1596,7 +1616,15 @@ export default function TerminalClient() {
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
-                      {`TIER ${tier} ACTIVE — ${tier === 1 ? "$27.78" : tier === 2 ? "$38.89" : "$50.00"}`}
+                      {(() => {
+                        const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
+                        const orig = `$${(base / 100).toFixed(2)}`;
+                        if (gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0) {
+                          const disc = `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`;
+                          return `TIER ${tier} ACTIVE — ${orig} → ${disc}`;
+                        }
+                        return `TIER ${tier} ACTIVE — ${orig}`;
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -1719,6 +1747,7 @@ export default function TerminalClient() {
               onClick={() => {
                 setCheckoutMessage("");
                 setPurchaseOpen(false);
+                setGaPromoCode(""); setGaPromoValid(null); setGaPromoDiscount(null);
               }}
             >
               CANCEL
@@ -1758,7 +1787,11 @@ export default function TerminalClient() {
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.67</span>
+                    <span className="modal-status-text">
+                      {vipPromoValid && vipPromoDiscount != null && vipPromoDiscount > 0
+                        ? `VIP CHANNEL ACTIVE — $66.67 → $${(Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)}`
+                        : "VIP CHANNEL ACTIVE — $66.67"}
+                    </span>
                   </div>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
@@ -1866,7 +1899,11 @@ export default function TerminalClient() {
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">VIP CHANNEL ACTIVE — $66.67</span>
+                    <span className="modal-status-text">
+                      {vipPromoValid && vipPromoDiscount != null && vipPromoDiscount > 0
+                        ? `VIP CHANNEL ACTIVE — $66.67 → $${(Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)}`
+                        : "VIP CHANNEL ACTIVE — $66.67"}
+                    </span>
                   </div>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
@@ -1994,6 +2031,7 @@ export default function TerminalClient() {
               onClick={() => {
                 setCheckoutMessage("");
                 setVipOpen(false);
+                setVipPromoCode(""); setVipPromoValid(null); setVipPromoDiscount(null);
               }}
             >
               CANCEL
@@ -2034,7 +2072,11 @@ export default function TerminalClient() {
                 <div className="modal-status-copy" style={{ ...generateStatusCopyStyle, lineHeight: 1.6 }}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
+                    <span className="modal-status-text">
+                      {tablePromoValid && tablePromoDiscount != null && tablePromoDiscount > 0
+                        ? `VIP TABLE RESERVATION — $666.67 → $${(Math.round(66667 * (1 - tablePromoDiscount / 100)) / 100).toFixed(2)}`
+                        : "VIP TABLE RESERVATION — $666.67"}
+                    </span>
                   </div>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
@@ -2127,7 +2169,11 @@ export default function TerminalClient() {
                 <div className="modal-status-copy" style={{ marginBottom: 6, lineHeight: 1.5 }}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">VIP TABLE RESERVATION — $666.67</span>
+                    <span className="modal-status-text">
+                      {tablePromoValid && tablePromoDiscount != null && tablePromoDiscount > 0
+                        ? `VIP TABLE RESERVATION — $666.67 → $${(Math.round(66667 * (1 - tablePromoDiscount / 100)) / 100).toFixed(2)}`
+                        : "VIP TABLE RESERVATION — $666.67"}
+                    </span>
                   </div>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
@@ -2252,6 +2298,7 @@ export default function TerminalClient() {
               onClick={() => {
                 setCheckoutMessage("");
                 setTableOpen(false);
+                setTablePromoCode(""); setTablePromoValid(null); setTablePromoDiscount(null);
               }}
             >
               CANCEL
@@ -2262,7 +2309,12 @@ export default function TerminalClient() {
 
       <EmbeddedCheckoutModal
         isOpen={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
+        onClose={() => {
+          setCheckoutOpen(false);
+          setGaPromoCode(""); setGaPromoValid(null); setGaPromoDiscount(null);
+          setVipPromoCode(""); setVipPromoValid(null); setVipPromoDiscount(null);
+          setTablePromoCode(""); setTablePromoValid(null); setTablePromoDiscount(null);
+        }}
         type={checkoutType}
         quantity={checkoutType === "table" ? 6 : checkoutType === "vip" ? vipQuantity : gaQuantity}
         isMobile={isMobile}

@@ -22,13 +22,15 @@ export default function Navbar() {
     <>
       <div className="navbar desktop-navbar">
         <div className="nav-left">
-          <img src="/logo.png" className="nav-logo" alt="Signo logo" />
+          <Link href="/" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <img src="/logo.png" className="nav-logo" alt="Signo logo" />
 
-          <img
-            src="/group-name.png"
-            className="nav-group-name"
-            alt="Signo Research Group"
-          />
+            <img
+              src="/group-name.png"
+              className="nav-group-name"
+              alt="Signo Research Group"
+            />
+          </Link>
         </div>
 
         {!hideNavLinks && (
@@ -45,11 +47,13 @@ export default function Navbar() {
       </div>
 
       <div className="navbar-mobile">
-        <img
-          src="/logo.png"
-          alt="Signo logo"
-          className="navbar-mobile-logo"
-        />
+        <Link href="/" style={{ cursor: "pointer" }}>
+          <img
+            src="/logo.png"
+            alt="Signo logo"
+            className="navbar-mobile-logo"
+          />
+        </Link>
 
         {!hideNavLinks && (
           <div className="navbar-mobile-links">

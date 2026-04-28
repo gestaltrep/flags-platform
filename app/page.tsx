@@ -184,10 +184,14 @@ export default function Home() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
-        const raw = String(data?.error || "").toLowerCase();
-        if (raw.includes("expired")) setMessage("That code has expired.");
-        else if (raw.includes("incorrect") || raw.includes("invalid")) setMessage("That code is incorrect.");
-        else setMessage("We couldn't verify your code. Please try again.");
+        if (res.status === 404 && data?.error) {
+          setMessage(data.error);
+        } else {
+          const raw = String(data?.error || "").toLowerCase();
+          if (raw.includes("expired")) setMessage("That code has expired.");
+          else if (raw.includes("incorrect") || raw.includes("invalid")) setMessage("That code is incorrect.");
+          else setMessage("We couldn't verify your code. Please try again.");
+        }
         return;
       }
       setOpen(false);
