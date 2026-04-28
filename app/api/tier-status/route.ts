@@ -14,7 +14,8 @@ export async function GET() {
     .eq("event_id", EVENT_ID)
     .eq("is_vip", false)
     .eq("comp", false)
-    .not("buyer_user_id", "is", null);
+    .not("buyer_user_id", "is", null)
+    .is("refunded_at", null);
 
   const { count: vipCount } = await supabase
     .from("ticket_codes")
@@ -22,7 +23,8 @@ export async function GET() {
     .eq("event_id", EVENT_ID)
     .eq("is_vip", true)
     .eq("comp", false)
-    .not("buyer_user_id", "is", null);
+    .not("buyer_user_id", "is", null)
+    .is("refunded_at", null);
 
   const sold = gaCount ?? 0;
   const vipSold = vipCount ?? 0;

@@ -23,7 +23,8 @@ export async function POST(req: Request) {
       .from("ticket_codes")
       .select("*", { count: "exact", head: true })
       .eq("event_id", EVENT_ID)
-      .eq("is_table", true);
+      .eq("is_table", true)
+      .is("refunded_at", null);
 
     const tablesSold = Math.floor((count ?? 0) / 6);
     if (tablesSold >= 5) return Response.json({ error: "TABLES SOLD OUT" }, { status: 400 });

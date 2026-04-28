@@ -30,6 +30,31 @@ export async function POST(req: Request) {
   }
 
   try {
+    if (event.type === "charge.refunded") {
+      const charge = event.data.object as Stripe.Charge;
+      const paymentIntentId =
+        typeof charge.payment_intent === "string"
+          ? charge.payment_intent
+          : (charge.payment_intent as Stripe.PaymentIntent | null)?.id;
+
+      if (paymentIntentId) {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        const { error: refundError } = await supabase
+          .from("ticket_codes")
+          .update({ refunded_at: new Date().toISOString() })
+          .eq("payment_intent_id", paymentIntentId)
+          .is("refunded_at", null);
+        if (refundError) {
+          console.error("Refund update error:", refundError);
+          return new Response("Refund update failed", { status: 500 });
+        }
+      }
+      return new Response("ok");
+    }
+
     if (event.type !== "payment_intent.succeeded") {
       return new Response("ok");
     }
@@ -89,6 +114,7 @@ export async function POST(req: Request) {
       claimed: false,
       claimed_by_user: null,
       claimed_at: null,
+      payment_intent_id: paymentIntent.id,
     }));
 
     const { error: ticketError } = await supabase
