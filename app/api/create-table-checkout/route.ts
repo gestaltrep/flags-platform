@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       const timeout = setTimeout(() => controller.abort(), 3000);
       try {
         const promoRes = await fetch(
-          `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(promoCode.toUpperCase().trim())}&select=id,active&limit=1`,
+          `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(promoCode.toUpperCase().trim())}&select=id,active,discount_percent&limit=1`,
           {
             signal: controller.signal,
             headers: {
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
         const promo = Array.isArray(promoRows) && promoRows.length > 0 ? promoRows[0] : null;
 
         if (promo?.active) {
-          discountPercent = 10;
+          discountPercent = promo.discount_percent ?? 0;
           promoCodeId = promo.id;
         }
       } catch (fetchErr: unknown) {
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const finalAmount = discountPercent > 0 ? 60000 : 66667;
+    const finalAmount = discountPercent > 0 ? Math.round(66667 * (1 - discountPercent / 100)) : 66667;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: finalAmount,
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
         is_table: "true",
         event_id: EVENT_ID,
         promo_code_id: promoCodeId ?? "",
-        discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * 0.1) : 0),
+        discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * discountPercent / 100) : 0),
       },
     });
 

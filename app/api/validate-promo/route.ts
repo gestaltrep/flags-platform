@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code.toUpperCase().trim())}&select=id,active,label,type&limit=1`,
+    `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code.toUpperCase().trim())}&select=id,active,label,type,discount_percent&limit=1`,
     {
       headers: {
         apikey: supabaseKey,
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const data = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
 
   if (data?.active) {
-    return Response.json({ valid: true, label: data.label, type: data.type });
+    return Response.json({ valid: true, label: data.label, type: data.type, discount_percent: data.discount_percent ?? 0 });
   }
 
   return Response.json({ valid: false });

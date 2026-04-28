@@ -84,6 +84,11 @@ export async function POST(req: Request) {
       }
 
       userId = updatedUser.id;
+    } else if (!name?.trim()) {
+      return Response.json(
+        { error: "NO ACCOUNT — REQUEST PARTICIPATION" },
+        { status: 404 }
+      );
     } else {
       const { data: insertedUser, error: insertError } = await supabase
         .from("users")

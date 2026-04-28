@@ -153,11 +153,15 @@ export default function Home() {
         body: JSON.stringify({ phone: loginPhone.trim(), name: "" }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.success) {
-        const raw = String(data?.error || "").toLowerCase();
-        if (raw.includes("invalid parameter")) setMessage("SMS is not available right now.");
-        else if (raw.includes("invalid") && raw.includes("phone")) setMessage("This phone number isn't valid.");
-        else setMessage("We couldn't send your code. Please try again.");
+      if (!res.ok) {
+        if (res.status === 404 && data?.error) {
+          setMessage(data.error);
+        } else {
+          const raw = String(data?.error || "").toLowerCase();
+          if (raw.includes("invalid parameter")) setMessage("SMS is not available right now.");
+          else if (raw.includes("invalid") && raw.includes("phone")) setMessage("This phone number isn't valid.");
+          else setMessage("We couldn't send your code. Please try again.");
+        }
         return;
       }
       setLoginStep("verify");
@@ -184,10 +188,14 @@ export default function Home() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
-        const raw = String(data?.error || "").toLowerCase();
-        if (raw.includes("expired")) setMessage("That code has expired.");
-        else if (raw.includes("incorrect") || raw.includes("invalid")) setMessage("That code is incorrect.");
-        else setMessage("We couldn't verify your code. Please try again.");
+        if (res.status === 404 && data?.error) {
+          setMessage(data.error);
+        } else {
+          const raw = String(data?.error || "").toLowerCase();
+          if (raw.includes("expired")) setMessage("That code has expired.");
+          else if (raw.includes("incorrect") || raw.includes("invalid")) setMessage("That code is incorrect.");
+          else setMessage("We couldn't verify your code. Please try again.");
+        }
         return;
       }
       setOpen(false);

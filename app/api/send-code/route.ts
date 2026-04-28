@@ -1,9 +1,10 @@
 import Twilio from "twilio";
+import { createClient } from "@supabase/supabase-js";
 import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
-    const { phone } = await req.json();
+    const { phone, name } = await req.json();
 
     const normalizedPhone = normalizeUSPhone(String(phone || ""));
 
@@ -20,6 +21,24 @@ export async function POST(req: Request) {
         { success: false, error: "Invalid phone number." },
         { status: 400 }
       );
+    }
+
+    if (!name?.trim()) {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("id")
+        .eq("phone", normalizedPhone)
+        .maybeSingle();
+      if (!existingUser) {
+        return Response.json(
+          { error: "NO ACCOUNT — REQUEST PARTICIPATION" },
+          { status: 404 }
+        );
+      }
     }
 
     const client = Twilio(
