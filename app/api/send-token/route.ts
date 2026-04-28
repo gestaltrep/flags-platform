@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
-      .select("id, buyer_user_id, claimed, claimed_by_user")
+      .select("id, buyer_user_id, claimed, claimed_by_user, refunded_at")
       .eq("id", ticketId)
       .maybeSingle();
 
@@ -53,6 +53,13 @@ export async function POST(req: Request) {
       return Response.json(
         { success: false, error: "You do not control this token." },
         { status: 403 }
+      );
+    }
+
+    if (ticket.refunded_at) {
+      return Response.json(
+        { success: false, error: "This ticket has been refunded and cannot be sent." },
+        { status: 400 }
       );
     }
 

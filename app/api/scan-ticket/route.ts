@@ -17,13 +17,17 @@ export async function POST(req: Request) {
 
     const { data: ticket, error } = await supabase
       .from("ticket_codes")
-      .select("id, code, claimed, buyer_user_id, vip, is_vip, event_id")
+      .select("id, code, claimed, refunded_at, buyer_user_id, vip, is_vip, event_id")
       .eq("event_id", EVENT_ID)
       .eq("code", code)
       .maybeSingle();
 
     if (error || !ticket) {
       return Response.json({ success: false, message: "Token not found." }, { status: 404 });
+    }
+
+    if (ticket.refunded_at) {
+      return Response.json({ success: false, message: "Ticket has been refunded and is no longer valid for entry." }, { status: 409 });
     }
 
     if (ticket.claimed) {
