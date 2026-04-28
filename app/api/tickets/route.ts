@@ -17,7 +17,7 @@ export async function GET() {
   const { data: tickets, error: ticketError } = await supabase
     .from("ticket_codes")
     .select(
-      "id, code, vip, is_vip, is_table, comp, claimed, claimed_at, created_at, buyer_user_id, claimed_by_user"
+      "id, code, vip, is_vip, is_table, comp, claimed, claimed_at, created_at, buyer_user_id, claimed_by_user, refunded_at"
     )
     .or(
       `and(buyer_user_id.eq.${userId},claimed_by_user.is.null),claimed_by_user.eq.${userId}`
@@ -76,6 +76,7 @@ export async function GET() {
       is_table: ticket.is_table,
       claimed: ticket.claimed,
       claimed_at: ticket.claimed_at,
+      refunded_at: ticket.refunded_at ?? null,
       created_at: ticket.created_at,
       pending_transfer_id: pending?.id ?? null,
       pending_recipient_phone: pending?.recipient_phone ?? null,

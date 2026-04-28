@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
-      .select("id, code, claimed, buyer_user_id, event_id")
+      .select("id, code, claimed, refunded_at, buyer_user_id, event_id")
       .eq("event_id", EVENT_ID)
       .eq("code", code)
       .maybeSingle();
@@ -51,6 +51,13 @@ export async function POST(req: Request) {
       return Response.json(
         { success: false, message: "Invalid ticket." },
         { status: 404 }
+      );
+    }
+
+    if (ticket.refunded_at) {
+      return Response.json(
+        { success: false, message: "Ticket has been refunded and is no longer valid for entry." },
+        { status: 409 }
       );
     }
 

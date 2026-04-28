@@ -13,6 +13,7 @@ type Ticket = {
   is_table?: boolean;
   claimed?: boolean;
   claimed_at?: string | null;
+  refunded_at?: string | null;
   created_at?: string;
   can_send?: boolean;
   can_cancel?: boolean;
@@ -1082,6 +1083,7 @@ export default function TerminalClient() {
                     const isTable = ticket.is_table;
                     const isUsed = !!ticket.claimed;
                     const isPending = !!ticket.can_cancel;
+                    const isRefunded = !!ticket.refunded_at;
 
                     return (
                       <div
@@ -1105,14 +1107,15 @@ export default function TerminalClient() {
                           ) : (
                             <span>GA</span>
                           )}</span>
-                          <span style={{ color: isUsed ? "#888" : "#fff" }}>
-                            {isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
+                          <span style={{ color: (isRefunded || isUsed) ? "#888" : "#fff" }}>
+                            {isRefunded ? "REFUNDED" : isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
                           </span>
                         </div>
 
                         <QRCodeSVG
                           value={`${qrBase}/checkin?code=${ticket.code}`}
                           size={desktopQrSize}
+                          style={{ opacity: isRefunded ? 0.35 : 1 }}
                         />
 
                         <div
@@ -1137,7 +1140,7 @@ export default function TerminalClient() {
                           {ticket.code}
                         </div>
 
-                        {(ticket.can_send || ticket.can_cancel) && !isUsed && ticket.id && (
+                        {(ticket.can_send || ticket.can_cancel) && !isUsed && !isRefunded && ticket.id && (
                           <button
                             style={sendTriggerStyle}
                             onClick={() => openSendModal(ticket)}
@@ -1286,6 +1289,7 @@ export default function TerminalClient() {
                     const isTable = ticket.is_table;
                     const isUsed = !!ticket.claimed;
                     const isPending = !!ticket.can_cancel;
+                    const isRefunded = !!ticket.refunded_at;
 
                     return (
                       <div
@@ -1309,12 +1313,12 @@ export default function TerminalClient() {
                           ) : (
                             <span>GA</span>
                           )}</span>
-                          <span style={{ color: isUsed ? "#888" : "#fff" }}>
-                            {isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
+                          <span style={{ color: (isRefunded || isUsed) ? "#888" : "#fff" }}>
+                            {isRefunded ? "REFUNDED" : isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
                           </span>
                         </div>
 
-                        <div style={{ display: "flex", justifyContent: "center" }}>
+                        <div style={{ display: "flex", justifyContent: "center", opacity: isRefunded ? 0.35 : 1 }}>
                           <QRCodeSVG
                             value={`${qrBase}/checkin?code=${ticket.code}`}
                             size={110}
@@ -1343,7 +1347,7 @@ export default function TerminalClient() {
                           {ticket.code}
                         </div>
 
-                        {(ticket.can_send || ticket.can_cancel) && !isUsed && ticket.id && (
+                        {(ticket.can_send || ticket.can_cancel) && !isUsed && !isRefunded && ticket.id && (
                           <button
                             style={sendTriggerStyle}
                             onClick={() => openSendModal(ticket)}
