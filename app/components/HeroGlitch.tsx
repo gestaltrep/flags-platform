@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const SLICE_COUNT = 6;
 const MAIN_DURATION_MS = 2600;
 const EPILOGUE_DURATION_MS = 600;
 const TOTAL_DURATION_MS = MAIN_DURATION_MS + EPILOGUE_DURATION_MS; // 3200
@@ -10,14 +9,17 @@ const TOTAL_DURATION_MS = MAIN_DURATION_MS + EPILOGUE_DURATION_MS; // 3200
 type Phase = "chaos" | "settled";
 
 function GlitchCanvas({
-  posterSrc,
   lineupSrc,
+  onError,
 }: {
-  posterSrc: string;
   lineupSrc: string;
+  onError: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const startTimeRef = useRef<number>(0);
+  // Stable ref so the effect doesn't re-run when the parent re-renders
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,21 +27,17 @@ function GlitchCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const posterImg = new Image();
-    posterImg.crossOrigin = "anonymous";
-    posterImg.src = posterSrc;
     const lineupImg = new Image();
     lineupImg.crossOrigin = "anonymous";
     lineupImg.src = lineupSrc;
 
-    let posterCanvas: HTMLCanvasElement | null = null;
     let lineupCanvas: HTMLCanvasElement | null = null;
     let raf = 0;
     let lastDisplace = 0;
     const DISPLACE_INTERVAL = 50;
     const STRIPE_HEIGHT = 8;
 
-    const buildOffscreen = (img: HTMLImageElement, fit: "cover-30pct" | "cover-center") => {
+    const buildOffscreen = (img: HTMLImageElement) => {
       const off = document.createElement("canvas");
       off.width = canvas.width;
       off.height = canvas.height;
@@ -59,7 +57,7 @@ function GlitchCanvas({
         drawW = w;
         drawH = w / imgRatio;
         drawX = 0;
-        drawY = (h - drawH) * (fit === "cover-30pct" ? 0.3 : 0.5);
+        drawY = (h - drawH) * 0.5;
       }
       offCtx.drawImage(img, drawX, drawY, drawW, drawH);
       return off;
@@ -69,11 +67,8 @@ function GlitchCanvas({
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
-      if (posterImg.complete && posterImg.naturalWidth > 0) {
-        posterCanvas = buildOffscreen(posterImg, "cover-30pct");
-      }
       if (lineupImg.complete && lineupImg.naturalWidth > 0) {
-        lineupCanvas = buildOffscreen(lineupImg, "cover-center");
+        lineupCanvas = buildOffscreen(lineupImg);
       }
     };
 
@@ -90,11 +85,6 @@ function GlitchCanvas({
       return Math.min(1, (elapsed - MAIN_DURATION_MS) / EPILOGUE_DURATION_MS);
     };
 
-    // Sigmoid curve, crossover at t=0.5. Returns lineup share 0..1.
-    const lineupShare = (t: number): number => {
-      return 1 / (1 + Math.exp(-10 * (t - 0.5)));
-    };
-
     // Main chaos intensity: full through 88%, decays to 0 at end of main
     const mainChaosIntensity = (mainT: number): number => {
       if (mainT >= 1) return 0;
@@ -109,31 +99,35 @@ function GlitchCanvas({
       return 0.4 * remaining * remaining;
     };
 
-    // Pseudo-random per-stripe assignment shifting with time
-    const stripeIsLineup = (stripeIndex: number, t: number): boolean => {
-      const timeQuant = Math.floor(t * 50);
-      const hash = Math.sin(stripeIndex * 12.9898 + timeQuant * 78.233) * 43758.5453;
-      const noise = hash - Math.floor(hash);
-      return noise < lineupShare(t);
-    };
-
+    // Option A: per-stripe vertical scramble decaying to 0.
+    // Each stripe reads from a pseudo-random vertical offset that collapses
+    // as mainT → 1, giving a TV-tuning-to-signal effect.
     const drawStripes = (now: number) => {
       const w = canvas.width;
       const h = canvas.height;
       const mainT = mainProgress(now);
-      const epT = epilogueProgress(now);
       ctx.clearRect(0, 0, w, h);
+
+      if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) return;
 
       const stripeCount = Math.ceil(h / STRIPE_HEIGHT);
       for (let i = 0; i < stripeCount; i++) {
         const y = i * STRIPE_HEIGHT;
         const stripeH = Math.min(STRIPE_HEIGHT, h - y);
         if (stripeH <= 0) continue;
-        // During epilogue, all stripes are lineup
-        const useLineup = epT > 0 ? true : stripeIsLineup(i, mainT);
-        const sourceCanvas = useLineup ? lineupCanvas : posterCanvas;
-        if (!sourceCanvas || sourceCanvas.width === 0 || sourceCanvas.height === 0) continue;
-        ctx.drawImage(sourceCanvas, 0, y, w, stripeH, 0, y, w, stripeH);
+
+        // Deterministic per-stripe noise value 0..1 — constant across frames
+        const seed = Math.sin(i * 12.9898) * 43758.5453;
+        const noise = seed - Math.floor(seed);
+        // maxOffset decays to 0 as mainT → 1; hard-clamps at 0 when mainT >= 1
+        const maxOffset = h * 0.6 * (1 - mainT);
+        const dy = Math.floor((noise - 0.5) * 2 * maxOffset);
+        const sourceY = ((y + dy) % h + h) % h;
+        // Clamp source rect so we don't read past the offscreen canvas bottom
+        const drawH = Math.min(stripeH, Math.max(0, h - sourceY));
+        if (drawH <= 0) continue;
+
+        ctx.drawImage(lineupCanvas, 0, sourceY, w, drawH, 0, y, w, drawH);
       }
     };
 
@@ -176,14 +170,13 @@ function GlitchCanvas({
         return;
       }
 
-      // MAIN: stripe-interleaved chaos
+      // MAIN: displaced blocks from lineup only
       const intensity = mainChaosIntensity(mainT);
       if (intensity <= 0) return;
 
       const baseCount = 8 + Math.floor(Math.random() * 8);
       const blockCount = Math.max(0, Math.floor(baseCount * intensity));
       const dispMagnitude = intensity;
-      const lineupShareNow = lineupShare(mainT);
 
       for (let i = 0; i < blockCount; i++) {
         const blockW = 15 + Math.floor(Math.random() * 90);
@@ -192,11 +185,9 @@ function GlitchCanvas({
         const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
         const dx = sx + (Math.random() - 0.5) * 140 * dispMagnitude;
         const dy = sy + (Math.random() - 0.5) * 50 * dispMagnitude;
-        const fromLineup = Math.random() < lineupShareNow;
-        const sourceCanvas = fromLineup ? lineupCanvas : posterCanvas;
-        if (!sourceCanvas || sourceCanvas.width === 0 || sourceCanvas.height === 0) continue;
+        if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) continue;
         try {
-          const slice = sourceCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+          const slice = lineupCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
           if (slice) ctx.putImageData(slice, dx, dy);
         } catch { /* ignore */ }
       }
@@ -212,18 +203,14 @@ function GlitchCanvas({
       raf = requestAnimationFrame(tick);
     };
 
-    let imagesLoaded = 0;
-    const onLoad = () => {
-      imagesLoaded++;
-      if (imagesLoaded === 2) {
-        resize();
-        raf = requestAnimationFrame(tick);
-      }
+    const start = () => {
+      resize();
+      raf = requestAnimationFrame(tick);
     };
-    posterImg.onload = onLoad;
-    lineupImg.onload = onLoad;
-    if (posterImg.complete && posterImg.naturalWidth > 0) onLoad();
-    if (lineupImg.complete && lineupImg.naturalWidth > 0) onLoad();
+
+    lineupImg.onload = start;
+    lineupImg.onerror = () => onErrorRef.current();
+    if (lineupImg.complete && lineupImg.naturalWidth > 0) start();
 
     window.addEventListener("resize", resize);
     return () => {
@@ -231,7 +218,7 @@ function GlitchCanvas({
       window.removeEventListener("resize", resize);
       startTimeRef.current = 0;
     };
-  }, [posterSrc, lineupSrc]);
+  }, [lineupSrc]);
 
   return (
     <canvas
@@ -248,15 +235,11 @@ function GlitchCanvas({
 }
 
 export default function HeroGlitch({
-  posterSrc = "/poster-image.png",
   lineupSrc = "/lineup_hero.png",
   className,
-  posterObjectPosition = "center 30%",
 }: {
-  posterSrc?: string;
   lineupSrc?: string;
   className?: string;
-  posterObjectPosition?: string;
 }) {
   const [phase, setPhase] = useState<Phase>("chaos");
   const [mounted, setMounted] = useState(false);
@@ -288,36 +271,13 @@ export default function HeroGlitch({
     );
   }
 
-  // chaos phase
+  // chaos phase — canvas only, no DOM slice layer
   return (
     <div
       className={className}
       style={{ position: "relative", overflow: "hidden", background: "#000" }}
     >
-      {Array.from({ length: SLICE_COUNT }).map((_, i) => {
-        const top = (i * 100) / SLICE_COUNT;
-        const bottom = 100 - ((i + 1) * 100) / SLICE_COUNT;
-        return (
-          <img
-            key={i}
-            src={posterSrc}
-            alt=""
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: posterObjectPosition,
-              clipPath: `inset(${top}% 0 ${bottom}% 0)`,
-              animation: `hero-glitch-slice-${i} ${1.4 + i * 0.13}s steps(1, end) infinite`,
-              willChange: "transform, filter",
-            }}
-          />
-        );
-      })}
-      <GlitchCanvas posterSrc={posterSrc} lineupSrc={lineupSrc} />
+      <GlitchCanvas lineupSrc={lineupSrc} onError={() => setPhase("settled")} />
     </div>
   );
 }
