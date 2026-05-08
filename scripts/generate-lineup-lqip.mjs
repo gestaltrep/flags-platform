@@ -3,8 +3,8 @@ import { statSync } from "fs";
 
 const SOURCE = "public/lineup_hero.png";
 const OUTPUT = "public/lineup_hero_lqip.webp";
-const TARGET_WIDTH = 200;
-const QUALITY = 55;
+const TARGET_WIDTH = 400;
+const QUALITY = 70;
 
 await sharp(SOURCE)
   .resize({ width: TARGET_WIDTH, withoutEnlargement: true })
