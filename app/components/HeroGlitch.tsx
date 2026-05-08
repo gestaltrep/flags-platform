@@ -8,18 +8,11 @@ const TOTAL_DURATION_MS = MAIN_DURATION_MS + EPILOGUE_DURATION_MS; // 3200
 
 type Phase = "chaos" | "settled";
 
-function GlitchCanvas({
-  lineupSrc,
-  onError,
-}: {
-  lineupSrc: string;
-  onError: () => void;
-}) {
+// B1: canvas animates against lqipSrc (small WebP) for near-instant start
+// B5: onError removed — phase timer handles fallback if LQIP fails to load
+function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const startTimeRef = useRef<number>(0);
-  // Stable ref so the effect doesn't re-run when the parent re-renders
-  const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,7 +22,7 @@ function GlitchCanvas({
 
     const lineupImg = new Image();
     lineupImg.crossOrigin = "anonymous";
-    lineupImg.src = lineupSrc;
+    lineupImg.src = lqipSrc;
 
     let lineupCanvas: HTMLCanvasElement | null = null;
     let raf = 0;
@@ -72,36 +65,29 @@ function GlitchCanvas({
       }
     };
 
-    // Returns 0..1 over the main 2.6s animation. Caps at 1 during epilogue.
     const mainProgress = (now: number): number => {
       const elapsed = now - startTimeRef.current;
       return Math.min(1, Math.max(0, elapsed / MAIN_DURATION_MS));
     };
 
-    // Returns 0..1 over the 600ms epilogue. Returns 0 during main animation.
     const epilogueProgress = (now: number): number => {
       const elapsed = now - startTimeRef.current;
       if (elapsed < MAIN_DURATION_MS) return 0;
       return Math.min(1, (elapsed - MAIN_DURATION_MS) / EPILOGUE_DURATION_MS);
     };
 
-    // Main chaos intensity: full through 88%, decays to 0 at end of main
     const mainChaosIntensity = (mainT: number): number => {
       if (mainT >= 1) return 0;
       if (mainT < 0.88) return 1;
       return Math.max(0, 1 - (mainT - 0.88) / 0.12);
     };
 
-    // Epilogue chaos intensity: starts at ~0.4, decays quadratically to 0
     const epilogueChaosIntensity = (epT: number): number => {
       if (epT <= 0 || epT >= 1) return 0;
       const remaining = 1 - epT;
       return 0.4 * remaining * remaining;
     };
 
-    // Option A: per-stripe vertical scramble decaying to 0.
-    // Each stripe reads from a pseudo-random vertical offset that collapses
-    // as mainT → 1, giving a TV-tuning-to-signal effect.
     const drawStripes = (now: number) => {
       const w = canvas.width;
       const h = canvas.height;
@@ -116,14 +102,11 @@ function GlitchCanvas({
         const stripeH = Math.min(STRIPE_HEIGHT, h - y);
         if (stripeH <= 0) continue;
 
-        // Deterministic per-stripe noise value 0..1 — constant across frames
         const seed = Math.sin(i * 12.9898) * 43758.5453;
         const noise = seed - Math.floor(seed);
-        // maxOffset decays to 0 as mainT → 1; hard-clamps at 0 when mainT >= 1
         const maxOffset = h * 0.6 * (1 - mainT);
         const dy = Math.floor((noise - 0.5) * 2 * maxOffset);
         const sourceY = ((y + dy) % h + h) % h;
-        // Clamp source rect so we don't read past the offscreen canvas bottom
         const drawH = Math.min(stripeH, Math.max(0, h - sourceY));
         if (drawH <= 0) continue;
 
@@ -138,7 +121,6 @@ function GlitchCanvas({
       const epT = epilogueProgress(now);
 
       if (epT > 0) {
-        // EPILOGUE: small chaos squares + occasional wide bar, sourced from lineup, decaying
         const intensity = epilogueChaosIntensity(epT);
         if (intensity <= 0) return;
         const blockCount = Math.max(0, Math.floor((3 + Math.random() * 4) * intensity));
@@ -156,7 +138,6 @@ function GlitchCanvas({
           } catch { /* ignore */ }
         }
 
-        // Occasional wide horizontal bar jitter (~15% chance per frame)
         if (Math.random() < 0.15 * intensity) {
           const barH = 4 + Math.floor(Math.random() * 8);
           const sy = Math.floor(Math.random() * Math.max(1, h - barH));
@@ -170,7 +151,6 @@ function GlitchCanvas({
         return;
       }
 
-      // MAIN: displaced blocks from lineup only
       const intensity = mainChaosIntensity(mainT);
       if (intensity <= 0) return;
 
@@ -209,7 +189,7 @@ function GlitchCanvas({
     };
 
     lineupImg.onload = start;
-    lineupImg.onerror = () => onErrorRef.current();
+    lineupImg.onerror = () => {}; // canvas stays black; phase timer transitions to settled
     if (lineupImg.complete && lineupImg.naturalWidth > 0) start();
 
     window.addEventListener("resize", resize);
@@ -218,7 +198,7 @@ function GlitchCanvas({
       window.removeEventListener("resize", resize);
       startTimeRef.current = 0;
     };
-  }, [lineupSrc]);
+  }, [lqipSrc]);
 
   return (
     <canvas
@@ -236,18 +216,23 @@ function GlitchCanvas({
 
 export default function HeroGlitch({
   lineupSrc = "/lineup_hero.png",
+  lqipSrc = "/lineup_hero_lqip.webp",
   className,
 }: {
   lineupSrc?: string;
+  lqipSrc?: string;
   className?: string;
 }) {
   const [phase, setPhase] = useState<Phase>("chaos");
   const [mounted, setMounted] = useState(false);
+  const [hiResReady, setHiResReady] = useState(false); // B2
 
   useEffect(() => {
     setMounted(true);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
+    // B3: bail out on reduced-motion or slow connection
+    const conn = (navigator as any).connection;
+    if (reduced || conn?.saveData || ["slow-2g", "2g"].includes(conn?.effectiveType)) {
       setPhase("settled");
       return;
     }
@@ -255,7 +240,15 @@ export default function HeroGlitch({
     return () => clearTimeout(t);
   }, []);
 
-  // Pre-mount (SSR + first paint) or settled
+  // B2: preload hi-res in parallel so settled state upgrades immediately when ready
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setHiResReady(true);
+    img.src = lineupSrc;
+    return () => { img.onload = null; };
+  }, [lineupSrc]);
+
+  // Pre-mount (SSR + first paint) or settled: show LQIP until hi-res is ready
   if (!mounted || phase === "settled") {
     return (
       <div
@@ -263,7 +256,7 @@ export default function HeroGlitch({
         style={{ position: "relative", overflow: "hidden", background: "transparent" }}
       >
         <img
-          src={lineupSrc}
+          src={hiResReady ? lineupSrc : lqipSrc}
           alt="RAVE_Initiation lineup"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center", display: "block" }}
         />
@@ -271,13 +264,13 @@ export default function HeroGlitch({
     );
   }
 
-  // chaos phase — canvas only, no DOM slice layer
+  // chaos phase — canvas animates against LQIP
   return (
     <div
       className={className}
       style={{ position: "relative", overflow: "hidden", background: "#000" }}
     >
-      <GlitchCanvas lineupSrc={lineupSrc} onError={() => setPhase("settled")} />
+      <GlitchCanvas lqipSrc={lqipSrc} />
     </div>
   );
 }
