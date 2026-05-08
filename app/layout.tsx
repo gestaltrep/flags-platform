@@ -15,6 +15,10 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        {/* B4: LQIP preload — unblocks canvas start before full lineup loads */}
+        <link rel="preload" as="image" href="/lineup_hero_lqip.webp" type="image/webp" fetchPriority="high" />
+      </head>
       <body>
 
         <Navbar />
