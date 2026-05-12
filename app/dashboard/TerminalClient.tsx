@@ -1517,6 +1517,21 @@ export default function TerminalClient() {
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
                       </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : tier === 2 ? (
+                    <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">TIER 2 ACTIVE - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(3) / 100).toFixed(2)}</span>
+                      </div>
                     </>
                   ) : (
                     <div className="modal-status-line">
@@ -1649,6 +1664,21 @@ export default function TerminalClient() {
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : tier === 2 ? (
+                    <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">TIER 2 ACTIVE - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(3) / 100).toFixed(2)}</span>
                       </div>
                     </>
                   ) : (
