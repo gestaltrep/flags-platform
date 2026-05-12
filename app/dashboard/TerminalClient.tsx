@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
+import Countdown from "../components/Countdown";
 import { QRCodeSVG } from "qrcode.react";
+import { tierPriceCents, type Tier } from "@/lib/tier";
 
 type Ticket = {
   id?: string;
@@ -247,6 +249,68 @@ export default function TerminalClient() {
     return Math.max(0, Math.min(100, (vipSold / 50) * 100));
   }
 
+  const TIER_URGENCY_TARGET = "2026-05-14T23:59:59-04:00";
+
+  function renderTierUrgency(modal: boolean) {
+    const lines: Array<{ content: React.ReactNode; red?: boolean }> =
+      tier === 1
+        ? [
+            {
+              content: (
+                <>TIER 1 ENDS IN: <Countdown targetDate={TIER_URGENCY_TARGET} onExpire={loadTier} /></>
+              ),
+              red: true,
+            },
+            { content: "$27.78 — $25 with code SIGNO10" },
+            { content: "Tier 2: $38.89 starting May 15" },
+          ]
+        : tier === 2
+        ? [
+            { content: "TIER 2 ACTIVE" },
+            { content: "$38.89 — $35.00 with code SIGNO10" },
+          ]
+        : [
+            { content: "TIER 3 ACTIVE" },
+            { content: "$50.00 — $45.00 with code SIGNO10" },
+          ];
+
+    if (modal) {
+      return (
+        <>
+          {lines.map((l, i) => (
+            <div key={i} className="modal-status-line">
+              <span className="modal-status-symbol">{">"}</span>
+              <span
+                className="modal-status-text"
+                style={l.red ? { color: "#ff3333" } : undefined}
+              >
+                {l.content}
+              </span>
+            </div>
+          ))}
+        </>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          fontFamily: '"Courier New", monospace',
+          fontSize: desktopSmallLabel,
+          letterSpacing: 2,
+          marginBottom: 14,
+          lineHeight: 1.8,
+        }}
+      >
+        {lines.map((l, i) => (
+          <div key={i} style={l.red ? { color: "#ff3333" } : undefined}>
+            {l.content}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   function decGa() {
     setGaQuantity((prev) => Math.max(1, prev - 1));
   }
@@ -343,7 +407,7 @@ export default function TerminalClient() {
     }
     setCheckoutMessage("");
     setCheckoutType("ga");
-    const pricePerToken = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
+    const pricePerToken = tierPriceCents(tier as Tier);
     const base = pricePerToken * gaQuantity;
     const disc = gaPromoDiscount ?? 0;
     setCheckoutAmount(gaPromoValid && disc > 0 ? Math.round(base * (1 - disc / 100)) : base);
@@ -979,6 +1043,8 @@ export default function TerminalClient() {
                   <div style={{ color: tierColor(3) }}>TIER 3</div>
                 </div>
 
+                {renderTierUrgency(false)}
+
                 <div
                   style={{
                     position: "relative",
@@ -1485,19 +1551,7 @@ export default function TerminalClient() {
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  <div className="modal-status-line">
-                    <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">
-                      {(() => {
-                        const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
-                        const orig = `$${(base / 100).toFixed(2)}`;
-                        const disc = gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0
-                          ? `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`
-                          : orig;
-                        return `TIER ${tier} ACTIVE — ${disc}`;
-                      })()}
-                    </span>
-                  </div>
+                  {renderTierUrgency(true)}
                 </div>
 
                 <div style={mobileTierVisualWrapStyle}>
@@ -1612,19 +1666,7 @@ export default function TerminalClient() {
             ) : (
               <>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  <div className="modal-status-line">
-                    <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">
-                      {(() => {
-                        const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
-                        const orig = `$${(base / 100).toFixed(2)}`;
-                        const disc = gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0
-                          ? `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`
-                          : orig;
-                        return `TIER ${tier} ACTIVE — ${disc}`;
-                      })()}
-                    </span>
-                  </div>
+                  {renderTierUrgency(true)}
                 </div>
 
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
