@@ -985,9 +985,9 @@ export default function TerminalClient() {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ color: tierColor(1) }}>TIER 1 - ${(tierPriceCents(1) / 100).toFixed(2)}</div>
-                  <div style={{ color: tierColor(2) }}>TIER 2 - ${(tierPriceCents(2) / 100).toFixed(2)}</div>
-                  <div style={{ color: tierColor(3) }}>TIER 3 - ${(tierPriceCents(3) / 100).toFixed(2)}</div>
+                  <div style={{ color: tierColor(1), textAlign: "center", whiteSpace: "nowrap" }}>TIER 1 - ${(tierPriceCents(1) / 100).toFixed(2)}</div>
+                  <div style={{ color: tierColor(2), textAlign: "center", whiteSpace: "nowrap" }}>TIER 2 - ${(tierPriceCents(2) / 100).toFixed(2)}</div>
+                  <div style={{ color: tierColor(3), textAlign: "center", whiteSpace: "nowrap" }}>TIER 3 - ${(tierPriceCents(3) / 100).toFixed(2)}</div>
                 </div>
 
                 <div
