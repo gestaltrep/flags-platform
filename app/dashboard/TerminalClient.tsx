@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
+import Countdown from "../components/Countdown";
 import { QRCodeSVG } from "qrcode.react";
+import { tierPriceCents, type Tier } from "@/lib/tier";
 
 type Ticket = {
   id?: string;
@@ -247,6 +249,7 @@ export default function TerminalClient() {
     return Math.max(0, Math.min(100, (vipSold / 50) * 100));
   }
 
+
   function decGa() {
     setGaQuantity((prev) => Math.max(1, prev - 1));
   }
@@ -343,7 +346,7 @@ export default function TerminalClient() {
     }
     setCheckoutMessage("");
     setCheckoutType("ga");
-    const pricePerToken = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
+    const pricePerToken = tierPriceCents(tier as Tier);
     const base = pricePerToken * gaQuantity;
     const disc = gaPromoDiscount ?? 0;
     setCheckoutAmount(gaPromoValid && disc > 0 ? Math.round(base * (1 - disc / 100)) : base);
@@ -959,9 +962,17 @@ export default function TerminalClient() {
                     fontSize: desktopSmallLabel,
                     marginBottom: 12,
                     letterSpacing: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
                   }}
                 >
-                  TOKENS
+                  <span>TOKENS</span>
+                  {tier === 1 && (
+                    <span style={{ color: '#ff3333', fontFamily: '"Courier New", monospace' }}>
+                      TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                    </span>
+                  )}
                 </div>
 
                 <div
@@ -974,9 +985,18 @@ export default function TerminalClient() {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ color: tierColor(1) }}>TIER 1</div>
-                  <div style={{ color: tierColor(2) }}>TIER 2</div>
-                  <div style={{ color: tierColor(3) }}>TIER 3</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ color: tierColor(1) }}>TIER 1</span>
+                    <span style={{ color: tierColor(1) }}>${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ color: tierColor(2) }}>TIER 2</span>
+                    <span style={{ color: tierColor(2) }}>${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ color: tierColor(3) }}>TIER 3</span>
+                    <span style={{ color: tierColor(3) }}>${(tierPriceCents(3) / 100).toFixed(2)}</span>
+                  </div>
                 </div>
 
                 <div
@@ -1485,19 +1505,25 @@ export default function TerminalClient() {
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  <div className="modal-status-line">
-                    <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">
-                      {(() => {
-                        const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
-                        const orig = `$${(base / 100).toFixed(2)}`;
-                        const disc = gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0
-                          ? `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`
-                          : orig;
-                        return `TIER ${tier} ACTIVE — ${disc}`;
-                      })()}
-                    </span>
-                  </div>
+                  {tier === 1 ? (
+                    <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                          TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                        </span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="modal-status-line">
+                      <span className="modal-status-symbol">{">"}</span>
+                      <span className="modal-status-text">TIER {tier} ACTIVE - ${(tierPriceCents(tier as Tier) / 100).toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div style={mobileTierVisualWrapStyle}>
@@ -1612,19 +1638,25 @@ export default function TerminalClient() {
             ) : (
               <>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  <div className="modal-status-line">
-                    <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">
-                      {(() => {
-                        const base = tier === 1 ? 2778 : tier === 2 ? 3889 : 5000;
-                        const orig = `$${(base / 100).toFixed(2)}`;
-                        const disc = gaPromoValid && gaPromoDiscount != null && gaPromoDiscount > 0
-                          ? `$${(Math.round(base * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)}`
-                          : orig;
-                        return `TIER ${tier} ACTIVE — ${disc}`;
-                      })()}
-                    </span>
-                  </div>
+                  {tier === 1 ? (
+                    <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                          TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                        </span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="modal-status-line">
+                      <span className="modal-status-symbol">{">"}</span>
+                      <span className="modal-status-text">TIER {tier} ACTIVE - ${(tierPriceCents(tier as Tier) / 100).toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>

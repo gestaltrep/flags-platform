@@ -1,31 +1,10 @@
 import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { calculateTier, tierPriceCents } from "@/lib/tier";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
-
-function buildAmount(quantity: number, sold: number): number {
-  const tiers = [
-    { cap: 50,   price: 2778, label: "Tier 1 Token" },
-    { cap: 125,  price: 3889, label: "Tier 2 Token" },
-    { cap: 1000, price: 5000, label: "Tier 3 Token" },
-  ];
-  let remaining = quantity;
-  let position = sold;
-  let total = 0;
-  for (const tier of tiers) {
-    if (remaining <= 0) break;
-    if (position >= tier.cap) continue;
-    const availableInTier = tier.cap - position;
-    const take = Math.min(remaining, availableInTier);
-    total += take * tier.price;
-    remaining -= take;
-    position += take;
-  }
-  if (remaining > 0) throw new Error("General admission sold out");
-  return total;
-}
 
 export async function POST(req: Request) {
   try {
@@ -47,6 +26,7 @@ export async function POST(req: Request) {
       .select("*", { count: "exact", head: true })
       .eq("event_id", EVENT_ID)
       .eq("is_vip", false)
+      .eq("comp", false)
       .not("buyer_user_id", "is", null)
       .is("refunded_at", null);
 
@@ -55,7 +35,8 @@ export async function POST(req: Request) {
     if (remaining <= 0) return Response.json({ error: "General admission sold out" }, { status: 400 });
     if (quantity > remaining) return Response.json({ error: `Only ${remaining} tokens remain.` }, { status: 400 });
 
-    const baseAmount = buildAmount(quantity, sold);
+    const tier = calculateTier(sold);
+    const baseAmount = tierPriceCents(tier) * quantity;
 
     let discountPercent = 0;
     let promoCodeId: string | null = null;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import HeroGlitch from "./components/HeroGlitch";
+import SponsorSection from "./components/SponsorSection";
 
 export default function Home() {
   const [open, setOpen] = useState(false);
@@ -368,6 +369,8 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <SponsorSection />
 
       {open && (
         <div className="signup-overlay">

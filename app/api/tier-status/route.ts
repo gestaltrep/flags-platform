@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { calculateTier } from "@/lib/tier";
 
 const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
@@ -29,7 +30,7 @@ export async function GET() {
   const sold = gaCount ?? 0;
   const vipSold = vipCount ?? 0;
 
-  const tier = sold < 50 ? 1 : sold < 125 ? 2 : 3;
+  const tier = calculateTier(sold);
 
   return Response.json({
     tier,
