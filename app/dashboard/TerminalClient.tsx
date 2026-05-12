@@ -969,9 +969,13 @@ export default function TerminalClient() {
                 >
                   <span>TOKENS</span>
                   {tier === 1 && (
-                    <span style={{ color: "#ff3333", fontFamily: '"Courier New", monospace' }}>
-                      TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
-                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", fontFamily: '"Courier New", monospace' }}>
+                      <span style={{ color: "#ff3333" }}>
+                        TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                      </span>
+                      <span>Tier 1 - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                      <span>Tier 2 - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                    </div>
                   )}
                 </div>
 
@@ -985,9 +989,9 @@ export default function TerminalClient() {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ color: tierColor(1), textAlign: "center", whiteSpace: "nowrap" }}>TIER 1 - ${(tierPriceCents(1) / 100).toFixed(2)}</div>
-                  <div style={{ color: tierColor(2), textAlign: "center", whiteSpace: "nowrap" }}>TIER 2 - ${(tierPriceCents(2) / 100).toFixed(2)}</div>
-                  <div style={{ color: tierColor(3), textAlign: "center", whiteSpace: "nowrap" }}>TIER 3 - ${(tierPriceCents(3) / 100).toFixed(2)}</div>
+                  <div style={{ color: tierColor(1) }}>TIER 1</div>
+                  <div style={{ color: tierColor(2) }}>TIER 2</div>
+                  <div style={{ color: tierColor(3) }}>TIER 3</div>
                 </div>
 
                 <div
