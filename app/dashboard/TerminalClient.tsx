@@ -1519,7 +1519,7 @@ export default function TerminalClient() {
                       </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
                       </div>
                     </>
                   ) : tier === 2 ? (
@@ -1530,7 +1530,7 @@ export default function TerminalClient() {
                       </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(3) / 100).toFixed(2)}</span>
+                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(3) / 100).toFixed(2)}</span>
                       </div>
                     </>
                   ) : (
@@ -1667,7 +1667,7 @@ export default function TerminalClient() {
                       </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(2) / 100).toFixed(2)}</span>
+                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
                       </div>
                     </>
                   ) : tier === 2 ? (
@@ -1678,7 +1678,7 @@ export default function TerminalClient() {
                       </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER: ${(tierPriceCents(3) / 100).toFixed(2)}</span>
+                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(3) / 100).toFixed(2)}</span>
                       </div>
                     </>
                   ) : (

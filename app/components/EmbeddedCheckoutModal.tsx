@@ -160,7 +160,8 @@ export default function EmbeddedCheckoutModal({
   return (
     <div
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
+        position: "fixed", inset: 0, width: "100vw", height: "100dvh",
+        background: "rgba(0,0,0,0.88)",
         zIndex: 1000, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "flex-start",
         overflowY: "auto", padding: isMobile ? "24px 16px 40px" : "40px 24px 60px",
