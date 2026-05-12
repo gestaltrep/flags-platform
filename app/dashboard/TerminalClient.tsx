@@ -985,15 +985,15 @@ export default function TerminalClient() {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ color: tierColor(1) }}>TIER 1</span>
                     <span style={{ color: tierColor(1) }}>${(tierPriceCents(1) / 100).toFixed(2)}</span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ color: tierColor(2) }}>TIER 2</span>
                     <span style={{ color: tierColor(2) }}>${(tierPriceCents(2) / 100).toFixed(2)}</span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ color: tierColor(3) }}>TIER 3</span>
                     <span style={{ color: tierColor(3) }}>${(tierPriceCents(3) / 100).toFixed(2)}</span>
                   </div>
