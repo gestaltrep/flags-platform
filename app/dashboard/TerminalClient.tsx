@@ -1657,7 +1657,7 @@ export default function TerminalClient() {
                     <>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                        <span className="modal-status-text" style={{ color: "#ff3333", whiteSpace: "nowrap" }}>
                           TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
                         </span>
                       </div>
