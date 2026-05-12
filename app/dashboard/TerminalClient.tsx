@@ -249,67 +249,6 @@ export default function TerminalClient() {
     return Math.max(0, Math.min(100, (vipSold / 50) * 100));
   }
 
-  const TIER_URGENCY_TARGET = "2026-05-14T23:59:59-04:00";
-
-  function renderTierUrgency(modal: boolean) {
-    const lines: Array<{ content: React.ReactNode; red?: boolean }> =
-      tier === 1
-        ? [
-            {
-              content: (
-                <>TIER 1 ENDS IN: <Countdown targetDate={TIER_URGENCY_TARGET} onExpire={loadTier} /></>
-              ),
-              red: true,
-            },
-            { content: "$27.78 — $25 with code SIGNO10" },
-            { content: "Tier 2: $38.89 starting May 15" },
-          ]
-        : tier === 2
-        ? [
-            { content: "TIER 2 ACTIVE" },
-            { content: "$38.89 — $35.00 with code SIGNO10" },
-          ]
-        : [
-            { content: "TIER 3 ACTIVE" },
-            { content: "$50.00 — $45.00 with code SIGNO10" },
-          ];
-
-    if (modal) {
-      return (
-        <>
-          {lines.map((l, i) => (
-            <div key={i} className="modal-status-line">
-              <span className="modal-status-symbol">{">"}</span>
-              <span
-                className="modal-status-text"
-                style={l.red ? { color: "#ff3333" } : undefined}
-              >
-                {l.content}
-              </span>
-            </div>
-          ))}
-        </>
-      );
-    }
-
-    return (
-      <div
-        style={{
-          fontFamily: '"Courier New", monospace',
-          fontSize: desktopSmallLabel,
-          letterSpacing: 2,
-          marginBottom: 14,
-          lineHeight: 1.8,
-        }}
-      >
-        {lines.map((l, i) => (
-          <div key={i} style={l.red ? { color: "#ff3333" } : undefined}>
-            {l.content}
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   function decGa() {
     setGaQuantity((prev) => Math.max(1, prev - 1));
@@ -1023,9 +962,17 @@ export default function TerminalClient() {
                     fontSize: desktopSmallLabel,
                     marginBottom: 12,
                     letterSpacing: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
                   }}
                 >
-                  TOKENS
+                  <span>TOKENS</span>
+                  {tier === 1 && (
+                    <span style={{ color: "#ff3333", fontFamily: '"Courier New", monospace' }}>
+                      TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                    </span>
+                  )}
                 </div>
 
                 <div
@@ -1038,12 +985,10 @@ export default function TerminalClient() {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ color: tierColor(1) }}>TIER 1</div>
-                  <div style={{ color: tierColor(2) }}>TIER 2</div>
-                  <div style={{ color: tierColor(3) }}>TIER 3</div>
+                  <div style={{ color: tierColor(1) }}>TIER 1 - ${(tierPriceCents(1) / 100).toFixed(2)}</div>
+                  <div style={{ color: tierColor(2) }}>TIER 2 - ${(tierPriceCents(2) / 100).toFixed(2)}</div>
+                  <div style={{ color: tierColor(3) }}>TIER 3 - ${(tierPriceCents(3) / 100).toFixed(2)}</div>
                 </div>
-
-                {renderTierUrgency(false)}
 
                 <div
                   style={{
@@ -1551,7 +1496,25 @@ export default function TerminalClient() {
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  {renderTierUrgency(true)}
+                  {tier === 1 ? (
+                    <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                          TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                        </span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="modal-status-line">
+                      <span className="modal-status-symbol">{">"}</span>
+                      <span className="modal-status-text">TIER {tier} ACTIVE - ${(tierPriceCents(tier as Tier) / 100).toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div style={mobileTierVisualWrapStyle}>
@@ -1666,7 +1629,25 @@ export default function TerminalClient() {
             ) : (
               <>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  {renderTierUrgency(true)}
+                  {tier === 1 ? (
+                    <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                          TIER 1 ENDS IN: <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                        </span>
+                      </div>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="modal-status-line">
+                      <span className="modal-status-symbol">{">"}</span>
+                      <span className="modal-status-text">TIER {tier} ACTIVE - ${(tierPriceCents(tier as Tier) / 100).toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
