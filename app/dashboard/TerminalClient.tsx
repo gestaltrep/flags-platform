@@ -34,6 +34,7 @@ export default function TerminalClient() {
   const [tier, setTier] = useState(1);
   const [sold, setSold] = useState(0);
   const [vipSold, setVipSold] = useState(0);
+  const [tierStartedAtSold, setTierStartedAtSold] = useState(0);
 
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   const [showTierPanel, setShowTierPanel] = useState(false);
@@ -126,6 +127,7 @@ export default function TerminalClient() {
       setTier(data.tier ?? 1);
       setSold(data.sold ?? 0);
       setVipSold(data.vipSold ?? 0);
+      setTierStartedAtSold(data.tierStartedAtSold ?? 0);
     } catch (err) {
       console.error("Tier load failed", err);
     }
@@ -242,7 +244,9 @@ export default function TerminalClient() {
   function tier2Fill() {
     if (tier > 2) return 1;
     if (tier < 2) return 0;
-    return Math.max(0, Math.min(1, (sold - 50) / 75));
+    const denominator = 125 - tierStartedAtSold;
+    if (denominator <= 0) return 1;
+    return Math.max(0, Math.min(1, (sold - tierStartedAtSold) / denominator));
   }
   function tier3Fill() {
     if (tier < 3) return 0;
