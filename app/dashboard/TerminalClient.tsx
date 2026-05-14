@@ -236,12 +236,16 @@ export default function TerminalClient() {
   }
 
   function tier1Fill() {
+    if (tier > 1) return 1;
     return Math.max(0, Math.min(1, sold / 50));
   }
   function tier2Fill() {
+    if (tier > 2) return 1;
+    if (tier < 2) return 0;
     return Math.max(0, Math.min(1, (sold - 50) / 75));
   }
   function tier3Fill() {
+    if (tier < 3) return 0;
     return Math.max(0, Math.min(1, (sold - 125) / 875));
   }
 
