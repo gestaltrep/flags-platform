@@ -2,9 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import Countdown from "./Countdown";
+import EmbeddedCheckoutModal from "./EmbeddedCheckoutModal";
 import { tierPriceCents, type Tier } from "@/lib/tier";
 
-type ParticipationStep = "chooser" | "ga" | "vip" | "table";
+type ParticipationStep =
+  | "chooser"
+  | "ga"
+  | "vip"
+  | "table"
+  | "phone-entry"
+  | "otp-verify"
+  | "checkout"
+  | "success";
 
 interface Props {
   step: ParticipationStep;
@@ -16,8 +25,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   // Per-tier quantities (preserved across chooser ↔ tier navigation)
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
-  // tableQuantity tracked for Phase 2 (table has no quantity selector)
-  const [tableQuantity, setTableQuantity] = useState(1);
 
   // GA promo — matches Terminal handleGaPromoChange pattern exactly
   const [gaPromo, setGaPromo] = useState("");
@@ -40,7 +47,15 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   const [tablePromoDiscount, setTablePromoDiscount] = useState<number | null>(null);
   const tablePromoTimer = useRef<number | null>(null);
 
-  const [generateStub, setGenerateStub] = useState(false);
+  // Auth flow state
+  const [phone, setPhone] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Checkout context — captured when GENERATE is clicked
+  const [checkoutSourceStep, setCheckoutSourceStep] = useState<"ga" | "vip" | "table">("ga");
+  const [checkoutAmount, setCheckoutAmount] = useState(0);
 
   const [tier, setTier] = useState(1);
   const [sold, setSold] = useState(0);
@@ -61,12 +76,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
 
   const isMobile = viewportWidth < 900;
 
-  // Reset stub when navigating between tier states
-  useEffect(() => {
-    setGenerateStub(false);
-  }, [step]);
-
-  // Fetch tier/table data once on mount (parent unmounts this component when modal closes)
+  // Fetch tier/table data once on mount
   useEffect(() => {
     fetch("/api/tier-status", { cache: "no-store" })
       .then((r) => r.json())
@@ -89,7 +99,24 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     };
   }, []);
 
-  // Promo handlers — identical pattern to Terminal's handleGaPromoChange etc.
+  // Redirect to /dashboard 1.5 s after payment confirmed
+  useEffect(() => {
+    if (step === "success") {
+      const timer = window.setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  // Auth detection — user_id cookie is httpOnly:false, readable from JS
+  function isAuthenticated(): boolean {
+    if (typeof document === "undefined") return false;
+    const cookie = document.cookie.split(";").find((c) => c.trim().startsWith("user_id="));
+    return !!cookie && cookie.split("=").slice(1).join("=").trim().length > 0;
+  }
+
+  // Promo handlers — identical pattern to Terminal
   function handleGaPromoChange(value: string) {
     setGaPromo(value);
     setGaPromoValid(null);
@@ -148,6 +175,121 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       setTablePromoDiscount(data.valid ? (data.discount_percent ?? null) : null);
       setTablePromoChecking(false);
     }, 800);
+  }
+
+  // Called by all three GENERATE buttons
+  function handleGenerate() {
+    const src = step as "ga" | "vip" | "table";
+
+    // Block if promo was entered but hasn't validated
+    if (src === "ga" && gaPromo.trim() && (gaPromoChecking || gaPromoValid !== true)) {
+      setGaPromoValid(false);
+      return;
+    }
+    if (src === "vip" && vipPromo.trim() && (vipPromoChecking || vipPromoValid !== true)) {
+      setVipPromoValid(false);
+      return;
+    }
+    if (src === "table" && tablePromo.trim() && (tablePromoChecking || tablePromoValid !== true)) {
+      setTablePromoValid(false);
+      return;
+    }
+
+    // Compute display amount for the Stripe modal header
+    let amount = 0;
+    if (src === "ga") {
+      const base = tierPriceCents(tier as Tier) * gaQuantity;
+      amount = gaPromoValid && gaPromoDiscount ? Math.round(base * (1 - gaPromoDiscount / 100)) : base;
+    } else if (src === "vip") {
+      const base = 6667 * vipQuantity;
+      amount = vipPromoValid && vipPromoDiscount ? Math.round(base * (1 - vipPromoDiscount / 100)) : base;
+    } else {
+      amount = tablePromoValid && tablePromoDiscount
+        ? Math.round(66667 * (1 - tablePromoDiscount / 100))
+        : 66667;
+    }
+
+    setCheckoutSourceStep(src);
+    setCheckoutAmount(amount);
+    setAuthMessage("");
+
+    if (isAuthenticated()) {
+      onStepChange("checkout");
+    } else {
+      setPhone("");
+      setOtpCode("");
+      onStepChange("phone-entry");
+    }
+  }
+
+  // Phone-entry: login path (name:"" — 404 if no account)
+  async function sendPhoneCode() {
+    setAuthMessage("");
+    if (!phone.trim()) {
+      setAuthMessage("Please enter your phone number.");
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      const res = await fetch("/api/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim(), name: "" }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        if (res.status === 404 && data?.error) {
+          setAuthMessage(data.error);
+        } else {
+          const raw = String(data?.error || "").toLowerCase();
+          if (raw.includes("invalid parameter")) setAuthMessage("SMS is not available right now.");
+          else if (raw.includes("invalid") && raw.includes("phone")) setAuthMessage("This phone number isn't valid.");
+          else setAuthMessage("We couldn't send your code. Please try again.");
+        }
+        return;
+      }
+      setOtpCode("");
+      onStepChange("otp-verify");
+    } catch {
+      setAuthMessage("We couldn't send your code. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  // OTP verify — server sets user_id cookie on success
+  async function verifyPhone() {
+    setAuthMessage("");
+    if (!otpCode.trim()) {
+      setAuthMessage("Please enter the verification code.");
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      const res = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: "" }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        if (res.status === 404 && data?.error) {
+          setAuthMessage(data.error);
+        } else {
+          const raw = String(data?.error || "").toLowerCase();
+          if (raw.includes("expired")) setAuthMessage("That code has expired.");
+          else if (raw.includes("incorrect") || raw.includes("invalid")) setAuthMessage("That code is incorrect.");
+          else setAuthMessage("We couldn't verify your code. Please try again.");
+        }
+        return;
+      }
+      // Cookie is now set by the server — go straight to checkout
+      onStepChange("checkout");
+    } catch {
+      setAuthMessage("We couldn't sign you in. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
   }
 
   function tier1Fill() {
@@ -218,7 +360,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     flexShrink: 0,
   };
 
-  // Fix 1: promoInputStyle width is "100%" — matches the GENERATE button width below
   const promoInputStyle: React.CSSProperties = {
     width: "100%",
     background: "black",
@@ -233,7 +374,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     borderRadius: 0,
   };
 
-  // Fix 1: GENERATE button now 100% wide to match the promo input above it
   const generateBtnStyle: React.CSSProperties = {
     width: "100%",
     maxWidth: "100%",
@@ -248,6 +388,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     textTransform: "uppercase",
   };
 
+  // 3-column grid header: [44px back] [1fr title] [44px spacer]
   const tierDetailHeaderStyle: React.CSSProperties = {
     display: "grid",
     gridTemplateColumns: "44px 1fr 44px",
@@ -269,7 +410,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     fontFamily: '"Courier New", monospace',
   };
 
-  // Shared checkmark overlay styles — match Terminal exactly
   const promoCheckingStyle: React.CSSProperties = {
     position: "absolute",
     right: 12,
@@ -297,12 +437,59 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     width: "100%",
   };
 
+  // Auth message slot (phone/otp steps)
+  const authMessageSlot = (
+    <div style={{
+      minHeight: 20,
+      marginTop: 8,
+      marginBottom: 14,
+      fontSize: 12,
+      lineHeight: 1.5,
+      color: "#c8c8c8",
+      textAlign: "center",
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+    }}>
+      {authMessage ? <span>{authMessage}</span> : null}
+    </div>
+  );
+
+  // Header title per step
   const tierTitle =
-    step === "ga"
-      ? "GA TOKENS"
-      : step === "vip"
-        ? "VIP TOKENS"
-        : "RESERVE A TABLE";
+    step === "ga" ? "GA TOKENS"
+    : step === "vip" ? "VIP TOKENS"
+    : step === "table" ? "RESERVE A TABLE"
+    : step === "phone-entry" ? "VERIFICATION"
+    : step === "otp-verify" ? "ENTER CODE"
+    : "";
+
+  // Back button target per step
+  function handleBack() {
+    if (step === "phone-entry") onStepChange(checkoutSourceStep);
+    else if (step === "otp-verify") onStepChange("phone-entry");
+    else onStepChange("chooser"); // ga / vip / table
+  }
+
+  // ── CHECKOUT: render Stripe modal directly, no participation overlay ──
+  if (step === "checkout") {
+    return (
+      <EmbeddedCheckoutModal
+        isOpen={true}
+        onClose={() => onStepChange(checkoutSourceStep)}
+        type={checkoutSourceStep}
+        quantity={checkoutSourceStep === "table" ? 6 : checkoutSourceStep === "vip" ? vipQuantity : gaQuantity}
+        isMobile={isMobile}
+        amount={checkoutAmount}
+        promoCode={
+          checkoutSourceStep === "ga" ? gaPromo
+          : checkoutSourceStep === "vip" ? vipPromo
+          : tablePromo
+        }
+        onSuccess={() => onStepChange("success")}
+      />
+    );
+  }
 
   return (
     <div className="signup-overlay">
@@ -320,99 +507,100 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
               />
             </div>
 
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: 14,
-              }}
-            >
-              <button className="cta-button" onClick={() => onStepChange("ga")}>
-                GA TOKENS
-              </button>
-              <button className="cta-button" onClick={() => onStepChange("vip")}>
-                VIP TOKENS
-              </button>
-              <button className="cta-button" onClick={() => onStepChange("table")}>
-                RESERVE A TABLE
-              </button>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
+              <button className="cta-button" onClick={() => onStepChange("ga")}>GA TOKENS</button>
+              <button className="cta-button" onClick={() => onStepChange("vip")}>VIP TOKENS</button>
+              <button className="cta-button" onClick={() => onStepChange("table")}>RESERVE A TABLE</button>
             </div>
 
-            <button className="signup-close" onClick={onClose}>
-              CANCEL
-            </button>
+            <button className="signup-close" onClick={onClose}>CANCEL</button>
           </>
         )}
 
-        {/* ── TIER-DETAIL STATES ───────────────────────── */}
-        {(step === "ga" || step === "vip" || step === "table") && (
+        {/* ── ALL NON-CHOOSER STATES ───────────────────── */}
+        {step !== "chooser" && (
           <>
-            {/* tier-detail header: 3-column grid keeps back button and title on the same vertical center */}
-            <div style={tierDetailHeaderStyle}>
-              <button
-                style={backBtnStyle}
-                onClick={() => onStepChange("chooser")}
-                aria-label="Back to chooser"
-              >
-                ◀
-              </button>
-              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center", marginBottom: 0 }}>
-                {tierTitle}
-              </span>
-              <div />
-            </div>
-
-            {/* ── GENERATE STUB ─────────────────────────── */}
-            {generateStub && (
-              <>
-                <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                  }}
+            {/* Header — shared by ga/vip/table/phone-entry/otp-verify; hidden for success */}
+            {step !== "success" && (
+              <div style={tierDetailHeaderStyle}>
+                <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
+                <span
+                  className="signup-title signup-title-large"
+                  style={{ width: "100%", textAlign: "center", marginBottom: 0 }}
                 >
-                  <div className="modal-status-line" style={{ marginBottom: 10 }}>
-                    <span className="modal-status-symbol">{">"}</span>
-                    <span
-                      className="modal-status-text"
-                      style={{ color: "#c8c8c8", fontSize: 14, letterSpacing: 1.8 }}
-                    >
-                      PHASE 2: VERIFICATION + CHECKOUT
-                    </span>
-                  </div>
-                  <div className="modal-status-line" style={{ marginBottom: 36 }}>
-                    <span className="modal-status-symbol">{">"}</span>
-                    <span
-                      className="modal-status-text"
-                      style={{ color: "#c8c8c8", fontSize: 14, letterSpacing: 1.8 }}
-                    >
-                      (THIS WILL WIRE IN NEXT)
-                    </span>
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <button
-                      className="signup-close"
-                      style={{ marginTop: 0 }}
-                      onClick={() => setGenerateStub(false)}
-                    >
-                      BACK TO TIER DETAIL
-                    </button>
-                  </div>
+                  {tierTitle}
+                </span>
+                <div />
+              </div>
+            )}
+
+            {/* ── SUCCESS ───────────────────────────────── */}
+            {step === "success" && (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div className="modal-status-line">
+                  <span className="modal-status-symbol">{">"}</span>
+                  <span className="modal-status-text" style={{ fontSize: 14, letterSpacing: 1.8 }}>
+                    PAYMENT CONFIRMED — REDIRECTING TO TERMINAL...
+                  </span>
                 </div>
-                <button className="signup-close" onClick={onClose}>
-                  CANCEL
-                </button>
+              </div>
+            )}
+
+            {/* ── PHONE-ENTRY ───────────────────────────── */}
+            {step === "phone-entry" && (
+              <>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+                  <input
+                    placeholder="PHONE NUMBER"
+                    className="signup-input"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    style={{ marginBottom: 0 }}
+                  />
+                </div>
+                {authMessageSlot}
+                <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
+                  <button
+                    className="cta-button modal-primary-button"
+                    onClick={sendPhoneCode}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "SENDING..." : "SEND CODE"}
+                  </button>
+                </div>
+                <button className="signup-close" onClick={onClose}>CANCEL</button>
+              </>
+            )}
+
+            {/* ── OTP-VERIFY ────────────────────────────── */}
+            {step === "otp-verify" && (
+              <>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+                  <input
+                    placeholder="6 DIGIT CODE"
+                    className="signup-input"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    style={{ marginBottom: 0 }}
+                  />
+                </div>
+                {authMessageSlot}
+                <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
+                  <button
+                    className="cta-button modal-primary-button"
+                    onClick={verifyPhone}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "VERIFYING..." : "VERIFY"}
+                  </button>
+                </div>
+                <button className="signup-close" onClick={onClose}>CANCEL</button>
               </>
             )}
 
             {/* ── GA DETAIL ─────────────────────────────── */}
-            {!generateStub && step === "ga" && (
+            {step === "ga" && (
               <>
-                {/* Urgency block — Fix 3: price drops on valid promo */}
                 <div className="modal-status-copy" style={{ marginBottom: 18 }}>
                   {tier === 1 ? (
                     <>
@@ -420,10 +608,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text" style={{ color: "#ff3333" }}>
                           TIER 1 END:{" "}
-                          <Countdown
-                            targetDate="2026-05-14T23:59:59-04:00"
-                            onExpire={loadTier}
-                          />
+                          <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
                         </span>
                       </div>
                       <div className="modal-status-line">
@@ -473,23 +658,18 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   )}
                 </div>
 
-                {/* Segmented tier bar with prices under labels */}
+                {/* Segmented tier bar */}
                 <div style={{ marginBottom: 22 }}>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr 1fr",
-                      textAlign: "center",
-                      fontSize: 10,
-                      letterSpacing: 1.8,
-                      marginBottom: 6,
-                    }}
-                  >
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    textAlign: "center",
+                    fontSize: 10,
+                    letterSpacing: 1.8,
+                    marginBottom: 6,
+                  }}>
                     {([1, 2, 3] as const).map((t) => (
-                      <div
-                        key={t}
-                        style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-                      >
+                      <div key={t} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                         <span style={{ color: tierColor(t) }}>TIER {t}</span>
                         <span style={{ color: "#888", fontSize: 9, marginTop: 2 }}>
                           ${(tierPriceCents(t) / 100).toFixed(2)}
@@ -510,7 +690,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                 </div>
 
-                {/* Quantity selector */}
                 <div className="modal-quantity-label">QUANTITY</div>
                 <div className="modal-quantity-row">
                   <button style={arrowBtnStyle} onClick={() => setGaQuantity((q) => Math.max(1, q - 1))}>▼</button>
@@ -518,7 +697,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   <button style={arrowBtnStyle} onClick={() => setGaQuantity((q) => Math.min(10, q + 1))}>▲</button>
                 </div>
 
-                {/* Fix 2: Promo code with debounced validation + checkmark (matches Terminal pattern) */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 20, marginBottom: 20 }}>
                   <div style={{ position: "relative", width: "100%" }}>
                     <input
@@ -535,13 +713,8 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                 </div>
 
-                {/* Generate */}
                 <div className="signup-generate-button-wrap" style={{ marginTop: "auto", paddingTop: 14 }}>
-                  <button
-                    className="cta-button"
-                    style={generateBtnStyle}
-                    onClick={() => setGenerateStub(true)}
-                  >
+                  <button className="cta-button" style={generateBtnStyle} onClick={handleGenerate}>
                     GENERATE
                   </button>
                 </div>
@@ -550,17 +723,16 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
             )}
 
             {/* ── VIP DETAIL ────────────────────────────── */}
-            {!generateStub && step === "vip" && (
+            {step === "vip" && (
               <>
-                {/* Fix 3: VIP price drops on valid promo */}
                 <div className="modal-status-copy" style={{ marginBottom: 16 }}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
                     <span className="modal-status-text">
                       VIP CHANNEL ACTIVE — $
                       {vipPromoValid && vipPromoDiscount != null
-                        ? (Math.round(5000 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)
-                        : "50.00"}
+                        ? (Math.round(6667 * (1 - vipPromoDiscount / 100)) / 100).toFixed(2)
+                        : "66.67"}
                     </span>
                   </div>
                   <div className="modal-status-line">
@@ -577,7 +749,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                 </div>
 
-                {/* Quantity selector */}
                 <div className="modal-quantity-label">QUANTITY</div>
                 <div className="modal-quantity-row">
                   <button style={arrowBtnStyle} onClick={() => setVipQuantity((q) => Math.max(1, q - 1))}>▼</button>
@@ -592,7 +763,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   >▲</button>
                 </div>
 
-                {/* Fix 2: Promo with validation */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 20, marginBottom: 20 }}>
                   <div style={{ position: "relative", width: "100%" }}>
                     <input
@@ -609,13 +779,8 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                 </div>
 
-                {/* Generate */}
                 <div className="signup-generate-button-wrap" style={{ marginTop: "auto", paddingTop: 14 }}>
-                  <button
-                    className="cta-button"
-                    style={generateBtnStyle}
-                    onClick={() => setGenerateStub(true)}
-                  >
+                  <button className="cta-button" style={generateBtnStyle} onClick={handleGenerate}>
                     GENERATE
                   </button>
                 </div>
@@ -624,9 +789,8 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
             )}
 
             {/* ── TABLE DETAIL ──────────────────────────── */}
-            {!generateStub && step === "table" && (
+            {step === "table" && (
               <>
-                {/* Fix 3: Table price drops on valid promo */}
                 <div className="modal-status-copy" style={{ marginBottom: 14, lineHeight: 1.5 }}>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
@@ -669,7 +833,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                 </div>
 
-                {/* Fix 2: Promo with validation */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 14, marginBottom: 14 }}>
                   <div style={{ position: "relative", width: "100%" }}>
                     <input
@@ -686,13 +849,8 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                 </div>
 
-                {/* Generate */}
                 <div className="signup-generate-button-wrap" style={{ marginTop: "auto", paddingTop: 14 }}>
-                  <button
-                    className="cta-button"
-                    style={generateBtnStyle}
-                    onClick={() => setGenerateStub(true)}
-                  >
+                  <button className="cta-button" style={generateBtnStyle} onClick={handleGenerate}>
                     GENERATE
                   </button>
                 </div>

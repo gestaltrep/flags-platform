@@ -1219,7 +1219,7 @@ export default function TerminalClient() {
                     style={actionButtonStyle}
                     onClick={() => setPurchaseOpen(true)}
                   >
-                    GENERATE TOKENS
+                    GA TOKENS
                   </button>
 
                   <button
@@ -1227,7 +1227,7 @@ export default function TerminalClient() {
                     style={actionButtonStyle}
                     onClick={() => setVipOpen(true)}
                   >
-                    GENERATE VIP TOKENS
+                    VIP TOKENS
                   </button>
 
                   <button
@@ -1435,7 +1435,7 @@ export default function TerminalClient() {
                     }}
                     onClick={() => setPurchaseOpen(true)}
                   >
-                    GENERATE TOKENS
+                    GA TOKENS
                   </button>
 
                   <button
@@ -1457,7 +1457,7 @@ export default function TerminalClient() {
                     }}
                     onClick={() => setVipOpen(true)}
                   >
-                    GENERATE VIP TOKENS
+                    VIP TOKENS
                   </button>
 
                   <button

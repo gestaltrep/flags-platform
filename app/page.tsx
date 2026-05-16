@@ -5,7 +5,7 @@ import HeroGlitch from "./components/HeroGlitch";
 import SponsorSection from "./components/SponsorSection";
 import ParticipationModal from "./components/ParticipationModal";
 
-type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table";
+type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout" | "success";
 
 export default function Home() {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
