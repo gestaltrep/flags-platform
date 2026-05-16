@@ -249,9 +249,9 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   };
 
   const tierDetailHeaderStyle: React.CSSProperties = {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "44px 1fr 44px",
     alignItems: "center",
-    position: "relative",
     minHeight: 104,
     borderBottom: "1px solid rgba(255,255,255,0.62)",
     marginBottom: 26,
@@ -259,8 +259,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   };
 
   const backBtnStyle: React.CSSProperties = {
-    position: "absolute",
-    left: 0,
     background: "none",
     border: "none",
     color: "white",
@@ -351,7 +349,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
         {/* ── TIER-DETAIL STATES ───────────────────────── */}
         {(step === "ga" || step === "vip" || step === "table") && (
           <>
-            {/* Fix 4: tier-detail header uses signup-title signup-title-large to match chooser/signup header sizing */}
+            {/* tier-detail header: 3-column grid keeps back button and title on the same vertical center */}
             <div style={tierDetailHeaderStyle}>
               <button
                 style={backBtnStyle}
@@ -360,9 +358,10 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
               >
                 ◀
               </button>
-              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center" }}>
+              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center", marginBottom: 0 }}>
                 {tierTitle}
               </span>
+              <div />
             </div>
 
             {/* ── GENERATE STUB ─────────────────────────── */}
