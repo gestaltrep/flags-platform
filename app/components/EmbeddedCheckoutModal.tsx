@@ -75,14 +75,6 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
             type: "tabs",
             defaultCollapsed: false,
           },
-          fields: {
-            billingDetails: {
-              name: "auto",
-              email: "never",
-              phone: "never",
-              address: "never",
-            },
-          },
         }}
       />
       {error && (
