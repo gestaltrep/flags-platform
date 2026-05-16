@@ -15,12 +15,14 @@ interface EmbeddedCheckoutModalProps {
   onSuccess: () => void;
   amount: number;
   promoCode: string;
+  billingPhone?: string;
 }
 
-function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
+function CheckoutForm({ onSuccess, isMobile, onSucceeded, billingPhone }: {
   onSuccess: () => void;
   isMobile: boolean;
   onSucceeded: () => void;
+  billingPhone?: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -46,6 +48,11 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/dashboard?purchase=complete`,
+          ...(billingPhone ? {
+            payment_method_data: {
+              billing_details: { phone: billingPhone },
+            },
+          } : {}),
         },
         redirect: "if_required",
       });
@@ -74,6 +81,14 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
           layout: {
             type: "tabs",
             defaultCollapsed: false,
+          },
+          fields: {
+            billingDetails: {
+              name: "auto",
+              email: "never",
+              phone: "never",
+              address: "never",
+            },
           },
         }}
       />
@@ -106,7 +121,7 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
 }
 
 export default function EmbeddedCheckoutModal({
-  isOpen, onClose, type, quantity, isMobile, onSuccess, amount, promoCode,
+  isOpen, onClose, type, quantity, isMobile, onSuccess, amount, promoCode, billingPhone,
 }: EmbeddedCheckoutModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -274,7 +289,7 @@ export default function EmbeddedCheckoutModal({
                   },
                 }}
               >
-                <CheckoutForm onSuccess={onSuccess} isMobile={isMobile} onSucceeded={() => setSucceeded(true)} />
+                <CheckoutForm onSuccess={onSuccess} isMobile={isMobile} onSucceeded={() => setSucceeded(true)} billingPhone={billingPhone} />
               </Elements>
             )}
           </>

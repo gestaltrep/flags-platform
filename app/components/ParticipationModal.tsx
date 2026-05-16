@@ -56,6 +56,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   // Checkout context — captured when GENERATE is clicked
   const [checkoutSourceStep, setCheckoutSourceStep] = useState<"ga" | "vip" | "table">("ga");
   const [checkoutAmount, setCheckoutAmount] = useState(0);
+  const [ticketBaseline, setTicketBaseline] = useState(0);
 
   const [tier, setTier] = useState(1);
   const [sold, setSold] = useState(0);
@@ -98,6 +99,17 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       if (tablePromoTimer.current) clearTimeout(tablePromoTimer.current);
     };
   }, []);
+
+  // Snapshot existing ticket count just before Stripe checkout mounts so the
+  // post-payment poll knows what delta to wait for
+  useEffect(() => {
+    if (step === "checkout") {
+      fetch("/api/tickets", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => setTicketBaseline(Array.isArray(d) ? d.length : 0))
+        .catch(() => setTicketBaseline(0));
+    }
+  }, [step]);
 
   // Auth detection — user_id cookie is httpOnly:false, readable from JS
   function isAuthenticated(): boolean {
@@ -477,7 +489,27 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
           : checkoutSourceStep === "vip" ? vipPromo
           : tablePromo
         }
-        onSuccess={() => { window.location.href = "/dashboard"; }}
+        billingPhone={phone.trim() || undefined}
+        onSuccess={() => {
+          const baseline = ticketBaseline;
+          let attempts = 0;
+          const poll = setInterval(async () => {
+            attempts++;
+            try {
+              const res = await fetch("/api/tickets");
+              const data = await res.json();
+              if ((data?.length ?? 0) > baseline) {
+                clearInterval(poll);
+                window.location.href = "/dashboard";
+                return;
+              }
+            } catch {}
+            if (attempts >= 20) {
+              clearInterval(poll);
+              window.location.href = "/dashboard";
+            }
+          }, 500);
+        }}
       />
     );
   }

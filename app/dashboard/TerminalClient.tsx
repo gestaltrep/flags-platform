@@ -2402,7 +2402,7 @@ export default function TerminalClient() {
             try {
               const res = await fetch("/api/tickets");
               const data = await res.json();
-              if ((data.tickets?.length ?? 0) > (tickets?.length ?? 0)) {
+              if ((data?.length ?? 0) > (tickets?.length ?? 0)) {
                 clearInterval(poll);
                 window.location.reload();
                 return;
