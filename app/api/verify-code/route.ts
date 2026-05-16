@@ -67,10 +67,7 @@ export async function POST(req: Request) {
     if (existingUser) {
       const { data: updatedUser, error: updateError } = await supabase
         .from("users")
-        .update({
-          phone_verified: true,
-          ...(name?.trim() ? { name: name.trim() } : {}),
-        })
+        .update({ phone_verified: true })
         .eq("id", existingUser.id)
         .select("id")
         .single();

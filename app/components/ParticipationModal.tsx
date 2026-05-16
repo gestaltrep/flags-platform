@@ -48,6 +48,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   const tablePromoTimer = useRef<number | null>(null);
 
   // Auth flow state
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [authMessage, setAuthMessage] = useState("");
@@ -216,15 +217,20 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     if (isAuthenticated()) {
       onStepChange("checkout");
     } else {
+      setName("");
       setPhone("");
       setOtpCode("");
       onStepChange("phone-entry");
     }
   }
 
-  // Phone-entry: login path (name:"" — 404 if no account)
+  // Phone-entry: unified signup-or-login (name provided, server skips 404 check)
   async function sendPhoneCode() {
     setAuthMessage("");
+    if (!name.trim()) {
+      setAuthMessage("Please enter your name.");
+      return;
+    }
     if (!phone.trim()) {
       setAuthMessage("Please enter your phone number.");
       return;
@@ -234,18 +240,14 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       const res = await fetch("/api/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), name: "" }),
+        body: JSON.stringify({ phone: phone.trim(), name: name.trim() }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        if (res.status === 404 && data?.error) {
-          setAuthMessage(data.error);
-        } else {
-          const raw = String(data?.error || "").toLowerCase();
-          if (raw.includes("invalid parameter")) setAuthMessage("SMS is not available right now.");
-          else if (raw.includes("invalid") && raw.includes("phone")) setAuthMessage("This phone number isn't valid.");
-          else setAuthMessage("We couldn't send your code. Please try again.");
-        }
+        const raw = String(data?.error || "").toLowerCase();
+        if (raw.includes("invalid parameter")) setAuthMessage("SMS is not available right now.");
+        else if (raw.includes("invalid") && raw.includes("phone")) setAuthMessage("This phone number isn't valid.");
+        else setAuthMessage("We couldn't send your code. Please try again.");
         return;
       }
       setOtpCode("");
@@ -269,7 +271,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       const res = await fetch("/api/verify-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: "" }),
+        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: name.trim() }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
@@ -550,6 +552,12 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
             {step === "phone-entry" && (
               <>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+                  <input
+                    placeholder="NAME"
+                    className="signup-input"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
                   <input
                     placeholder="PHONE NUMBER"
                     className="signup-input"
