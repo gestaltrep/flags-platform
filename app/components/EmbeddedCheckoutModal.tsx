@@ -15,14 +15,12 @@ interface EmbeddedCheckoutModalProps {
   onSuccess: () => void;
   amount: number;
   promoCode: string;
-  billingPhone?: string;
 }
 
-function CheckoutForm({ onSuccess, isMobile, onSucceeded, billingPhone }: {
+function CheckoutForm({ onSuccess, isMobile, onSucceeded }: {
   onSuccess: () => void;
   isMobile: boolean;
   onSucceeded: () => void;
-  billingPhone?: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -48,11 +46,6 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded, billingPhone }: {
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/dashboard?purchase=complete`,
-          ...(billingPhone ? {
-            payment_method_data: {
-              billing_details: { phone: billingPhone },
-            },
-          } : {}),
         },
         redirect: "if_required",
       });
@@ -121,7 +114,7 @@ function CheckoutForm({ onSuccess, isMobile, onSucceeded, billingPhone }: {
 }
 
 export default function EmbeddedCheckoutModal({
-  isOpen, onClose, type, quantity, isMobile, onSuccess, amount, promoCode, billingPhone,
+  isOpen, onClose, type, quantity, isMobile, onSuccess, amount, promoCode,
 }: EmbeddedCheckoutModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -289,7 +282,7 @@ export default function EmbeddedCheckoutModal({
                   },
                 }}
               >
-                <CheckoutForm onSuccess={onSuccess} isMobile={isMobile} onSucceeded={() => setSucceeded(true)} billingPhone={billingPhone} />
+                <CheckoutForm onSuccess={onSuccess} isMobile={isMobile} onSucceeded={() => setSucceeded(true)} />
               </Elements>
             )}
           </>

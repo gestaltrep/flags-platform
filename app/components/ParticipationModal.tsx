@@ -489,7 +489,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
           : checkoutSourceStep === "vip" ? vipPromo
           : tablePromo
         }
-        billingPhone={phone.trim() || undefined}
         onSuccess={() => {
           const baseline = ticketBaseline;
           let attempts = 0;
