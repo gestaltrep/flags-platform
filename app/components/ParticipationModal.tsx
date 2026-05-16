@@ -243,8 +243,15 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: phone.trim(), name: name.trim() }),
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
+
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok || !data?.success) {
         const raw = String(data?.error || "").toLowerCase();
         if (raw.includes("invalid parameter")) setAuthMessage("SMS is not available right now.");
         else if (raw.includes("invalid") && raw.includes("phone")) setAuthMessage("This phone number isn't valid.");
