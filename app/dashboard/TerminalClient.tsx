@@ -1230,20 +1230,17 @@ export default function TerminalClient() {
                     GENERATE VIP TOKENS
                   </button>
 
-                  <div
-                    onClick={() => !tableSoldOut && setTableOpen(true)}
+                  <button
+                    className="cta-button"
                     style={{
-                      fontFamily: '"Courier New", monospace',
-                      fontSize: 11,
-                      letterSpacing: 2,
-                      color: tableSoldOut ? '#444' : '#ffffff',
-                      cursor: tableSoldOut ? 'default' : 'pointer',
-                      textAlign: 'left',
-                      marginTop: 12,
-                      }}
+                      ...actionButtonStyle,
+                      opacity: tableSoldOut ? 0.35 : 1,
+                    }}
+                    disabled={tableSoldOut}
+                    onClick={() => setTableOpen(true)}
                   >
                     {tableSoldOut ? 'TABLES SOLD OUT' : 'RESERVE A TABLE'}
-                  </div>
+                  </button>
                 </div>
               )}
             </div>
@@ -1463,20 +1460,29 @@ export default function TerminalClient() {
                     GENERATE VIP TOKENS
                   </button>
 
-                  <div
-                    onClick={() => !tableSoldOut && setTableOpen(true)}
+                  <button
+                    className="cta-button"
                     style={{
-                      fontFamily: '"Courier New", monospace',
-                      fontSize: 11,
-                      letterSpacing: 2,
-                      color: tableSoldOut ? '#444' : '#ffffff',
-                      cursor: tableSoldOut ? 'default' : 'pointer',
-                      textAlign: 'left',
-                      marginTop: 12,
-                      }}
+                      width: "100%",
+                      minHeight: 58,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      lineHeight: 1.08,
+                      padding: "12px 16px",
+                      fontSize: 13,
+                      letterSpacing: 3,
+                      whiteSpace: "nowrap",
+                      fontFamily: "Arial, Helvetica, sans-serif",
+                      fontWeight: 700,
+                      opacity: tableSoldOut ? 0.35 : 1,
+                    }}
+                    disabled={tableSoldOut}
+                    onClick={() => setTableOpen(true)}
                   >
                     {tableSoldOut ? 'TABLES SOLD OUT' : 'RESERVE A TABLE'}
-                  </div>
+                  </button>
                 </div>
               )}
             </>
