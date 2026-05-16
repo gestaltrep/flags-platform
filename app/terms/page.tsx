@@ -12,7 +12,7 @@ export default function Terms() {
       <p>
         <strong>Effective Date:</strong> April 19, 2026
         <br />
-        <strong>Last Updated:</strong> April 23, 2026
+        <strong>Last Updated:</strong> May 16, 2026
       </p>
 
       <hr />
@@ -61,10 +61,29 @@ export default function Terms() {
       <p>(c) Keep your account credentials confidential and not share access with any other person;</p>
       <p>(d) Accept responsibility for all activities that occur under your account.</p>
       <p>
-        We use Twilio, Inc. for phone verification via one-time SMS codes. Consent to receive these transactional messages is required to complete verification but is limited strictly to the delivery of one-time codes. See our Privacy Policy for full details.
+        We use Twilio, Inc. for phone verification via one-time SMS codes. Consent to receive these transactional messages is required to complete verification but is limited to that purpose. Users may optionally consent to receive additional marketing SMS as described in Section 3.5 below; that consent is separate, optional, and not a condition of account creation, verification, or purchase. See Section 5 of our Privacy Policy for full details on our SMS messaging program and data handling.
       </p>
       <p>
         We reserve the right to suspend, disable, or terminate any account we reasonably believe is being used in violation of these Terms.
+      </p>
+
+      <h3>3.5 SMS Messaging Program</h3>
+      <p>The Site operates an SMS messaging program with two categories of messages:</p>
+      <p>
+        <strong>Transactional SMS:</strong> One-time verification codes sent via Twilio when you initiate an action that requires phone verification (account creation, sign-in, ticket claim). These messages are required to complete those actions.
+      </p>
+      <p>
+        <strong>Optional Marketing SMS:</strong> Recurring text messages from Signo Research Group about events, updates, and announcements. Marketing SMS is sent only to users who affirmatively consent by checking the dedicated SMS opt-in checkbox on the participation form. Marketing SMS consent is optional and is not required to register, verify, or purchase tokens.
+      </p>
+      <p>
+        Message frequency varies based on event scheduling. Standard message and data rates may apply, based on your carrier plan.
+      </p>
+      <p>
+        To stop marketing SMS, reply <strong>STOP</strong> to any marketing message. This will stop future marketing messages but will not affect your account, your access, or your ability to receive verification codes. Reply <strong>HELP</strong> for assistance.
+      </p>
+      <p>
+        For full details on how SMS opt-in data is handled, including data sharing limitations, see Section 5 of our{" "}
+        <a href="/privacy">Privacy Policy</a>.
       </p>
 
       <h2>4. Ticket Sales and Pricing</h2>
@@ -539,7 +558,7 @@ export default function Terms() {
 
       <h3>23.1 Notices to You</h3>
       <p>
-        We may provide notice to you by email to the address associated with your account, by text message to the phone number associated with your account, by posting a notice on the Site, or by any other means permitted by law. You are responsible for keeping your contact information current.
+        We may provide notice to you by email to the address associated with your account, by posting a notice on the Site, or by any other means permitted by law. You are responsible for keeping your contact information current.
       </p>
 
       <h3>23.2 Notices to Us</h3>

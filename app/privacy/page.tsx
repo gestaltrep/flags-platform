@@ -12,7 +12,7 @@ export default function Privacy() {
       <p>
         <strong>Effective Date:</strong> April 19, 2026
         <br />
-        <strong>Last Updated:</strong> April 23, 2026
+        <strong>Last Updated:</strong> May 16, 2026
       </p>
 
       <hr />
@@ -48,6 +48,7 @@ export default function Privacy() {
         <li>Your full name</li>
         <li>Your mobile phone number</li>
         <li>Consent to receive one-time verification codes by SMS</li>
+        <li>Optional consent to receive marketing SMS (event updates and announcements), captured via the dedicated opt-in checkbox on the participation form. When affirmatively given, this consent is stored with a timestamp (<code>sms_consent_at</code>) and method indicator (<code>sms_consent_method = &apos;web_form&apos;</code>).</li>
       </ul>
       <p><strong>Ticket transfers:</strong></p>
       <ul>
@@ -135,8 +136,9 @@ export default function Privacy() {
       <h2>5. SMS and Phone Verification</h2>
 
       <h3>5.1 Scope of SMS Communication</h3>
+      <p>Our SMS communication operates in two distinct categories:</p>
       <p>
-        The only SMS messages we send are one-time verification codes delivered through Twilio Verify, sent automatically in direct response to user-initiated actions:
+        <strong>Transactional SMS (sent to all users with a registered phone number):</strong> One-time verification codes delivered through Twilio Verify in direct response to user-initiated actions, including:
       </p>
       <ul>
         <li>Creating an account;</li>
@@ -144,12 +146,15 @@ export default function Privacy() {
         <li>Claiming a transferred ticket.</li>
       </ul>
       <p>
-        We do not send marketing messages, event reminders, promotional SMS, or any other non-transactional SMS.
+        <strong>Optional marketing SMS (sent only to users who affirmatively opt in):</strong> Recurring text messages about events, updates, and announcements from Signo Research Group. These messages are sent only to users who have checked the dedicated SMS opt-in checkbox during the participation flow. Consent for marketing SMS is separate from consent to the Terms of Service and Privacy Policy, and is not required to create an account, verify a phone number, or purchase tokens. Users who do not check the marketing opt-in checkbox receive only transactional SMS as described above.
       </p>
 
       <h3>5.2 Message Frequency</h3>
       <p>
-        SMS frequency is limited to the verification events you initiate. Typical frequency is one or two messages per login or claim event.
+        <strong>Transactional SMS frequency</strong> is limited to verification events you initiate. Typical frequency is one or two messages per login or ticket-claim event.
+      </p>
+      <p>
+        <strong>Marketing SMS frequency</strong> (for opted-in users only) varies based on event scheduling and announcement cadence &mdash; typically a small number of messages per active event cycle.
       </p>
 
       <h3>5.3 Message and Data Rates</h3>
@@ -159,10 +164,19 @@ export default function Privacy() {
 
       <h3>5.4 Opt-Out</h3>
       <p>
-        You may reply <strong>STOP</strong> to any verification message to opt out of SMS messages from us. Doing so will prevent future phone verification and, consequently, your ability to access your account or claim tickets through phone-based authentication. For assistance, reply <strong>HELP</strong>.
+        <strong>To opt out of marketing SMS:</strong> Reply <strong>STOP</strong> to any marketing message. This stops all future marketing messages but does <strong>not</strong> affect your account access, your ability to receive verification codes, or your ability to purchase tokens. You may opt back in later by checking the SMS opt-in checkbox during a future participation flow.
+      </p>
+      <p>
+        <strong>To opt out of transactional SMS (verification codes):</strong> Also reply <strong>STOP</strong>. Note that doing so will prevent future phone verification and, as a consequence, may prevent you from accessing your account or claiming transferred tickets through phone-based authentication.
+      </p>
+      <p>For assistance, reply <strong>HELP</strong>.</p>
+
+      <h3>5.5 SMS Data Sharing</h3>
+      <p>
+        We do not share or sell SMS opt-in data &mdash; including phone numbers, consent timestamps, or consent method indicators &mdash; with any third parties or affiliates for marketing or promotional purposes. SMS opt-in data is used solely to operate the SMS messaging program described in this section. Phone numbers may be processed by our SMS service provider (Twilio) strictly for the purpose of message delivery, under Twilio&rsquo;s own contractual privacy obligations as a service provider.
       </p>
 
-      <h3>5.5 SMS Carriers and Transmission</h3>
+      <h3>5.6 SMS Carriers and Transmission</h3>
       <p>
         SMS delivery depends on your mobile carrier. We are not responsible for delays, failures, or errors in SMS delivery attributable to carrier infrastructure.
       </p>
