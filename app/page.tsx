@@ -3,8 +3,13 @@
 import { useState } from "react";
 import HeroGlitch from "./components/HeroGlitch";
 import SponsorSection from "./components/SponsorSection";
+import ParticipationModal from "./components/ParticipationModal";
+
+type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
 export default function Home() {
+  const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
+
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -254,12 +259,7 @@ export default function Home() {
 
             <button
               className="cta-button"
-              onClick={() => {
-                setMode("register");
-                setStep("form");
-                setMessage("");
-                setOpen(true);
-              }}
+              onClick={() => setParticipationStep("chooser")}
               style={{
                 width: 352,
                 maxWidth: "100%",
@@ -327,12 +327,7 @@ export default function Home() {
         <div className="home-mobile-cta-wrap">
           <button
             className="cta-button"
-            onClick={() => {
-              setMode("register");
-              setStep("form");
-              setMessage("");
-              setOpen(true);
-            }}
+            onClick={() => setParticipationStep("chooser")}
             style={{
               width: "100%",
             }}
@@ -371,6 +366,14 @@ export default function Home() {
       </main>
 
       <SponsorSection />
+
+      {participationStep !== "closed" && (
+        <ParticipationModal
+          step={participationStep}
+          onClose={() => setParticipationStep("closed")}
+          onStepChange={(s) => setParticipationStep(s)}
+        />
+      )}
 
       {open && (
         <div className="signup-overlay">
