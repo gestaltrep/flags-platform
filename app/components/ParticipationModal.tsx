@@ -52,6 +52,9 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   const [otpCode, setOtpCode] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
+  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [optInSms, setOptInSms] = useState(false);
 
   // Checkout context — captured when GENERATE is clicked
   const [checkoutSourceStep, setCheckoutSourceStep] = useState<"ga" | "vip" | "table">("ga");
@@ -221,6 +224,9 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       setName("");
       setPhone("");
       setOtpCode("");
+      setTermsChecked(false);
+      setPrivacyChecked(false);
+      setOptInSms(false);
       onStepChange("phone-entry");
     }
   }
@@ -236,12 +242,20 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       setAuthMessage("Please enter your phone number.");
       return;
     }
+    if (!termsChecked) {
+      setAuthMessage("Please agree to the Terms & Conditions.");
+      return;
+    }
+    if (!privacyChecked) {
+      setAuthMessage("Please agree to the Privacy Policy.");
+      return;
+    }
     setAuthLoading(true);
     try {
       const res = await fetch("/api/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), name: name.trim() }),
+        body: JSON.stringify({ phone: phone.trim(), name: name.trim(), optInSms }),
       });
 
       let data: any = null;
@@ -279,7 +293,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       const res = await fetch("/api/verify-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: name.trim() }),
+        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: name.trim(), optInSms }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
@@ -564,7 +578,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
             {/* ── PHONE-ENTRY ───────────────────────────── */}
             {step === "phone-entry" && (
               <>
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "6%" }}>
                   <input
                     placeholder="NAME"
                     className="signup-input"
@@ -576,8 +590,62 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                     className="signup-input"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    style={{ marginBottom: 0 }}
+                    style={{ marginBottom: 22 }}
                   />
+                  <label className="signup-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={termsChecked}
+                      onChange={(e) => setTermsChecked(e.target.checked)}
+                      style={{
+                        WebkitAppearance: "checkbox",
+                        appearance: "auto",
+                        accentColor: "#9ca3af",
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.8)",
+                      }}
+                    />
+                    <span>
+                      I agree to the <a href="/terms">Terms &amp; Conditions</a>
+                    </span>
+                  </label>
+                  <label className="signup-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={privacyChecked}
+                      onChange={(e) => setPrivacyChecked(e.target.checked)}
+                      style={{
+                        WebkitAppearance: "checkbox",
+                        appearance: "auto",
+                        accentColor: "#9ca3af",
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.8)",
+                      }}
+                    />
+                    <span>
+                      I agree to the <a href="/privacy">Privacy Policy</a>
+                    </span>
+                  </label>
+                  <label className="signup-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={optInSms}
+                      onChange={(e) => setOptInSms(e.target.checked)}
+                      style={{
+                        WebkitAppearance: "checkbox",
+                        appearance: "auto",
+                        accentColor: "#9ca3af",
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.8)",
+                        flexShrink: 0,
+                        alignSelf: "flex-start",
+                        marginTop: 3,
+                      }}
+                    />
+                    <span>
+                      I agree to receive recurring text messages from Signo Research Group about events, updates, and announcements. Msg frequency varies. Msg &amp; data rates may apply. Reply STOP to cancel.
+                    </span>
+                  </label>
                 </div>
                 {authMessageSlot}
                 <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
