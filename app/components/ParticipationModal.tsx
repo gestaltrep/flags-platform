@@ -12,8 +12,7 @@ type ParticipationStep =
   | "table"
   | "phone-entry"
   | "otp-verify"
-  | "checkout"
-  | "success";
+  | "checkout";
 
 interface Props {
   step: ParticipationStep;
@@ -99,16 +98,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
       if (tablePromoTimer.current) clearTimeout(tablePromoTimer.current);
     };
   }, []);
-
-  // Redirect to /dashboard 1.5 s after payment confirmed
-  useEffect(() => {
-    if (step === "success") {
-      const timer = window.setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
 
   // Auth detection — user_id cookie is httpOnly:false, readable from JS
   function isAuthenticated(): boolean {
@@ -488,7 +477,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
           : checkoutSourceStep === "vip" ? vipPromo
           : tablePromo
         }
-        onSuccess={() => onStepChange("success")}
+        onSuccess={() => { window.location.href = "/dashboard"; }}
       />
     );
   }
@@ -522,31 +511,17 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
         {/* ── ALL NON-CHOOSER STATES ───────────────────── */}
         {step !== "chooser" && (
           <>
-            {/* Header — shared by ga/vip/table/phone-entry/otp-verify; hidden for success */}
-            {step !== "success" && (
-              <div style={tierDetailHeaderStyle}>
-                <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
-                <span
-                  className="signup-title signup-title-large"
-                  style={{ width: "100%", textAlign: "center", marginBottom: 0 }}
-                >
-                  {tierTitle}
-                </span>
-                <div />
-              </div>
-            )}
-
-            {/* ── SUCCESS ───────────────────────────────── */}
-            {step === "success" && (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div className="modal-status-line">
-                  <span className="modal-status-symbol">{">"}</span>
-                  <span className="modal-status-text" style={{ fontSize: 14, letterSpacing: 1.8 }}>
-                    PAYMENT CONFIRMED — REDIRECTING TO TERMINAL...
-                  </span>
-                </div>
-              </div>
-            )}
+            {/* Header — shared by ga/vip/table/phone-entry/otp-verify */}
+            <div style={tierDetailHeaderStyle}>
+              <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
+              <span
+                className="signup-title signup-title-large"
+                style={{ width: "100%", textAlign: "center", marginBottom: 0 }}
+              >
+                {tierTitle}
+              </span>
+              <div />
+            </div>
 
             {/* ── PHONE-ENTRY ───────────────────────────── */}
             {step === "phone-entry" && (
