@@ -251,7 +251,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   const tierDetailHeaderStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
     position: "relative",
     minHeight: 104,
     borderBottom: "1px solid rgba(255,255,255,0.62)",
@@ -361,7 +360,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
               >
                 ◀
               </button>
-              <span className="signup-title signup-title-large">
+              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center" }}>
                 {tierTitle}
               </span>
             </div>
@@ -565,20 +564,18 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                         : "50.00"}
                     </span>
                   </div>
-                </div>
-
-                {/* Description copy */}
-                <div
-                  style={{
-                    fontSize: 13,
-                    letterSpacing: 1.4,
-                    lineHeight: 1.7,
-                    color: "#c8c8c8",
-                    marginBottom: 22,
-                  }}
-                >
-                  Private elevated area with unobstructed view of the stage.
-                  Astroturf flooring. Exclusive bar access.
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">PRIVATE ELEVATED AREA WITH UNOBSTRUCTED VIEW OF THE STAGE.</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">ASTROTURF FLOORING.</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">EXCLUSIVE BAR ACCESS.</span>
+                  </div>
                 </div>
 
                 {/* Quantity selector */}
