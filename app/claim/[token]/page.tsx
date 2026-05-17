@@ -395,7 +395,7 @@ export default function ClaimTokenPage({
                       type="checkbox"
                       checked={optInSms}
                       onChange={(e) => setOptInSms(e.target.checked)}
-                      style={checkboxStyle}
+                      style={{ ...checkboxStyle, alignSelf: "flex-start", marginTop: 3 }}
                     />
                     <span style={checkboxTextStyle}>
                       I agree to receive recurring text messages from Signo Research Group about events, updates, and announcements. Msg frequency varies. Msg &amp; data rates may apply. Reply STOP to cancel.
