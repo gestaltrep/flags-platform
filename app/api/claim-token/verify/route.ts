@@ -5,7 +5,7 @@ import { normalizeUSPhone } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
-    const { phone, code, claimToken, name } = await req.json();
+    const { phone, code, claimToken, name, optInSms } = await req.json();
 
     const normalizedPhone = normalizeUSPhone(String(phone || ""));
     const normalizedCode = String(code || "").trim();
@@ -39,6 +39,10 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    const consentFields = optInSms === true
+      ? { sms_consent_at: new Date().toISOString(), sms_consent_method: "web_form" }
+      : {};
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -153,6 +157,7 @@ export async function POST(req: Request) {
         .update({
           phone_verified: true,
           ...(shouldUpdateName ? { name: normalizedName } : {}),
+          ...consentFields,
         })
         .eq("id", existingUser.id)
         .select("id")
@@ -173,6 +178,7 @@ export async function POST(req: Request) {
           name: normalizedName,
           phone: normalizedPhone,
           phone_verified: true,
+          ...consentFields,
         })
         .select("id")
         .single();
