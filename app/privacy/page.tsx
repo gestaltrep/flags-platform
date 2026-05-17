@@ -12,7 +12,7 @@ export default function Privacy() {
       <p>
         <strong>Effective Date:</strong> April 19, 2026
         <br />
-        <strong>Last Updated:</strong> May 16, 2026
+        <strong>Last Updated:</strong> May 17, 2026
       </p>
 
       <hr />
@@ -48,11 +48,11 @@ export default function Privacy() {
         <li>Your full name</li>
         <li>Your mobile phone number</li>
         <li>Consent to receive one-time verification codes by SMS</li>
-        <li>Optional consent to receive marketing SMS (event updates and announcements), captured via the dedicated opt-in checkbox on the participation form. When affirmatively given, this consent is stored with a timestamp (<code>sms_consent_at</code>) and method indicator (<code>sms_consent_method = &apos;web_form&apos;</code>).</li>
+        <li>Optional consent to receive marketing SMS (event updates and announcements), captured via the dedicated opt-in checkbox on either the participation form or the ticket-claim form. When affirmatively given, this consent is stored with a timestamp (<code>sms_consent_at</code>) and method indicator (<code>sms_consent_method = &apos;web_form&apos;</code>).</li>
       </ul>
       <p><strong>Ticket transfers:</strong></p>
       <ul>
-        <li>If you claim a transferred ticket: your name, phone number, and consent to our Terms and this Privacy Policy</li>
+        <li>If you claim a transferred ticket: your name, phone number, consent to our Terms and this Privacy Policy, and optionally your consent to receive marketing SMS</li>
       </ul>
       <p><strong>At Event check-in</strong> (required for Event entry and, where applicable, participation in any on-site game or interactive activity):</p>
       <ul>
@@ -146,7 +146,7 @@ export default function Privacy() {
         <li>Claiming a transferred ticket.</li>
       </ul>
       <p>
-        <strong>Optional marketing SMS (sent only to users who affirmatively opt in):</strong> Recurring text messages about events, updates, and announcements from Signo Research Group. These messages are sent only to users who have checked the dedicated SMS opt-in checkbox during the participation flow. Consent for marketing SMS is separate from consent to the Terms of Service and Privacy Policy, and is not required to create an account, verify a phone number, or purchase tokens. Users who do not check the marketing opt-in checkbox receive only transactional SMS as described above.
+        <strong>Optional marketing SMS (sent only to users who affirmatively opt in):</strong> Recurring text messages about events, updates, and announcements from Signo Research Group. These messages are sent only to users who have checked the dedicated SMS opt-in checkbox during either the participation flow or the ticket-claim flow. Consent for marketing SMS is separate from consent to the Terms of Service and Privacy Policy, and is not required to create an account, verify a phone number, or purchase tokens. Users who do not check the marketing opt-in checkbox receive only transactional SMS as described above.
       </p>
 
       <h3>5.2 Message Frequency</h3>

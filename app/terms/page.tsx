@@ -12,7 +12,7 @@ export default function Terms() {
       <p>
         <strong>Effective Date:</strong> April 19, 2026
         <br />
-        <strong>Last Updated:</strong> May 16, 2026
+        <strong>Last Updated:</strong> May 17, 2026
       </p>
 
       <hr />
@@ -73,7 +73,7 @@ export default function Terms() {
         <strong>Transactional SMS:</strong> One-time verification codes sent via Twilio when you initiate an action that requires phone verification (account creation, sign-in, ticket claim). These messages are required to complete those actions.
       </p>
       <p>
-        <strong>Optional Marketing SMS:</strong> Recurring text messages from Signo Research Group about events, updates, and announcements. Marketing SMS is sent only to users who affirmatively consent by checking the dedicated SMS opt-in checkbox on the participation form. Marketing SMS consent is optional and is not required to register, verify, or purchase tokens.
+        <strong>Optional Marketing SMS:</strong> Recurring text messages from Signo Research Group about events, updates, and announcements. Marketing SMS is sent only to users who affirmatively consent by checking the dedicated SMS opt-in checkbox on the participation form or the ticket-claim form. Marketing SMS consent is optional and is not required to register, verify, or purchase tokens.
       </p>
       <p>
         Message frequency varies based on event scheduling. Standard message and data rates may apply, based on your carrier plan.

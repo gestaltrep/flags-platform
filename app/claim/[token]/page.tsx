@@ -36,6 +36,7 @@ export default function ClaimTokenPage({
 
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [optInSms, setOptInSms] = useState(false);
 
   useEffect(() => {
     function handleResize() {
@@ -114,8 +115,8 @@ export default function ClaimTokenPage({
   function validatePhoneStep() {
     if (!name.trim()) return "Enter your name.";
     if (!phone.trim()) return "Enter your phone number.";
-    if (!termsChecked) return "Agree to Terms & Conditions.";
-    if (!privacyChecked) return "Agree to Privacy Policy.";
+    if (!termsChecked) return "Please agree to the Terms & Conditions.";
+    if (!privacyChecked) return "Please agree to the Privacy Policy.";
     return "";
   }
 
@@ -137,7 +138,7 @@ export default function ClaimTokenPage({
       const res = await fetch("/api/claim-token/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, claimToken }),
+        body: JSON.stringify({ phone, claimToken, optInSms }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -166,7 +167,7 @@ export default function ClaimTokenPage({
       const res = await fetch("/api/claim-token/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code, claimToken, name }),
+        body: JSON.stringify({ phone, code, claimToken, name, optInSms }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -385,6 +386,19 @@ export default function ClaimTokenPage({
                         Privacy Policy
                       </a>
                       .
+                    </span>
+                  </label>
+
+                  <label style={checkboxRowStyle} htmlFor="claim-sms-consent">
+                    <input
+                      id="claim-sms-consent"
+                      type="checkbox"
+                      checked={optInSms}
+                      onChange={(e) => setOptInSms(e.target.checked)}
+                      style={checkboxStyle}
+                    />
+                    <span style={checkboxTextStyle}>
+                      I agree to receive recurring text messages from Signo Research Group about events, updates, and announcements. Msg frequency varies. Msg &amp; data rates may apply. Reply STOP to cancel.
                     </span>
                   </label>
                 </div>
