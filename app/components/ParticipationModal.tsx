@@ -553,7 +553,6 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
               <button className="cta-button" onClick={() => onStepChange("ga")}>GA TOKENS</button>
               <button className="cta-button" onClick={() => onStepChange("vip")}>VIP TOKENS</button>
-              <button className="cta-button" onClick={() => onStepChange("table")}>RESERVE A TABLE</button>
             </div>
 
             <button className="signup-close" onClick={onClose}>CANCEL</button>
