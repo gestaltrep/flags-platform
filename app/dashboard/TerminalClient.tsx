@@ -1230,17 +1230,6 @@ export default function TerminalClient() {
                     VIP TOKENS
                   </button>
 
-                  <button
-                    className="cta-button"
-                    style={{
-                      ...actionButtonStyle,
-                      opacity: tableSoldOut ? 0.35 : 1,
-                    }}
-                    disabled={tableSoldOut}
-                    onClick={() => setTableOpen(true)}
-                  >
-                    {tableSoldOut ? 'TABLES SOLD OUT' : 'RESERVE A TABLE'}
-                  </button>
                 </div>
               )}
             </div>
@@ -1460,29 +1449,6 @@ export default function TerminalClient() {
                     VIP TOKENS
                   </button>
 
-                  <button
-                    className="cta-button"
-                    style={{
-                      width: "100%",
-                      minHeight: 58,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textAlign: "center",
-                      lineHeight: 1.08,
-                      padding: "12px 16px",
-                      fontSize: 13,
-                      letterSpacing: 3,
-                      whiteSpace: "nowrap",
-                      fontFamily: "Arial, Helvetica, sans-serif",
-                      fontWeight: 700,
-                      opacity: tableSoldOut ? 0.35 : 1,
-                    }}
-                    disabled={tableSoldOut}
-                    onClick={() => setTableOpen(true)}
-                  >
-                    {tableSoldOut ? 'TABLES SOLD OUT' : 'RESERVE A TABLE'}
-                  </button>
                 </div>
               )}
             </>
