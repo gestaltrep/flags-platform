@@ -205,18 +205,22 @@ const BTN: React.CSSProperties = {
 function MinimalScanner({
   onScan,
   onError,
+  onTick,
 }: {
   onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
+  onTick: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
+  const onTickRef = useRef(onTick);
 
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
+    onTickRef.current = onTick;
   });
 
   useEffect(() => {
@@ -227,7 +231,13 @@ function MinimalScanner({
     (async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            // @ts-expect-error — non-standard but supported on mobile Chrome/Safari
+            focusMode: { ideal: "continuous" },
+          },
           audio: false,
         });
         if (cancelled) {
@@ -240,6 +250,7 @@ function MinimalScanner({
 
         const tick = () => {
           if (cancelled) return;
+          onTickRef.current();
           const video = videoRef.current;
           const canvas = canvasRef.current;
           if (video && canvas && video.readyState >= 2) {
@@ -307,6 +318,7 @@ export default function CheckInPage() {
   const [ticket, setTicket] = useState<TicketData | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [checkedInCount, setCheckedInCount] = useState(0);
+  const [framesScanned, setFramesScanned] = useState(0);
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -573,6 +585,7 @@ export default function CheckInPage() {
         <MinimalScanner
           onScan={handleScan}
           onError={(err) => console.error("scanner:", err.message)}
+          onTick={() => setFramesScanned((n) => n + 1)}
         />
 
         <div
@@ -604,7 +617,7 @@ export default function CheckInPage() {
               marginBottom: 10,
             }}
           >
-            CHECKED IN: {checkedInCount}
+            CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}
           </div>
           <div
             style={{
