@@ -206,27 +206,32 @@ function MinimalScanner({
   onScan,
   onError,
   onTick,
+  onResolution,
 }: {
   onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
   onTick: () => void;
+  onResolution: (w: number, h: number) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
   const onTickRef = useRef(onTick);
+  const onResolutionRef = useRef(onResolution);
 
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
     onTickRef.current = onTick;
+    onResolutionRef.current = onResolution;
   });
 
   useEffect(() => {
     let stream: MediaStream | null = null;
     let rafId: number | null = null;
     let cancelled = false;
+    let resolutionReported = false;
 
     (async () => {
       try {
@@ -257,6 +262,10 @@ function MinimalScanner({
             const w = video.videoWidth;
             const h = video.videoHeight;
             if (w > 0 && h > 0) {
+              if (!resolutionReported) {
+                resolutionReported = true;
+                onResolutionRef.current(w, h);
+              }
               canvas.width = w;
               canvas.height = h;
               const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -319,6 +328,7 @@ export default function CheckInPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [checkedInCount, setCheckedInCount] = useState(0);
   const [framesScanned, setFramesScanned] = useState(0);
+  const [resolution, setResolution] = useState<string | null>(null);
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -586,6 +596,7 @@ export default function CheckInPage() {
           onScan={handleScan}
           onError={(err) => console.error("scanner:", err.message)}
           onTick={() => setFramesScanned((n) => n + 1)}
+          onResolution={(w, h) => setResolution(`${w}×${h}`)}
         />
 
         <div
@@ -617,7 +628,7 @@ export default function CheckInPage() {
               marginBottom: 10,
             }}
           >
-            CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}
+            CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}{resolution ? ` · RES: ${resolution}` : ""}
           </div>
           <div
             style={{
