@@ -1,6 +1,6 @@
 "use client";
 
-import { BarcodeDetector as PonyfillBarcodeDetector } from "barcode-detector/pure";
+import jsQR from "jsqr";
 import { useEffect, useRef, useState } from "react";
 
 // ─── Waiver (verbatim from original checkin page) ────────────────────────────
@@ -143,7 +143,7 @@ BY CHECKING THE ACCEPTANCE BOX, I ACKNOWLEDGE THAT I HAVE READ THIS AGREEMENT, U
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type DetectedBarcode = { rawValue: string; format?: string };
+type DetectedCode = { rawValue: string };
 
 type AppState =
   | "auth_checking"
@@ -199,39 +199,33 @@ const BTN: React.CSSProperties = {
 };
 
 // ─── MinimalScanner ───────────────────────────────────────────────────────────
-// Bypasses @yudiel entirely. Constructs PonyfillBarcodeDetector directly so
-// there is no globalThis lookup — the broken native class is never consulted.
+// Pure-JS QR detection via jsQR — no BarcodeDetector API, no WASM, no @yudiel.
+// RAF loop; stops after first hit and lets the parent re-mount to restart.
 
 function MinimalScanner({
   onScan,
   onError,
-  onStatus,
 }: {
-  onScan: (codes: DetectedBarcode[]) => void;
+  onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
-  onStatus: (status: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
-  const onStatusRef = useRef(onStatus);
 
-  // Keep refs current on every render without re-firing the camera effect
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
-    onStatusRef.current = onStatus;
   });
 
-  // Camera + detector lifecycle — runs once on mount, cleans up once on unmount
   useEffect(() => {
     let stream: MediaStream | null = null;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let rafId: number | null = null;
     let cancelled = false;
 
     (async () => {
       try {
-        onStatusRef.current("REQUESTING_CAMERA");
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
           audio: false,
@@ -242,53 +236,65 @@ function MinimalScanner({
         }
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          await videoRef.current.play();
         }
 
-        const detector = new PonyfillBarcodeDetector({ formats: ["qr_code"] });
-        onStatusRef.current("ACTIVE");
-
-        intervalId = setInterval(async () => {
-          if (cancelled || !videoRef.current || videoRef.current.readyState < 2) return;
-          try {
-            const codes = await detector.detect(videoRef.current);
-            if (codes.length > 0 && !cancelled) {
-              onScanRef.current(codes as DetectedBarcode[]);
+        const tick = () => {
+          if (cancelled) return;
+          const video = videoRef.current;
+          const canvas = canvasRef.current;
+          if (video && canvas && video.readyState >= 2) {
+            const w = video.videoWidth;
+            const h = video.videoHeight;
+            if (w > 0 && h > 0) {
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext("2d", { willReadFrequently: true });
+              if (ctx) {
+                ctx.drawImage(video, 0, 0, w, h);
+                const imageData = ctx.getImageData(0, 0, w, h);
+                const code = jsQR(imageData.data, w, h, {
+                  inversionAttempts: "dontInvert",
+                });
+                if (code && code.data) {
+                  onScanRef.current({ rawValue: code.data });
+                  return; // stop polling after first hit
+                }
+              }
             }
-          } catch (e: unknown) {
-            onErrorRef.current(e instanceof Error ? e : new Error(String(e)));
           }
-        }, 400);
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
       } catch (e: unknown) {
-        const err = e instanceof Error ? e : new Error(String(e));
-        onErrorRef.current(err);
-        onStatusRef.current("ERROR: " + err.message);
+        onErrorRef.current(e instanceof Error ? e : new Error(String(e)));
       }
     })();
 
     return () => {
       cancelled = true;
-      if (intervalId) clearInterval(intervalId);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
-  }, []); // empty — runs once on mount, cleanup runs once on unmount
+  }, []); // runs once on mount, cleanup runs once on unmount
 
   return (
-    <video
-      ref={videoRef}
-      playsInline
-      muted
-      style={{
-        width: "100%",
-        maxWidth: 400,
-        aspectRatio: "1 / 1",
-        objectFit: "cover",
-        outline: "2px solid red",
-        background: "black",
-        display: "block",
-        margin: "0 auto",
-      }}
-    />
+    <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
+      <video
+        ref={videoRef}
+        playsInline
+        muted
+        autoPlay
+        style={{
+          display: "block",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          objectFit: "cover",
+          background: "black",
+          outline: "2px solid red",
+        }}
+      />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
+    </div>
   );
 }
 
@@ -304,10 +310,7 @@ export default function CheckInPage() {
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debug overlay state — survives scanner UI, shows raw detect / extraction
-  const [debugDetect, setDebugDetect] = useState<string>("(none)");
-  const [debugCode, setDebugCode] = useState<string>("(none)");
-  const [debugStatus, setDebugStatus] = useState<string>("INITIALIZING");
+  const [manualCode, setManualCode] = useState("");
 
   useEffect(() => {
     return () => {
@@ -379,32 +382,8 @@ export default function CheckInPage() {
     checkAuth();
   }, []); // mount only
 
-  // Set ACTIVE once scanner state is entered (no onStart in v2.6 API)
-  useEffect(() => {
-    if (appState === "scanner") setDebugStatus("ACTIVE");
-  }, [appState]);
-
-  // ── Scanner handler ──────────────────────────────────────────────────────
-  function handleScan(detectedCodes: DetectedBarcode[]) {
-    if (appState !== "scanner") return;
-    const rawValue = detectedCodes[0]?.rawValue;
-    if (!rawValue) return;
-
-    // Debug: capture raw scanner output before any processing
-    setDebugDetect(rawValue.slice(0, 60));
-
-    let code: string;
-    try {
-      const url = new URL(rawValue);
-      code = (url.searchParams.get("code") || "").trim().toUpperCase();
-      if (!code) code = rawValue.trim().toUpperCase();
-    } catch {
-      code = rawValue.trim().toUpperCase();
-    }
-
-    // Debug: capture extracted code
-    setDebugCode(code || "(empty)");
-
+  // ── Code submission (scanner + manual entry share this path) ────────────
+  function submitCode(code: string) {
     setCurrentCode(code);
     setAppState("validating");
 
@@ -449,6 +428,31 @@ export default function CheckInPage() {
         setErrorMessage("NETWORK ERROR");
         setAppState("error");
       });
+  }
+
+  // ── Scanner handler ──────────────────────────────────────────────────────
+  function handleScan(detected: DetectedCode) {
+    if (appState !== "scanner") return;
+    const rawValue = detected.rawValue;
+    if (!rawValue) return;
+
+    let code: string;
+    try {
+      const url = new URL(rawValue);
+      code = (url.searchParams.get("code") || "").trim().toUpperCase();
+      if (!code) code = rawValue.trim().toUpperCase();
+    } catch {
+      code = rawValue.trim().toUpperCase();
+    }
+
+    submitCode(code);
+  }
+
+  function handleManualSubmit() {
+    const code = manualCode.trim().toUpperCase();
+    if (!code) return;
+    setManualCode("");
+    submitCode(code);
   }
 
   // ── Check-in submit ──────────────────────────────────────────────────────
@@ -548,7 +552,7 @@ export default function CheckInPage() {
   // scanner
   if (appState === "scanner") {
     return (
-      <main style={{ ...BASE, position: "relative" }}>
+      <main style={{ ...BASE, paddingBottom: 32 }}>
         {offlineBanner && (
           <div
             style={{
@@ -565,61 +569,99 @@ export default function CheckInPage() {
             OFFLINE — CACHED AUTH
           </div>
         )}
+
         <MinimalScanner
           onScan={handleScan}
-          onError={(err) => setDebugStatus(`ERROR: ${err.message}`)}
-          onStatus={setDebugStatus}
+          onError={(err) => console.error("scanner:", err.message)}
         />
+
         <div
           style={{
-            position: "fixed",
-            bottom: 96,
-            left: 0,
-            right: 0,
             textAlign: "center",
             color: "red",
             letterSpacing: 3,
             fontSize: 13,
             fontFamily: MONO,
-            pointerEvents: "none",
+            padding: "10px 0 4px",
           }}
         >
           {">"} AIM AT ENTRY TOKEN
         </div>
+
         <div
           style={{
-            position: "fixed",
-            bottom: 70,
-            right: 16,
-            color: "#555",
-            fontSize: 11,
+            textAlign: "right",
+            color: "#444",
+            fontSize: 10,
             letterSpacing: 1.5,
             fontFamily: MONO,
+            padding: "0 16px 16px",
           }}
         >
           CHECKED IN: {checkedInCount}
         </div>
 
-        {/* Debug overlay — remove after iOS diagnosis */}
         <div
           style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            background: "rgba(0,0,0,0.82)",
-            color: "white",
-            fontFamily: MONO,
-            fontSize: 10,
-            letterSpacing: 1,
-            lineHeight: 1.8,
-            padding: "6px 10px",
-            pointerEvents: "none",
+            margin: "0 20px",
+            border: "1px solid #2a2a2a",
+            padding: "16px",
           }}
         >
-          <div>SCANNER: {debugStatus}</div>
-          <div>LAST DETECT: {debugDetect}</div>
-          <div>LAST CODE: {debugCode}</div>
+          <div
+            style={{
+              color: "#555",
+              textAlign: "center",
+              fontSize: 10,
+              letterSpacing: 2,
+              fontFamily: MONO,
+              marginBottom: 12,
+            }}
+          >
+            ─── OR ENTER CODE MANUALLY ───
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              value={manualCode}
+              onChange={(e) =>
+                setManualCode(e.target.value.toUpperCase())
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleManualSubmit();
+              }}
+              maxLength={8}
+              placeholder="CODE"
+              style={{
+                flex: 1,
+                background: "black",
+                border: "1px solid #555",
+                color: "white",
+                padding: "12px 10px",
+                fontFamily: MONO,
+                fontSize: 15,
+                letterSpacing: 3,
+                outline: "none",
+                minWidth: 0,
+              }}
+            />
+            <button
+              onClick={handleManualSubmit}
+              disabled={!manualCode.trim()}
+              style={{
+                background: "black",
+                border: `1px solid ${manualCode.trim() ? "red" : "#400"}`,
+                color: manualCode.trim() ? "red" : "#400",
+                padding: "12px 16px",
+                fontFamily: MONO,
+                fontSize: 11,
+                letterSpacing: 2,
+                cursor: manualCode.trim() ? "pointer" : "not-allowed",
+                flexShrink: 0,
+              }}
+            >
+              SUBMIT
+            </button>
+          </div>
         </div>
       </main>
     );
