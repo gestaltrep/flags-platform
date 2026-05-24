@@ -1,27 +1,7 @@
 "use client";
 
 import { BarcodeDetector as PonyfillBarcodeDetector } from "barcode-detector/pure";
-
-// Unconditional override — polyfill.js uses `!= null || assign`, so it skips
-// when the broken native BarcodeDetector already exists (iOS Chrome / some Android).
-// We force-replace globalThis.BarcodeDetector here so @yudiel caches our class.
-// ES imports are hoisted; this assignment runs after all static imports resolve,
-// before any React rendering.
-if (typeof globalThis !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalThis as any).BarcodeDetector = PonyfillBarcodeDetector;
-}
-
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
-
-// ssr: false is required — Scanner uses getUserMedia + BarcodeDetector/ZXing-WASM
-// which are browser-only. Next.js prerendering would throw without this guard.
-const Scanner = dynamic(
-  () => import("@yudiel/react-qr-scanner").then((m) => m.Scanner),
-  { ssr: false }
-);
 
 // ─── Waiver (verbatim from original checkin page) ────────────────────────────
 
@@ -163,6 +143,8 @@ BY CHECKING THE ACCEPTANCE BOX, I ACKNOWLEDGE THAT I HAVE READ THIS AGREEMENT, U
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type DetectedBarcode = { rawValue: string; format?: string };
+
 type AppState =
   | "auth_checking"
   | "unauthorized"
@@ -216,6 +198,89 @@ const BTN: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
+// ─── MinimalScanner ───────────────────────────────────────────────────────────
+// Bypasses @yudiel entirely. Constructs PonyfillBarcodeDetector directly so
+// there is no globalThis lookup — the broken native class is never consulted.
+
+function MinimalScanner({
+  onScan,
+  onError,
+  onStatus,
+}: {
+  onScan: (codes: DetectedBarcode[]) => void;
+  onError: (err: Error) => void;
+  onStatus: (status: string) => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        onStatus("REQUESTING_CAMERA");
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+
+        const detector = new PonyfillBarcodeDetector({ formats: ["qr_code"] });
+        onStatus("ACTIVE");
+
+        intervalId = setInterval(async () => {
+          if (cancelled || !videoRef.current || videoRef.current.readyState < 2) return;
+          try {
+            const codes = await detector.detect(videoRef.current);
+            if (codes.length > 0 && !cancelled) {
+              onScan(codes as DetectedBarcode[]);
+            }
+          } catch (e: unknown) {
+            onError(e instanceof Error ? e : new Error(String(e)));
+          }
+        }, 400);
+      } catch (e: unknown) {
+        const err = e instanceof Error ? e : new Error(String(e));
+        onError(err);
+        onStatus("ERROR: " + err.message);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
+  }, [onScan, onError, onStatus]);
+
+  return (
+    <video
+      ref={videoRef}
+      playsInline
+      muted
+      style={{
+        width: "100%",
+        maxWidth: 400,
+        aspectRatio: "1 / 1",
+        objectFit: "cover",
+        outline: "2px solid red",
+        background: "black",
+        display: "block",
+        margin: "0 auto",
+      }}
+    />
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CheckInPage() {
@@ -232,7 +297,6 @@ export default function CheckInPage() {
   const [debugDetect, setDebugDetect] = useState<string>("(none)");
   const [debugCode, setDebugCode] = useState<string>("(none)");
   const [debugStatus, setDebugStatus] = useState<string>("INITIALIZING");
-  const [overrideOk, setOverrideOk] = useState<"checking" | "yes" | "no">("checking");
 
   useEffect(() => {
     return () => {
@@ -309,17 +373,8 @@ export default function CheckInPage() {
     if (appState === "scanner") setDebugStatus("ACTIVE");
   }, [appState]);
 
-  // Verify the globalThis override is still in place when React first runs
-  useEffect(() => {
-    if (typeof globalThis !== "undefined") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const matches = (globalThis as any).BarcodeDetector === PonyfillBarcodeDetector;
-      setOverrideOk(matches ? "yes" : "no");
-    }
-  }, []);
-
   // ── Scanner handler ──────────────────────────────────────────────────────
-  function handleScan(detectedCodes: IDetectedBarcode[]) {
+  function handleScan(detectedCodes: DetectedBarcode[]) {
     if (appState !== "scanner") return;
     const rawValue = detectedCodes[0]?.rawValue;
     if (!rawValue) return;
@@ -499,14 +554,10 @@ export default function CheckInPage() {
             OFFLINE — CACHED AUTH
           </div>
         )}
-        <Scanner
+        <MinimalScanner
           onScan={handleScan}
           onError={(err) => setDebugStatus(`ERROR: ${err.message}`)}
-          constraints={{ facingMode: "environment" }}
-          formats={["qr_code"]}
-          styles={{
-            container: { outline: "2px solid red" },
-          }}
+          onStatus={setDebugStatus}
         />
         <div
           style={{
@@ -558,7 +609,6 @@ export default function CheckInPage() {
           <div>SCANNER: {debugStatus}</div>
           <div>LAST DETECT: {debugDetect}</div>
           <div>LAST CODE: {debugCode}</div>
-          <div>OVERRIDE: {overrideOk.toUpperCase()}</div>
         </div>
       </main>
     );
