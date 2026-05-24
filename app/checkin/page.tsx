@@ -1,6 +1,16 @@
 "use client";
 
-import "barcode-detector/polyfill";
+import { BarcodeDetector as PonyfillBarcodeDetector } from "barcode-detector/pure";
+
+// Unconditional override — polyfill.js uses `!= null || assign`, so it skips
+// when the broken native BarcodeDetector already exists (iOS Chrome / some Android).
+// We force-replace globalThis.BarcodeDetector here so @yudiel caches our class.
+// ES imports are hoisted; this assignment runs after all static imports resolve,
+// before any React rendering.
+if (typeof globalThis !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).BarcodeDetector = PonyfillBarcodeDetector;
+}
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
@@ -222,6 +232,7 @@ export default function CheckInPage() {
   const [debugDetect, setDebugDetect] = useState<string>("(none)");
   const [debugCode, setDebugCode] = useState<string>("(none)");
   const [debugStatus, setDebugStatus] = useState<string>("INITIALIZING");
+  const [overrideOk, setOverrideOk] = useState<"checking" | "yes" | "no">("checking");
 
   useEffect(() => {
     return () => {
@@ -297,6 +308,15 @@ export default function CheckInPage() {
   useEffect(() => {
     if (appState === "scanner") setDebugStatus("ACTIVE");
   }, [appState]);
+
+  // Verify the globalThis override is still in place when React first runs
+  useEffect(() => {
+    if (typeof globalThis !== "undefined") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const matches = (globalThis as any).BarcodeDetector === PonyfillBarcodeDetector;
+      setOverrideOk(matches ? "yes" : "no");
+    }
+  }, []);
 
   // ── Scanner handler ──────────────────────────────────────────────────────
   function handleScan(detectedCodes: IDetectedBarcode[]) {
@@ -538,6 +558,7 @@ export default function CheckInPage() {
           <div>SCANNER: {debugStatus}</div>
           <div>LAST DETECT: {debugDetect}</div>
           <div>LAST CODE: {debugCode}</div>
+          <div>OVERRIDE: {overrideOk.toUpperCase()}</div>
         </div>
       </main>
     );
