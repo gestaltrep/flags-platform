@@ -318,7 +318,19 @@ function MinimalScanner({
           outline: "2px solid red",
         }}
       />
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: "block",
+          width: 200,
+          height: "auto",
+          aspectRatio: "9 / 16",
+          objectFit: "contain",
+          outline: "1px solid yellow",
+          margin: "10px auto 0",
+          background: "black",
+        }}
+      />
     </div>
   );
 }
