@@ -207,11 +207,13 @@ function MinimalScanner({
   onError,
   onTick,
   onResolution,
+  onJsqrResult,
 }: {
   onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
   onTick: () => void;
   onResolution: (w: number, h: number) => void;
+  onJsqrResult: (result: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -219,12 +221,14 @@ function MinimalScanner({
   const onErrorRef = useRef(onError);
   const onTickRef = useRef(onTick);
   const onResolutionRef = useRef(onResolution);
+  const onJsqrResultRef = useRef(onJsqrResult);
 
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
     onTickRef.current = onTick;
     onResolutionRef.current = onResolution;
+    onJsqrResultRef.current = onJsqrResult;
   });
 
   useEffect(() => {
@@ -275,6 +279,7 @@ function MinimalScanner({
                 const code = jsQR(imageData.data, w, h, {
                   inversionAttempts: "attemptBoth",
                 });
+                onJsqrResultRef.current(code && code.data ? code.data : "null");
                 if (code && code.data) {
                   onScanRef.current({ rawValue: code.data });
                   return; // stop polling after first hit
@@ -329,6 +334,7 @@ export default function CheckInPage() {
   const [checkedInCount, setCheckedInCount] = useState(0);
   const [framesScanned, setFramesScanned] = useState(0);
   const [resolution, setResolution] = useState<string | null>(null);
+  const [lastJsqrResult, setLastJsqrResult] = useState("null");
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -597,6 +603,7 @@ export default function CheckInPage() {
           onError={(err) => console.error("scanner:", err.message)}
           onTick={() => setFramesScanned((n) => n + 1)}
           onResolution={(w, h) => setResolution(`${w}×${h}`)}
+          onJsqrResult={(r) => setLastJsqrResult(r.length > 80 ? r.slice(0, 80) : r)}
         />
 
         <div
@@ -625,10 +632,22 @@ export default function CheckInPage() {
               fontSize: 10,
               letterSpacing: 1.5,
               fontFamily: MONO,
-              marginBottom: 10,
+              marginBottom: 4,
             }}
           >
             CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}{resolution ? ` · RES: ${resolution}` : ""}
+          </div>
+          <div
+            style={{
+              color: "#444",
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontFamily: MONO,
+              marginBottom: 10,
+              wordBreak: "break-all",
+            }}
+          >
+            LAST JS: {lastJsqrResult}
           </div>
           <div
             style={{
