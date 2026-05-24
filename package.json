@@ -12,6 +12,7 @@
     "@stripe/react-stripe-js": "^6.1.0",
     "@stripe/stripe-js": "^9.0.1",
     "@supabase/supabase-js": "^2.98.0",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "dom-to-image-more": "^3.7.2",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
