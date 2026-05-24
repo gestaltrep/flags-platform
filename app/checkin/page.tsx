@@ -590,24 +590,22 @@ export default function CheckInPage() {
 
         <div
           style={{
-            textAlign: "right",
-            color: "#444",
-            fontSize: 10,
-            letterSpacing: 1.5,
-            fontFamily: MONO,
-            padding: "0 16px 16px",
-          }}
-        >
-          CHECKED IN: {checkedInCount}
-        </div>
-
-        <div
-          style={{
             margin: "0 20px",
             border: "1px solid #2a2a2a",
             padding: "16px",
           }}
         >
+          <div
+            style={{
+              color: "#444",
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontFamily: MONO,
+              marginBottom: 10,
+            }}
+          >
+            CHECKED IN: {checkedInCount}
+          </div>
           <div
             style={{
               color: "#555",
