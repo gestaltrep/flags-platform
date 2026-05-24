@@ -253,7 +253,7 @@ function MinimalScanner({
                 ctx.drawImage(video, 0, 0, w, h);
                 const imageData = ctx.getImageData(0, 0, w, h);
                 const code = jsQR(imageData.data, w, h, {
-                  inversionAttempts: "dontInvert",
+                  inversionAttempts: "attemptBoth",
                 });
                 if (code && code.data) {
                   onScanRef.current({ rawValue: code.data });
