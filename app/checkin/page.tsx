@@ -221,9 +221,61 @@ export default function CheckInPage() {
   const [debugCode, setDebugCode] = useState<string>("(none)");
   const [debugStatus, setDebugStatus] = useState<string>("INITIALIZING");
 
+  // Detector probe state — gates Scanner render until we know which detector is in use
+  const [polyfillReady, setPolyfillReady] = useState(false);
+  const [detectorMode, setDetectorMode] = useState<"native" | "polyfill" | "checking">("checking");
+
   useEffect(() => {
     return () => {
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
+
+  // ── BarcodeDetector probe + ZXing override ───────────────────────────────
+  // The native BarcodeDetector on iOS Chrome/Edge (and some Android builds)
+  // reports as present but throws "service unavailable" when actually called.
+  // @yudiel/react-qr-scanner trusts the native API and never falls back once
+  // it finds window.BarcodeDetector, so we must replace it before the Scanner
+  // component mounts.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (typeof window === "undefined") return;
+
+        const installPolyfill = async () => {
+          // barcode-detector/pure → ponyfill export (ZXing-WASM backed, no side effects)
+          const mod = await import("barcode-detector/pure");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).BarcodeDetector = mod.BarcodeDetector;
+          if (!cancelled) setDetectorMode("polyfill");
+        };
+
+        if ("BarcodeDetector" in window) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const probe = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+            // 1×1 ImageData is enough to trigger "service unavailable" on broken native
+            await probe.detect(new ImageData(1, 1));
+            if (!cancelled) setDetectorMode("native");
+          } catch (e: unknown) {
+            const msg = String((e as Error)?.message ?? e);
+            if (/service unavailable|not implemented|not supported|not available/i.test(msg)) {
+              await installPolyfill();
+            } else {
+              // Unexpected probe failure — still fall back so the user isn't stuck
+              await installPolyfill();
+            }
+          }
+        } else {
+          await installPolyfill();
+        }
+      } finally {
+        if (!cancelled) setPolyfillReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
   }, []);
 
@@ -477,15 +529,32 @@ export default function CheckInPage() {
             OFFLINE — CACHED AUTH
           </div>
         )}
-        <Scanner
-          onScan={handleScan}
-          onError={(err) => setDebugStatus(`ERROR: ${err.message}`)}
-          constraints={{ facingMode: "environment" }}
-          formats={["qr_code"]}
-          styles={{
-            container: { outline: "2px solid red" },
-          }}
-        />
+        {polyfillReady ? (
+          <Scanner
+            onScan={handleScan}
+            onError={(err) => setDebugStatus(`ERROR: ${err.message}`)}
+            constraints={{ facingMode: "environment" }}
+            formats={["qr_code"]}
+            styles={{
+              container: { outline: "2px solid red" },
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "60vw",
+              color: "#555",
+              fontFamily: MONO,
+              letterSpacing: 2,
+              fontSize: 12,
+            }}
+          >
+            {">"} INITIALIZING DETECTOR...
+          </div>
+        )}
         <div
           style={{
             position: "fixed",
@@ -536,6 +605,7 @@ export default function CheckInPage() {
           <div>SCANNER: {debugStatus}</div>
           <div>LAST DETECT: {debugDetect}</div>
           <div>LAST CODE: {debugCode}</div>
+          <div>DETECTOR: {detectorMode.toUpperCase()}</div>
         </div>
       </main>
     );
