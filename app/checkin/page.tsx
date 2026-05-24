@@ -1,8 +1,15 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { Scanner } from "@yudiel/react-qr-scanner";
 import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
+
+// ssr: false is required — Scanner uses getUserMedia + BarcodeDetector/ZXing-WASM
+// which are browser-only. Next.js prerendering would throw without this guard.
+const Scanner = dynamic(
+  () => import("@yudiel/react-qr-scanner").then((m) => m.Scanner),
+  { ssr: false }
+);
 
 // ─── Waiver (verbatim from original checkin page) ────────────────────────────
 
@@ -209,6 +216,11 @@ export default function CheckInPage() {
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Debug overlay state — survives scanner UI, shows raw detect / extraction
+  const [debugDetect, setDebugDetect] = useState<string>("(none)");
+  const [debugCode, setDebugCode] = useState<string>("(none)");
+  const [debugStatus, setDebugStatus] = useState<string>("INITIALIZING");
+
   useEffect(() => {
     return () => {
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
@@ -279,11 +291,19 @@ export default function CheckInPage() {
     checkAuth();
   }, []); // mount only
 
+  // Set ACTIVE once scanner state is entered (no onStart in v2.6 API)
+  useEffect(() => {
+    if (appState === "scanner") setDebugStatus("ACTIVE");
+  }, [appState]);
+
   // ── Scanner handler ──────────────────────────────────────────────────────
   function handleScan(detectedCodes: IDetectedBarcode[]) {
     if (appState !== "scanner") return;
     const rawValue = detectedCodes[0]?.rawValue;
     if (!rawValue) return;
+
+    // Debug: capture raw scanner output before any processing
+    setDebugDetect(rawValue.slice(0, 60));
 
     let code: string;
     try {
@@ -293,6 +313,9 @@ export default function CheckInPage() {
     } catch {
       code = rawValue.trim().toUpperCase();
     }
+
+    // Debug: capture extracted code
+    setDebugCode(code || "(empty)");
 
     setCurrentCode(code);
     setAppState("validating");
@@ -456,16 +479,17 @@ export default function CheckInPage() {
         )}
         <Scanner
           onScan={handleScan}
+          onError={(err) => setDebugStatus(`ERROR: ${err.message}`)}
           constraints={{ facingMode: "environment" }}
           formats={["qr_code"]}
           styles={{
-            container: { border: "2px solid red" },
+            container: { outline: "2px solid red" },
           }}
         />
         <div
           style={{
             position: "fixed",
-            bottom: 40,
+            bottom: 96,
             left: 0,
             right: 0,
             textAlign: "center",
@@ -481,7 +505,7 @@ export default function CheckInPage() {
         <div
           style={{
             position: "fixed",
-            bottom: 16,
+            bottom: 70,
             right: 16,
             color: "#555",
             fontSize: 11,
@@ -490,6 +514,28 @@ export default function CheckInPage() {
           }}
         >
           CHECKED IN: {checkedInCount}
+        </div>
+
+        {/* Debug overlay — remove after iOS diagnosis */}
+        <div
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: "rgba(0,0,0,0.82)",
+            color: "white",
+            fontFamily: MONO,
+            fontSize: 10,
+            letterSpacing: 1,
+            lineHeight: 1.8,
+            padding: "6px 10px",
+            pointerEvents: "none",
+          }}
+        >
+          <div>SCANNER: {debugStatus}</div>
+          <div>LAST DETECT: {debugDetect}</div>
+          <div>LAST CODE: {debugCode}</div>
         </div>
       </main>
     );
