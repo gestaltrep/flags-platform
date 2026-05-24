@@ -212,7 +212,18 @@ function MinimalScanner({
   onStatus: (status: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const onScanRef = useRef(onScan);
+  const onErrorRef = useRef(onError);
+  const onStatusRef = useRef(onStatus);
 
+  // Keep refs current on every render without re-firing the camera effect
+  useEffect(() => {
+    onScanRef.current = onScan;
+    onErrorRef.current = onError;
+    onStatusRef.current = onStatus;
+  });
+
+  // Camera + detector lifecycle — runs once on mount, cleans up once on unmount
   useEffect(() => {
     let stream: MediaStream | null = null;
     let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -220,7 +231,7 @@ function MinimalScanner({
 
     (async () => {
       try {
-        onStatus("REQUESTING_CAMERA");
+        onStatusRef.current("REQUESTING_CAMERA");
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
           audio: false,
@@ -235,23 +246,23 @@ function MinimalScanner({
         }
 
         const detector = new PonyfillBarcodeDetector({ formats: ["qr_code"] });
-        onStatus("ACTIVE");
+        onStatusRef.current("ACTIVE");
 
         intervalId = setInterval(async () => {
           if (cancelled || !videoRef.current || videoRef.current.readyState < 2) return;
           try {
             const codes = await detector.detect(videoRef.current);
             if (codes.length > 0 && !cancelled) {
-              onScan(codes as DetectedBarcode[]);
+              onScanRef.current(codes as DetectedBarcode[]);
             }
           } catch (e: unknown) {
-            onError(e instanceof Error ? e : new Error(String(e)));
+            onErrorRef.current(e instanceof Error ? e : new Error(String(e)));
           }
         }, 400);
       } catch (e: unknown) {
         const err = e instanceof Error ? e : new Error(String(e));
-        onError(err);
-        onStatus("ERROR: " + err.message);
+        onErrorRef.current(err);
+        onStatusRef.current("ERROR: " + err.message);
       }
     })();
 
@@ -260,7 +271,7 @@ function MinimalScanner({
       if (intervalId) clearInterval(intervalId);
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
-  }, [onScan, onError, onStatus]);
+  }, []); // empty — runs once on mount, cleanup runs once on unmount
 
   return (
     <video
