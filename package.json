@@ -19,12 +19,12 @@
     "jsbarcode": "^3.12.3",
     "jsqr": "^1.4.0",
     "next": "16.1.6",
-    "qr-scanner": "^1.4.2",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "stripe": "^20.4.1",
-    "twilio": "^5.12.2"
+    "twilio": "^5.12.2",
+    "zxing-wasm": "^3.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

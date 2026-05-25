@@ -1,7 +1,7 @@
 "use client";
 
-import QrScanner from "qr-scanner";
 import { useEffect, useRef, useState } from "react";
+import { prepareZXingModule, readBarcodes } from "zxing-wasm/reader";
 
 // ─── Waiver (verbatim from original checkin page) ────────────────────────────
 
@@ -200,6 +200,11 @@ const BTN: React.CSSProperties = {
 
 // ─── MinimalScanner ───────────────────────────────────────────────────────────
 
+// Pre-warm the WASM module on first import so the first scan isn't slow
+if (typeof window !== "undefined") {
+  prepareZXingModule({ fireImmediately: true });
+}
+
 function MinimalScanner({
   onScan,
   onError,
@@ -225,41 +230,73 @@ function MinimalScanner({
   });
 
   useEffect(() => {
-    if (!videoRef.current) return;
-    let scanner: QrScanner | null = null;
-    let resolutionReported = false;
+    let stream: MediaStream | null = null;
+    let rafId: number | null = null;
     let cancelled = false;
+    let resolutionReported = false;
+    let scanning = false;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
     (async () => {
       try {
-        scanner = new QrScanner(
-          videoRef.current!,
-          (result) => {
-            if (!cancelled) {
-              onScanRef.current({ rawValue: result.data });
-            }
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
           },
-          {
-            preferredCamera: "environment",
-            highlightScanRegion: false,
-            highlightCodeOutline: false,
-            maxScansPerSecond: 10,
-            returnDetailedScanResult: true,
-            onDecodeError: () => {
-              if (cancelled) return;
-              onTickRef.current();
-              if (!resolutionReported && videoRef.current) {
-                const w = videoRef.current.videoWidth;
-                const h = videoRef.current.videoHeight;
-                if (w > 0 && h > 0) {
-                  resolutionReported = true;
-                  onResolutionRef.current(w, h);
-                }
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+
+        const tick = async () => {
+          if (cancelled) return;
+          onTickRef.current();
+
+          const video = videoRef.current;
+          if (video && ctx && video.readyState >= 2 && !scanning) {
+            const w = video.videoWidth;
+            const h = video.videoHeight;
+            if (w > 0 && h > 0) {
+              if (!resolutionReported) {
+                resolutionReported = true;
+                onResolutionRef.current(w, h);
               }
-            },
+              canvas.width = w;
+              canvas.height = h;
+              ctx.drawImage(video, 0, 0, w, h);
+              const imageData = ctx.getImageData(0, 0, w, h);
+
+              scanning = true;
+              try {
+                const results = await readBarcodes(imageData, {
+                  formats: ["QRCode"],
+                  tryHarder: true,
+                  tryRotate: true,
+                  tryInvert: true,
+                });
+                if (results.length > 0 && results[0].text && !cancelled) {
+                  onScanRef.current({ rawValue: results[0].text });
+                  return;
+                }
+              } catch {
+                // decode error on empty frames is normal; swallow
+              } finally {
+                scanning = false;
+              }
+            }
           }
-        );
-        await scanner.start();
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
       } catch (e: unknown) {
         onErrorRef.current(e instanceof Error ? e : new Error(String(e)));
       }
@@ -267,10 +304,8 @@ function MinimalScanner({
 
     return () => {
       cancelled = true;
-      if (scanner) {
-        scanner.stop();
-        scanner.destroy();
-      }
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
     };
   }, []);
 
