@@ -202,7 +202,17 @@ const BTN: React.CSSProperties = {
 
 // Pre-warm the WASM module on first import so the first scan isn't slow
 if (typeof window !== "undefined") {
-  prepareZXingModule({ fireImmediately: true });
+  prepareZXingModule({
+    overrides: {
+      locateFile: (path: string, prefix: string) => {
+        if (path.endsWith(".wasm")) {
+          return `/zxing-wasm/${path}`;
+        }
+        return prefix + path;
+      },
+    },
+    fireImmediately: true,
+  });
 }
 
 function MinimalScanner({

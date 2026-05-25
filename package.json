@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "mkdir -p public/zxing-wasm && cp -f node_modules/zxing-wasm/dist/reader/zxing_reader.wasm public/zxing-wasm/zxing_reader.wasm 2>/dev/null || true"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.1.0",
