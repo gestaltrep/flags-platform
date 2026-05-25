@@ -218,36 +218,23 @@ if (typeof window !== "undefined") {
 function MinimalScanner({
   onScan,
   onError,
-  onTick,
-  onResolution,
-  onDecodeError,
 }: {
   onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
-  onTick: () => void;
-  onResolution: (w: number, h: number) => void;
-  onDecodeError: (msg: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
-  const onTickRef = useRef(onTick);
-  const onResolutionRef = useRef(onResolution);
-  const onDecodeErrorRef = useRef(onDecodeError);
 
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
-    onTickRef.current = onTick;
-    onResolutionRef.current = onResolution;
-    onDecodeErrorRef.current = onDecodeError;
   });
 
   useEffect(() => {
     let stream: MediaStream | null = null;
     let rafId: number | null = null;
     let cancelled = false;
-    let resolutionReported = false;
     let scanning = false;
 
     const canvas = document.createElement("canvas");
@@ -273,17 +260,12 @@ function MinimalScanner({
 
         const tick = async () => {
           if (cancelled) return;
-          onTickRef.current();
 
           const video = videoRef.current;
           if (video && ctx && video.readyState >= 2 && !scanning) {
             const w = video.videoWidth;
             const h = video.videoHeight;
             if (w > 0 && h > 0) {
-              if (!resolutionReported) {
-                resolutionReported = true;
-                onResolutionRef.current(w, h);
-              }
               canvas.width = w;
               canvas.height = h;
               ctx.drawImage(video, 0, 0, w, h);
@@ -301,10 +283,8 @@ function MinimalScanner({
                   onScanRef.current({ rawValue: results[0].text });
                   return;
                 }
-              } catch (e: any) {
-                if (!cancelled) {
-                  onDecodeErrorRef.current(e?.message || String(e));
-                }
+              } catch {
+                // empty frames produce decode noise; swallow
               } finally {
                 scanning = false;
               }
@@ -354,9 +334,6 @@ export default function CheckInPage() {
   const [ticket, setTicket] = useState<TicketData | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [checkedInCount, setCheckedInCount] = useState(0);
-  const [framesScanned, setFramesScanned] = useState(0);
-  const [resolution, setResolution] = useState<string | null>(null);
-  const [lastDecodeError, setLastDecodeError] = useState("none");
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -623,9 +600,6 @@ export default function CheckInPage() {
         <MinimalScanner
           onScan={handleScan}
           onError={(err) => console.error("scanner:", err.message)}
-          onTick={() => setFramesScanned((n) => n + 1)}
-          onResolution={(w, h) => setResolution(`${w}×${h}`)}
-          onDecodeError={(msg) => setLastDecodeError(msg.slice(0, 80))}
         />
 
         <div
@@ -635,10 +609,23 @@ export default function CheckInPage() {
             letterSpacing: 3,
             fontSize: 13,
             fontFamily: MONO,
-            padding: "10px 0 4px",
+            padding: "16px 0",
           }}
         >
           {">"} AIM AT ENTRY TOKEN
+        </div>
+
+        <div
+          style={{
+            margin: "0 20px",
+            color: "#444",
+            fontSize: 10,
+            letterSpacing: 1.5,
+            fontFamily: MONO,
+            marginBottom: 8,
+          }}
+        >
+          CHECKED IN: {checkedInCount}
         </div>
 
         <div
@@ -648,29 +635,6 @@ export default function CheckInPage() {
             padding: "16px",
           }}
         >
-          <div
-            style={{
-              color: "#444",
-              fontSize: 10,
-              letterSpacing: 1.5,
-              fontFamily: MONO,
-              marginBottom: 4,
-            }}
-          >
-            CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}{resolution ? ` · RES: ${resolution}` : ""}
-          </div>
-          <div
-            style={{
-              color: "#444",
-              fontSize: 10,
-              letterSpacing: 1.5,
-              fontFamily: MONO,
-              marginBottom: 10,
-              wordBreak: "break-all",
-            }}
-          >
-            LAST ERROR: {lastDecodeError}
-          </div>
           <div
             style={{
               color: "#555",
