@@ -210,23 +210,27 @@ function MinimalScanner({
   onError,
   onTick,
   onResolution,
+  onDecodeError,
 }: {
   onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
   onTick: () => void;
   onResolution: (w: number, h: number) => void;
+  onDecodeError: (msg: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
   const onTickRef = useRef(onTick);
   const onResolutionRef = useRef(onResolution);
+  const onDecodeErrorRef = useRef(onDecodeError);
 
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
     onTickRef.current = onTick;
     onResolutionRef.current = onResolution;
+    onDecodeErrorRef.current = onDecodeError;
   });
 
   useEffect(() => {
@@ -287,8 +291,10 @@ function MinimalScanner({
                   onScanRef.current({ rawValue: results[0].text });
                   return;
                 }
-              } catch {
-                // decode error on empty frames is normal; swallow
+              } catch (e: any) {
+                if (!cancelled) {
+                  onDecodeErrorRef.current(e?.message || String(e));
+                }
               } finally {
                 scanning = false;
               }
@@ -340,6 +346,7 @@ export default function CheckInPage() {
   const [checkedInCount, setCheckedInCount] = useState(0);
   const [framesScanned, setFramesScanned] = useState(0);
   const [resolution, setResolution] = useState<string | null>(null);
+  const [lastDecodeError, setLastDecodeError] = useState("none");
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -608,6 +615,7 @@ export default function CheckInPage() {
           onError={(err) => console.error("scanner:", err.message)}
           onTick={() => setFramesScanned((n) => n + 1)}
           onResolution={(w, h) => setResolution(`${w}×${h}`)}
+          onDecodeError={(msg) => setLastDecodeError(msg.slice(0, 80))}
         />
 
         <div
@@ -640,6 +648,18 @@ export default function CheckInPage() {
             }}
           >
             CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}{resolution ? ` · RES: ${resolution}` : ""}
+          </div>
+          <div
+            style={{
+              color: "#444",
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontFamily: MONO,
+              marginBottom: 10,
+              wordBreak: "break-all",
+            }}
+          >
+            LAST ERROR: {lastDecodeError}
           </div>
           <div
             style={{
