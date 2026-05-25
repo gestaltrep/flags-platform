@@ -1,6 +1,6 @@
 "use client";
 
-import jsQR from "jsqr";
+import QrScanner from "qr-scanner";
 import { useEffect, useRef, useState } from "react";
 
 // ─── Waiver (verbatim from original checkin page) ────────────────────────────
@@ -199,97 +199,67 @@ const BTN: React.CSSProperties = {
 };
 
 // ─── MinimalScanner ───────────────────────────────────────────────────────────
-// Pure-JS QR detection via jsQR — no BarcodeDetector API, no WASM, no @yudiel.
-// RAF loop; stops after first hit and lets the parent re-mount to restart.
 
 function MinimalScanner({
   onScan,
   onError,
   onTick,
   onResolution,
-  onJsqrResult,
 }: {
   onScan: (code: DetectedCode) => void;
   onError: (err: Error) => void;
   onTick: () => void;
   onResolution: (w: number, h: number) => void;
-  onJsqrResult: (result: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
   const onTickRef = useRef(onTick);
   const onResolutionRef = useRef(onResolution);
-  const onJsqrResultRef = useRef(onJsqrResult);
 
   useEffect(() => {
     onScanRef.current = onScan;
     onErrorRef.current = onError;
     onTickRef.current = onTick;
     onResolutionRef.current = onResolution;
-    onJsqrResultRef.current = onJsqrResult;
   });
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
-    let rafId: number | null = null;
-    let cancelled = false;
+    if (!videoRef.current) return;
+    let scanner: QrScanner | null = null;
     let resolutionReported = false;
+    let cancelled = false;
 
     (async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "environment",
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            // @ts-expect-error — non-standard but supported on mobile Chrome/Safari
-            focusMode: { ideal: "continuous" },
+        scanner = new QrScanner(
+          videoRef.current!,
+          (result) => {
+            if (!cancelled) {
+              onScanRef.current({ rawValue: result.data });
+            }
           },
-          audio: false,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-
-        const tick = () => {
-          if (cancelled) return;
-          onTickRef.current();
-          const video = videoRef.current;
-          const canvas = canvasRef.current;
-          if (video && canvas && video.readyState >= 2) {
-            const w = video.videoWidth;
-            const h = video.videoHeight;
-            if (w > 0 && h > 0) {
-              if (!resolutionReported) {
-                resolutionReported = true;
-                onResolutionRef.current(w, h);
-              }
-              canvas.width = w;
-              canvas.height = h;
-              const ctx = canvas.getContext("2d", { willReadFrequently: true });
-              if (ctx) {
-                ctx.drawImage(video, 0, 0, w, h);
-                const imageData = ctx.getImageData(0, 0, w, h);
-                const code = jsQR(imageData.data, w, h, {
-                  inversionAttempts: "attemptBoth",
-                });
-                onJsqrResultRef.current(code && code.data ? code.data : "null");
-                if (code && code.data) {
-                  onScanRef.current({ rawValue: code.data });
-                  return; // stop polling after first hit
+          {
+            preferredCamera: "environment",
+            highlightScanRegion: false,
+            highlightCodeOutline: false,
+            maxScansPerSecond: 10,
+            returnDetailedScanResult: true,
+            onDecodeError: () => {
+              if (cancelled) return;
+              onTickRef.current();
+              if (!resolutionReported && videoRef.current) {
+                const w = videoRef.current.videoWidth;
+                const h = videoRef.current.videoHeight;
+                if (w > 0 && h > 0) {
+                  resolutionReported = true;
+                  onResolutionRef.current(w, h);
                 }
               }
-            }
+            },
           }
-          rafId = requestAnimationFrame(tick);
-        };
-        rafId = requestAnimationFrame(tick);
+        );
+        await scanner.start();
       } catch (e: unknown) {
         onErrorRef.current(e instanceof Error ? e : new Error(String(e)));
       }
@@ -297,10 +267,12 @@ function MinimalScanner({
 
     return () => {
       cancelled = true;
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (scanner) {
+        scanner.stop();
+        scanner.destroy();
+      }
     };
-  }, []); // runs once on mount, cleanup runs once on unmount
+  }, []);
 
   return (
     <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
@@ -318,19 +290,6 @@ function MinimalScanner({
           outline: "2px solid red",
         }}
       />
-      <canvas
-        ref={canvasRef}
-        style={{
-          display: "block",
-          width: 200,
-          height: "auto",
-          aspectRatio: "9 / 16",
-          objectFit: "contain",
-          outline: "1px solid yellow",
-          margin: "10px auto 0",
-          background: "black",
-        }}
-      />
     </div>
   );
 }
@@ -346,7 +305,6 @@ export default function CheckInPage() {
   const [checkedInCount, setCheckedInCount] = useState(0);
   const [framesScanned, setFramesScanned] = useState(0);
   const [resolution, setResolution] = useState<string | null>(null);
-  const [lastJsqrResult, setLastJsqrResult] = useState("null");
   const [waiverChecked, setWaiverChecked] = useState(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -615,7 +573,6 @@ export default function CheckInPage() {
           onError={(err) => console.error("scanner:", err.message)}
           onTick={() => setFramesScanned((n) => n + 1)}
           onResolution={(w, h) => setResolution(`${w}×${h}`)}
-          onJsqrResult={(r) => setLastJsqrResult(r.length > 80 ? r.slice(0, 80) : r)}
         />
 
         <div
@@ -648,18 +605,6 @@ export default function CheckInPage() {
             }}
           >
             CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}{resolution ? ` · RES: ${resolution}` : ""}
-          </div>
-          <div
-            style={{
-              color: "#444",
-              fontSize: 10,
-              letterSpacing: 1.5,
-              fontFamily: MONO,
-              marginBottom: 10,
-              wordBreak: "break-all",
-            }}
-          >
-            LAST JS: {lastJsqrResult}
           </div>
           <div
             style={{
