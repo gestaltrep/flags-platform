@@ -1102,6 +1102,7 @@ export default function TerminalClient() {
                         <QRCodeSVG
                           value={`${qrBase}/checkin?code=${ticket.code}`}
                           size={desktopQrSize}
+                          marginSize={1}
                           style={{ opacity: isRefunded ? 0.35 : 1 }}
                         />
 
@@ -1295,6 +1296,7 @@ export default function TerminalClient() {
                           <QRCodeSVG
                             value={`${qrBase}/checkin?code=${ticket.code}`}
                             size={110}
+                            marginSize={1}
                           />
                         </div>
 
@@ -2124,6 +2126,7 @@ export default function TerminalClient() {
                 <QRCodeSVG
                   value={`${qrBase}/checkin?code=${sendModalTicket.code}`}
                   size={isMobile ? 104 : 102}
+                  marginSize={1}
                 />
               </div>
 

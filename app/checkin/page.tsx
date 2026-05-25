@@ -1,15 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { prepareZXingModule, readBarcodes } from "zxing-wasm/reader";
 
-type ValidateState = "loading" | "ready" | "used" | "invalid" | "error";
-type Step = "consent" | "form" | "verify" | "success";
-
-const WAIVER_TITLE =
-  "Liability Waiver, Release, Assumption of Risk, and Indemnity Agreement";
-
-const WAIVER_CHECKBOX_TEXT =
-  "I am at least 18 years old, I have read and agree to the Liability Waiver, Release, Assumption of Risk, and Indemnity Agreement, and I understand that it includes a release of claims for ordinary negligence and a waiver of important legal rights.";
+// ─── Waiver (verbatim from original checkin page) ────────────────────────────
 
 const WAIVER_BODY = `LIABILITY WAIVER, RELEASE, ASSUMPTION OF RISK, AND INDEMNITY AGREEMENT
 
@@ -17,7 +11,7 @@ By checking the acceptance box during event check-in, I acknowledge that I have 
 
 1. Organizer
 
-This event is solely organized, produced, and operated by Azazel_ver1.0.0 LLC, a Florida limited liability company (“Organizer”). The following entities provide or receive services in connection with the event and are not co-organizers: Seativa Entertainment LLC, Signo Research Group LLC, 13th Tribe Inc., and Gestalt LLC (each a Florida limited liability company, collectively “Service Providers”). Each Service Provider acts in its own independent capacity and is not an agent, partner, joint venturer, or representative of Organizer or any other Service Provider.
+This event is solely organized, produced, and operated by Azazel_ver1.0.0 LLC, a Florida limited liability company ("Organizer"). The following entities provide or receive services in connection with the event and are not co-organizers: Seativa Entertainment LLC, Signo Research Group LLC, 13th Tribe Inc., and Gestalt LLC (each a Florida limited liability company, collectively "Service Providers"). Each Service Provider acts in its own independent capacity and is not an agent, partner, joint venturer, or representative of Organizer or any other Service Provider.
 
 2. No Third-Party Authority
 
@@ -33,7 +27,7 @@ Any venue owner, landlord, lessor, security company, emergency or medical provid
 
 5. Released Parties
 
-For purposes of this Agreement, “Released Parties” means Organizer; the Service Providers (Seativa Entertainment LLC, Signo Research Group LLC, 13th Tribe Inc., and Gestalt LLC); Charlotte County Fair Association, Inc.; the event venue; property owner; landlord; lessor; event staff; security providers; emergency or medical personnel; contractors; subcontractors; volunteers; sponsors; artists; performers; vendors; and each of their respective owners, members, managers, officers, directors, employees, representatives, successors, and assigns.
+For purposes of this Agreement, "Released Parties" means Organizer; the Service Providers (Seativa Entertainment LLC, Signo Research Group LLC, 13th Tribe Inc., and Gestalt LLC); Charlotte County Fair Association, Inc.; the event venue; property owner; landlord; lessor; event staff; security providers; emergency or medical personnel; contractors; subcontractors; volunteers; sponsors; artists; performers; vendors; and each of their respective owners, members, managers, officers, directors, employees, representatives, successors, and assigns.
 
 6. Age Representation
 
@@ -41,7 +35,7 @@ I represent and warrant that I am at least eighteen (18) years old.
 
 7. Activity Description
 
-I understand that I am attending a live music event at which Organizer may conduct an optional, competitive, interactive game involving event-issued tickets, tags, tokens, or similar designated visible game items worn on a participant’s person. I understand that the game may begin later in the event without prior public disclosure of its timing. I understand that participation in the game is voluntary. I further understand that the game may involve pursuit, crowd movement, attempts by other participants to remove the designated visible game item, and incidental light physical contact.
+I understand that I am attending a live music event at which Organizer may conduct an optional, competitive, interactive game involving event-issued tickets, tags, tokens, or similar designated visible game items worn on a participant's person. I understand that the game may begin later in the event without prior public disclosure of its timing. I understand that participation in the game is voluntary. I further understand that the game may involve pursuit, crowd movement, attempts by other participants to remove the designated visible game item, and incidental light physical contact.
 
 8. Voluntary Participation
 
@@ -53,7 +47,7 @@ I understand and expressly assume all risks arising from or related to attendanc
 
 10. Release and Waiver of Claims
 
-TO THE FULLEST EXTENT PERMITTED BY FLORIDA LAW, I KNOWINGLY AND VOLUNTARILY RELEASE, WAIVE, DISCHARGE, AND COVENANT NOT TO SUE THE RELEASED PARTIES FOR ANY AND ALL CLAIMS, DEMANDS, ACTIONS, CAUSES OF ACTION, DAMAGES, LOSSES, LIABILITIES, COSTS, OR EXPENSES, INCLUDING ATTORNEYS’ FEES, ARISING OUT OF OR RELATED TO MY ATTENDANCE AT THE EVENT OR MY PARTICIPATION IN THE GAME, INCLUDING CLAIMS ARISING FROM THE ORDINARY NEGLIGENCE OF ANY RELEASED PARTY.
+TO THE FULLEST EXTENT PERMITTED BY FLORIDA LAW, I KNOWINGLY AND VOLUNTARILY RELEASE, WAIVE, DISCHARGE, AND COVENANT NOT TO SUE THE RELEASED PARTIES FOR ANY AND ALL CLAIMS, DEMANDS, ACTIONS, CAUSES OF ACTION, DAMAGES, LOSSES, LIABILITIES, COSTS, OR EXPENSES, INCLUDING ATTORNEYS' FEES, ARISING OUT OF OR RELATED TO MY ATTENDANCE AT THE EVENT OR MY PARTICIPATION IN THE GAME, INCLUDING CLAIMS ARISING FROM THE ORDINARY NEGLIGENCE OF ANY RELEASED PARTY.
 
 11. Non-Waivable Claims
 
@@ -61,7 +55,7 @@ Nothing in this Agreement releases any claim that cannot lawfully be released un
 
 12. No Cross-Entity Liability
 
-I acknowledge that each Released Party acts independently. I agree that I will not assert any claim against one Released Party based solely on that party’s association with, presence at, or service relationship to another Released Party. Each Released Party’s liability, if any, shall be evaluated solely on the basis of its own independent acts or omissions.
+I acknowledge that each Released Party acts independently. I agree that I will not assert any claim against one Released Party based solely on that party's association with, presence at, or service relationship to another Released Party. Each Released Party's liability, if any, shall be evaluated solely on the basis of its own independent acts or omissions.
 
 13. Game Rules and Participant Conduct
 
@@ -79,7 +73,7 @@ I may not pursue another participant into bathrooms, staff-only areas, parking l
 
 I must immediately stop if another participant verbally disengages, falls, appears injured, or if security, staff, or Organizer gives any instruction.
 
-I may not participate while impaired to a level that makes safe participation unreasonable in Organizer’s judgment.
+I may not participate while impaired to a level that makes safe participation unreasonable in Organizer's judgment.
 
 Organizer may suspend, disqualify, eject, or ban me at any time, with or without refund, for any actual or suspected rule violation or unsafe conduct.
 
@@ -97,11 +91,11 @@ I represent that I am physically and mentally capable of attending the event and
 
 17. Property Damage Responsibility
 
-I am financially responsible for any loss, damage, vandalism, or destruction to the venue, surrounding property, equipment, furnishings, barriers, fixtures, vehicles, staging, sound equipment, lighting equipment, or any other real or personal property caused by my acts or omissions, whether intentional, reckless, negligent, or accidental. I agree to reimburse the applicable Released Parties for repair or replacement costs, including labor, materials, cleanup, security response, and reasonable attorneys’ fees and collection costs.
+I am financially responsible for any loss, damage, vandalism, or destruction to the venue, surrounding property, equipment, furnishings, barriers, fixtures, vehicles, staging, sound equipment, lighting equipment, or any other real or personal property caused by my acts or omissions, whether intentional, reckless, negligent, or accidental. I agree to reimburse the applicable Released Parties for repair or replacement costs, including labor, materials, cleanup, security response, and reasonable attorneys' fees and collection costs.
 
 18. Indemnification
 
-I agree to defend, indemnify, and hold harmless the Released Parties from and against any third-party claim, demand, suit, liability, damage, judgment, loss, cost, or expense, including reasonable attorneys’ fees, arising out of or related to: (a) my acts or omissions; (b) my violation of event rules or this Agreement; (c) any injury or property damage I cause or contribute to; or (d) any claim brought by a person associated with me or resulting from my conduct.
+I agree to defend, indemnify, and hold harmless the Released Parties from and against any third-party claim, demand, suit, liability, damage, judgment, loss, cost, or expense, including reasonable attorneys' fees, arising out of or related to: (a) my acts or omissions; (b) my violation of event rules or this Agreement; (c) any injury or property damage I cause or contribute to; or (d) any claim brought by a person associated with me or resulting from my conduct.
 
 19. Security and Removal
 
@@ -147,680 +141,810 @@ I agree that my electronic acceptance of this Agreement during check-in is inten
 
 BY CHECKING THE ACCEPTANCE BOX, I ACKNOWLEDGE THAT I HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AM GIVING UP IMPORTANT LEGAL RIGHTS, INCLUDING THE RIGHT TO SUE FOR CLAIMS ARISING FROM ORDINARY NEGLIGENCE.`;
 
-export default function CheckInPage() {
-  const [code, setCode] = useState("");
-  const [validateState, setValidateState] = useState<ValidateState>("loading");
-  const [step, setStep] = useState<Step>("consent");
-  const [message, setMessage] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
-  const [ticketType, setTicketType] = useState<"GA" | "VIP" | "">("");
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-  const [phone, setPhone] = useState("");
-  const [tag, setTag] = useState("");
-  const [team, setTeam] = useState<"black" | "white" | "">("");
-  const [serial, setSerial] = useState("");
-  const [verifyCode, setVerifyCode] = useState("");
+type DetectedCode = { rawValue: string };
 
-  const [termsChecked, setTermsChecked] = useState(false);
-  const [privacyChecked, setPrivacyChecked] = useState(false);
-  const [waiverChecked, setWaiverChecked] = useState(false);
-  const [waiverOpen, setWaiverOpen] = useState(false);
+type AppState =
+  | "auth_checking"
+  | "unauthorized"
+  | "scanner"
+  | "validating"
+  | "confirm"
+  | "success"
+  | "error";
 
-  const [submitting, setSubmitting] = useState(false);
-  const [sendingVerify, setSendingVerify] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+interface TicketHolder {
+  name: string | null;
+  phone: string | null;
+}
 
-  const [debugStep, setDebugStep] = useState<
-    "" | "consent" | "form" | "verify" | "success"
-  >("");
-  const [debugMode, setDebugMode] = useState(false);
+interface TicketData {
+  id: string;
+  code: string;
+  is_vip: boolean;
+  is_table: boolean;
+  buyer_user_id: string | null;
+  claimed_by_user: string | null;
+  holder: TicketHolder | null;
+}
+
+function getTier(ticket: TicketData): string {
+  if (ticket.is_table) return "VIP TABLE";
+  if (ticket.is_vip) return "VIP";
+  return "GA";
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const MONO = '"Courier New", monospace';
+
+const BASE: React.CSSProperties = {
+  background: "black",
+  minHeight: "100vh",
+  color: "white",
+  fontFamily: MONO,
+};
+
+const BTN: React.CSSProperties = {
+  background: "black",
+  border: "1px solid white",
+  color: "white",
+  padding: "14px 18px",
+  letterSpacing: 2,
+  fontSize: 12,
+  cursor: "pointer",
+  fontFamily: MONO,
+  textTransform: "uppercase",
+};
+
+// ─── MinimalScanner ───────────────────────────────────────────────────────────
+
+// Pre-warm the WASM module on first import so the first scan isn't slow
+if (typeof window !== "undefined") {
+  prepareZXingModule({
+    overrides: {
+      locateFile: (path: string, prefix: string) => {
+        if (path.endsWith(".wasm")) {
+          return `/zxing-wasm/${path}`;
+        }
+        return prefix + path;
+      },
+    },
+    fireImmediately: true,
+  });
+}
+
+function MinimalScanner({
+  onScan,
+  onError,
+  onTick,
+  onResolution,
+  onDecodeError,
+}: {
+  onScan: (code: DetectedCode) => void;
+  onError: (err: Error) => void;
+  onTick: () => void;
+  onResolution: (w: number, h: number) => void;
+  onDecodeError: (msg: string) => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const onScanRef = useRef(onScan);
+  const onErrorRef = useRef(onError);
+  const onTickRef = useRef(onTick);
+  const onResolutionRef = useRef(onResolution);
+  const onDecodeErrorRef = useRef(onDecodeError);
 
   useEffect(() => {
-    function handleResize() {
-      setIsMobile(window.innerWidth < 900);
-    }
+    onScanRef.current = onScan;
+    onErrorRef.current = onError;
+    onTickRef.current = onTick;
+    onResolutionRef.current = onResolution;
+    onDecodeErrorRef.current = onDecodeError;
+  });
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let rafId: number | null = null;
+    let cancelled = false;
+    let resolutionReported = false;
+    let scanning = false;
 
-    const params = new URLSearchParams(window.location.search);
-    const incomingCode = (params.get("code") || "").trim().toUpperCase();
-    const incomingDebugStep = (params.get("debugStep") || "").trim().toLowerCase();
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-    setCode(incomingCode);
+    (async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
 
-    if (
-      process.env.NODE_ENV === "development" &&
-      ["consent", "form", "verify", "success"].includes(incomingDebugStep)
-    ) {
-      setDebugMode(true);
-      setDebugStep(
-        incomingDebugStep as "consent" | "form" | "verify" | "success"
-      );
-    }
+        const tick = async () => {
+          if (cancelled) return;
+          onTickRef.current();
 
-    return () => window.removeEventListener("resize", handleResize);
+          const video = videoRef.current;
+          if (video && ctx && video.readyState >= 2 && !scanning) {
+            const w = video.videoWidth;
+            const h = video.videoHeight;
+            if (w > 0 && h > 0) {
+              if (!resolutionReported) {
+                resolutionReported = true;
+                onResolutionRef.current(w, h);
+              }
+              canvas.width = w;
+              canvas.height = h;
+              ctx.drawImage(video, 0, 0, w, h);
+              const imageData = ctx.getImageData(0, 0, w, h);
+
+              scanning = true;
+              try {
+                const results = await readBarcodes(imageData, {
+                  formats: ["QRCode"],
+                  tryHarder: true,
+                  tryRotate: true,
+                  tryInvert: true,
+                });
+                if (results.length > 0 && results[0].text && !cancelled) {
+                  onScanRef.current({ rawValue: results[0].text });
+                  return;
+                }
+              } catch (e: any) {
+                if (!cancelled) {
+                  onDecodeErrorRef.current(e?.message || String(e));
+                }
+              } finally {
+                scanning = false;
+              }
+            }
+          }
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+      } catch (e: unknown) {
+        onErrorRef.current(e instanceof Error ? e : new Error(String(e)));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
   }, []);
 
+  return (
+    <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
+      <video
+        ref={videoRef}
+        playsInline
+        muted
+        autoPlay
+        style={{
+          display: "block",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          objectFit: "cover",
+          background: "black",
+          outline: "2px solid red",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function CheckInPage() {
+  const [appState, setAppState] = useState<AppState>("auth_checking");
+  const [offlineBanner, setOfflineBanner] = useState(false);
+  const [currentCode, setCurrentCode] = useState("");
+  const [ticket, setTicket] = useState<TicketData | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [checkedInCount, setCheckedInCount] = useState(0);
+  const [framesScanned, setFramesScanned] = useState(0);
+  const [resolution, setResolution] = useState<string | null>(null);
+  const [lastDecodeError, setLastDecodeError] = useState("none");
+  const [waiverChecked, setWaiverChecked] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [manualCode, setManualCode] = useState("");
+
   useEffect(() => {
-    async function validateCode() {
-      if (debugMode && debugStep) {
-        setValidateState("ready");
-        setTicketType("GA");
-        setPhone("2395881313");
-        setTag("DEVPLAYER");
-        setTeam("black");
-        setSerial("DEV-SERIAL");
-        setVerifyCode("");
-        setStep(debugStep);
-        setMessage("");
-        return;
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
+
+  // ── Auth check on mount ──────────────────────────────────────────────────
+  useEffect(() => {
+    async function checkAuth() {
+      const params = new URLSearchParams(window.location.search);
+      const keyParam = params.get("key");
+      if (keyParam) {
+        localStorage.setItem("checkin_staff_token", keyParam);
+        window.history.replaceState({}, "", "/checkin");
       }
 
-      if (!code) {
-        setValidateState("invalid");
-        setMessage("No token code provided.");
+      const token = localStorage.getItem("checkin_staff_token");
+      if (!token) {
+        setAppState("unauthorized");
         return;
       }
-
-      setValidateState("loading");
-      setMessage("");
 
       try {
-        const res = await fetch("/api/scan-ticket", {
+        const res = await fetch("/api/checkin-auth", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code }),
+          headers: { Authorization: `Bearer ${token}` },
         });
+
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem(
+            "checkin_staff_token_valid_until",
+            String(data.valid_until_ms)
+          );
+          setAppState("scanner");
+          return;
+        }
+
+        if (res.status === 401) {
+          localStorage.removeItem("checkin_staff_token");
+          setAppState("unauthorized");
+          return;
+        }
+
+        // Non-200/401 — check offline cache
+        const validUntil = Number(
+          localStorage.getItem("checkin_staff_token_valid_until") || "0"
+        );
+        if (validUntil > Date.now()) {
+          setOfflineBanner(true);
+          setAppState("scanner");
+        } else {
+          setAppState("unauthorized");
+        }
+      } catch {
+        const validUntil = Number(
+          localStorage.getItem("checkin_staff_token_valid_until") || "0"
+        );
+        if (validUntil > Date.now()) {
+          setOfflineBanner(true);
+          setAppState("scanner");
+        } else {
+          setAppState("unauthorized");
+        }
+      }
+    }
+
+    checkAuth();
+  }, []); // mount only
+
+  // ── Code submission (scanner + manual entry share this path) ────────────
+  function submitCode(code: string) {
+    setCurrentCode(code);
+    setAppState("validating");
+
+    const token = localStorage.getItem("checkin_staff_token") || "";
+
+    fetch("/api/scan-ticket", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code }),
+    })
+      .then(async (res) => {
+        if (res.status === 401) {
+          localStorage.removeItem("checkin_staff_token");
+          setAppState("unauthorized");
+          return;
+        }
 
         const data = await res.json();
 
-        if (res.ok && data?.success) {
-          setValidateState("ready");
-          setTicketType(data.ticket?.vip ? "VIP" : "GA");
-          setStep("consent");
+        if (res.status === 404) {
+          setErrorMessage("TOKEN NOT FOUND");
+          setAppState("error");
           return;
         }
 
         if (res.status === 409) {
-          setValidateState("used");
-          setMessage(data.message || "Token already used.");
+          setErrorMessage(data.message || "Token already used.");
+          setAppState("error");
           return;
         }
 
-        if (res.status === 404) {
-          setValidateState("invalid");
-          setMessage(data.message || "Token not found.");
-          return;
+        if (res.ok && data.success) {
+          setTicket(data.ticket);
+          setWaiverChecked(false);
+          setAppState("confirm");
         }
-
-        setValidateState("error");
-        setMessage(data.message || "Token validation failed.");
-      } catch {
-        setValidateState("error");
-        setMessage("Token validation failed.");
-      }
-    }
-
-    validateCode();
-  }, [code, debugMode, debugStep]);
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    background: "black",
-    border: "1px solid rgba(255,255,255,0.28)",
-    color: "white",
-    padding: isMobile ? "14px 14px" : "12px 14px",
-    fontFamily: '"Courier New", monospace',
-    fontSize: isMobile ? 15 : 14,
-    outline: "none",
-    marginBottom: isMobile ? 14 : 10,
-    letterSpacing: isMobile ? 1.5 : 2,
-    minHeight: isMobile ? undefined : 46,
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    width: "100%",
-    border: "1px solid white",
-    background: "black",
-    color: "white",
-    padding: "14px 18px",
-    fontSize: isMobile ? 13 : 15,
-    cursor: "pointer",
-    fontFamily: "Arial, Helvetica, sans-serif",
-    fontWeight: 700,
-    letterSpacing: isMobile ? 3 : 3.2,
-    textTransform: "uppercase",
-    minHeight: isMobile ? 54 : 56,
-  };
-
-  const checkboxStyle: React.CSSProperties = {
-    WebkitAppearance: "checkbox",
-    appearance: "auto",
-    accentColor: "#9ca3af",
-    backgroundColor: "transparent",
-    border: "1px solid rgba(255,255,255,0.8)",
-    width: isMobile ? 18 : 16,
-    height: isMobile ? 18 : 16,
-    cursor: "pointer",
-    flexShrink: 0,
-    marginTop: isMobile ? 2 : 0,
-  };
-
-  const pageWrapStyle: React.CSSProperties = {
-    maxWidth: isMobile ? 820 : 1180,
-    margin: isMobile ? "22px auto 48px auto" : "72px auto 80px auto",
-    padding: isMobile ? "0 20px" : "0 24px",
-    color: "white",
-    fontFamily: '"Courier New", monospace',
-    letterSpacing: 2,
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: isMobile ? 24 : 30,
-    marginBottom: isMobile ? 18 : 28,
-    letterSpacing: isMobile ? 3.5 : 6,
-    lineHeight: 1,
-    wordBreak: "break-word",
-  };
-
-  const panelStyle: React.CSSProperties = {
-    border: "1px solid #666",
-    padding: isMobile ? "18px 18px 22px 18px" : "22px 28px 24px 28px",
-  };
-
-  const statusLineStyle: React.CSSProperties = {
-    color: "#cfcfcf",
-    fontSize: isMobile ? 13 : 14,
-    lineHeight: isMobile ? 1.7 : 1.75,
-    letterSpacing: isMobile ? 1.6 : 2,
-  };
-
-  const reserveStyle: React.CSSProperties = {
-    minHeight: 14,
-    marginTop: 4,
-    marginBottom: 8,
-    fontSize: isMobile ? 9 : 11,
-    lineHeight: isMobile ? 1.2 : 1.35,
-    color: "#cfcfcf",
-  };
-
-  const checkboxLabelStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: 10,
-    cursor: "pointer",
-  };
-
-  const checkboxTextStyle: React.CSSProperties = {
-    fontSize: isMobile ? 12 : 12,
-    lineHeight: isMobile ? 1.42 : 1.5,
-    letterSpacing: isMobile ? 0.7 : 1.5,
-    color: "white",
-  };
-
-  async function onSubmitDetails(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!phone.trim() || !tag.trim() || !team || !serial.trim()) {
-      setMessage("All fields are required.");
-      return;
-    }
-
-    setSendingVerify(true);
-    setMessage("");
-
-    try {
-      const res = await fetch("/api/send-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+      })
+      .catch(() => {
+        setErrorMessage("NETWORK ERROR");
+        setAppState("error");
       });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setMessage(data.error || "We couldn't send your code.");
-        return;
-      }
-
-      setStep("verify");
-      setMessage("Verification code sent.");
-    } catch {
-      setMessage("Something went wrong. Please try again.");
-    } finally {
-      setSendingVerify(false);
-    }
   }
 
-  async function runCheckIn() {
-    setSubmitting(true);
-    setMessage("");
+  // ── Scanner handler ──────────────────────────────────────────────────────
+  function handleScan(detected: DetectedCode) {
+    if (appState !== "scanner") return;
+    const rawValue = detected.rawValue;
+    if (!rawValue) return;
+
+    let code: string;
+    try {
+      const url = new URL(rawValue);
+      code = (url.searchParams.get("code") || "").trim().toUpperCase();
+      if (!code) code = rawValue.trim().toUpperCase();
+    } catch {
+      code = rawValue.trim().toUpperCase();
+    }
+
+    submitCode(code);
+  }
+
+  function handleManualSubmit() {
+    const code = manualCode.trim().toUpperCase();
+    if (!code) return;
+    setManualCode("");
+    submitCode(code);
+  }
+
+  // ── Check-in submit ──────────────────────────────────────────────────────
+  async function completeCheckIn() {
+    const token = localStorage.getItem("checkin_staff_token") || "";
 
     try {
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          code,
-          phone,
-          tag,
-          team,
-          serial,
-        }),
+        body: JSON.stringify({ code: currentCode }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setMessage(data.message || "Check-in failed.");
-        return false;
-      }
-
-      if (data.needsVerification) {
-        // Should not happen here — phone was just verified. Guard against it
-        // rather than showing a false success screen with no player record written.
-        setMessage("Phone verification required. Please try again.");
-        return false;
-      }
-
-      setStep("success");
-      setMessage(data.message || "Check-in complete.");
-      return true;
-    } catch {
-      setMessage("Check-in failed.");
-      return false;
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function completeVerification(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!verifyCode.trim()) {
-      setMessage("Please enter the verification code.");
-      return;
-    }
-
-    setVerifying(true);
-    setMessage("");
-
-    try {
-      const res = await fetch("/api/verify-code", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone,
-          code: verifyCode.trim(),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setMessage(data.error || "Verification failed.");
+      if (res.status === 401) {
+        localStorage.removeItem("checkin_staff_token");
+        setAppState("unauthorized");
         return;
       }
 
-      await runCheckIn();
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.message || "CHECK-IN FAILED");
+        setAppState("error");
+        return;
+      }
+
+      setCheckedInCount((n) => n + 1);
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      setAppState("success");
+      successTimerRef.current = setTimeout(() => setAppState("scanner"), 3000);
     } catch {
-      setMessage("Verification failed.");
-    } finally {
-      setVerifying(false);
+      setErrorMessage("NETWORK ERROR");
+      setAppState("error");
     }
   }
 
-  function continueFromConsent() {
-    if (!termsChecked) {
-      setMessage("Please agree to the Terms & Conditions.");
-      return;
+  function scanNext() {
+    if (successTimerRef.current) {
+      clearTimeout(successTimerRef.current);
+      successTimerRef.current = null;
     }
-
-    if (!privacyChecked) {
-      setMessage("Please agree to the Privacy Policy.");
-      return;
-    }
-
-    if (!waiverChecked) {
-      setMessage("Please accept the liability waiver.");
-      return;
-    }
-
-    setMessage("");
-    setStep("form");
+    setAppState("scanner");
   }
 
-  return (
-    <main style={pageWrapStyle}>
-      <div style={titleStyle}>Check-In Terminal</div>
+  // ── Render ───────────────────────────────────────────────────────────────
 
-      <div style={panelStyle}>
-        <div style={{ marginBottom: isMobile ? 8 : 12 }}>{">"} TOKEN CODE</div>
+  // auth_checking — blank black screen
+  if (appState === "auth_checking") {
+    return <main style={BASE} />;
+  }
+
+  // unauthorized — gate page JSX duplicated inline (URL stays /checkin)
+  if (appState === "unauthorized") {
+    return (
+      <main
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "black",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <style>{`
+          @keyframes eerieBreath {
+            0%   { transform: scale(1.000) translate(0px, 0px); filter: brightness(0.88) saturate(0.95); }
+            25%  { transform: scale(1.006) translate(-0.5px, 0.5px); filter: brightness(0.93) saturate(1.01); }
+            50%  { transform: scale(1.010) translate(0px, 0.8px); filter: brightness(0.97) saturate(1.06); }
+            75%  { transform: scale(1.005) translate(0.5px, 0.3px); filter: brightness(0.92) saturate(1.02); }
+            100% { transform: scale(1.000) translate(0px, 0px); filter: brightness(0.88) saturate(0.95); }
+          }
+        `}</style>
+        <img
+          src="/thislong.gif"
+          alt=""
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            animation: "eerieBreath 10s ease-in-out infinite",
+            willChange: "transform, filter",
+          }}
+        />
+      </main>
+    );
+  }
+
+  // scanner
+  if (appState === "scanner") {
+    return (
+      <main style={{ ...BASE, paddingBottom: 32 }}>
+        {offlineBanner && (
+          <div
+            style={{
+              background: "#1a0000",
+              color: "red",
+              textAlign: "center",
+              padding: "6px 12px",
+              letterSpacing: 2,
+              fontSize: 11,
+              fontFamily: MONO,
+              borderBottom: "1px solid #500",
+            }}
+          >
+            OFFLINE — CACHED AUTH
+          </div>
+        )}
+
+        <MinimalScanner
+          onScan={handleScan}
+          onError={(err) => console.error("scanner:", err.message)}
+          onTick={() => setFramesScanned((n) => n + 1)}
+          onResolution={(w, h) => setResolution(`${w}×${h}`)}
+          onDecodeError={(msg) => setLastDecodeError(msg.slice(0, 80))}
+        />
 
         <div
           style={{
-            fontSize: isMobile ? 30 : 22,
-            marginBottom: isMobile ? 18 : 12,
-            wordBreak: "break-word",
-            lineHeight: 1.2,
+            textAlign: "center",
+            color: "red",
+            letterSpacing: 3,
+            fontSize: 13,
+            fontFamily: MONO,
+            padding: "10px 0 4px",
           }}
         >
-          {code || "NO CODE DETECTED"}
+          {">"} AIM AT ENTRY TOKEN
         </div>
 
-        {ticketType ? (
+        <div
+          style={{
+            margin: "0 20px",
+            border: "1px solid #2a2a2a",
+            padding: "16px",
+          }}
+        >
           <div
             style={{
-              marginBottom: isMobile ? 24 : 26,
-              color: "#cfcfcf",
-              fontSize: isMobile ? 14 : 14,
-              letterSpacing: isMobile ? 1.8 : 2,
+              color: "#444",
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontFamily: MONO,
+              marginBottom: 4,
             }}
           >
-            {">"} TOKEN TYPE: {ticketType}
+            CHECKED IN: {checkedInCount} · FRAMES: {framesScanned}{resolution ? ` · RES: ${resolution}` : ""}
           </div>
-        ) : null}
-
-        {validateState === "loading" && (
-          <div style={statusLineStyle}>{">"} VALIDATING TOKEN...</div>
-        )}
-
-        {(validateState === "used" ||
-          validateState === "invalid" ||
-          validateState === "error") && (
-          <div style={{ ...statusLineStyle, marginTop: 8 }}>{">"} {message}</div>
-        )}
-
-        {validateState === "ready" && step === "consent" && (
-          <div style={{ marginTop: 4 }}>
-            <div style={{ ...statusLineStyle, marginBottom: isMobile ? 16 : 14 }}>
-              {">"} COMPLETE PRE-CHECK-IN CONSENT TO CONTINUE.
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: isMobile ? 12 : 10,
-                marginBottom: isMobile ? 14 : 14,
+          <div
+            style={{
+              color: "#444",
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontFamily: MONO,
+              marginBottom: 10,
+              wordBreak: "break-all",
+            }}
+          >
+            LAST ERROR: {lastDecodeError}
+          </div>
+          <div
+            style={{
+              color: "#555",
+              textAlign: "center",
+              fontSize: 10,
+              letterSpacing: 2,
+              fontFamily: MONO,
+              marginBottom: 12,
+            }}
+          >
+            ─── OR ENTER CODE MANUALLY ───
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              value={manualCode}
+              onChange={(e) =>
+                setManualCode(e.target.value.toUpperCase())
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleManualSubmit();
               }}
-            >
-              <label style={checkboxLabelStyle}>
-                <input
-                  type="checkbox"
-                  checked={termsChecked}
-                  onChange={(e) => setTermsChecked(e.target.checked)}
-                  style={checkboxStyle}
-                />
-                <span style={checkboxTextStyle}>
-                  I agree to the{" "}
-                  <a
-                    href="/terms"
-                    style={{ color: "white", textDecoration: "underline" }}
-                  >
-                    Terms &amp; Conditions
-                  </a>
-                  .
-                </span>
-              </label>
-
-              <label style={checkboxLabelStyle}>
-                <input
-                  type="checkbox"
-                  checked={privacyChecked}
-                  onChange={(e) => setPrivacyChecked(e.target.checked)}
-                  style={checkboxStyle}
-                />
-                <span style={checkboxTextStyle}>
-                  I agree to the{" "}
-                  <a
-                    href="/privacy"
-                    style={{ color: "white", textDecoration: "underline" }}
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </span>
-              </label>
-
-              <label
-                style={{
-                  ...checkboxLabelStyle,
-                  maxWidth: isMobile ? "100%" : undefined,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={waiverChecked}
-                  onChange={(e) => setWaiverChecked(e.target.checked)}
-                  style={checkboxStyle}
-                />
-                <span
-                  style={{
-                    ...checkboxTextStyle,
-                    maxWidth: isMobile ? "calc(100% - 32px)" : "100%",
-                  }}
-                >
-                  {WAIVER_CHECKBOX_TEXT}
-                </span>
-              </label>
-            </div>
-
+              maxLength={8}
+              placeholder="CODE"
+              style={{
+                flex: 1,
+                background: "black",
+                border: "1px solid #555",
+                color: "white",
+                padding: "12px 10px",
+                fontFamily: MONO,
+                fontSize: 15,
+                letterSpacing: 3,
+                outline: "none",
+                minWidth: 0,
+              }}
+            />
             <button
-              type="button"
-              onClick={() => setWaiverOpen((prev) => !prev)}
+              onClick={handleManualSubmit}
+              disabled={!manualCode.trim()}
               style={{
-                ...buttonStyle,
-                minHeight: isMobile ? 52 : 46,
-                marginBottom: waiverOpen ? 8 : 6,
-                fontSize: isMobile ? 12 : 12,
+                background: "black",
+                border: `1px solid ${manualCode.trim() ? "red" : "#400"}`,
+                color: manualCode.trim() ? "red" : "#400",
+                padding: "12px 16px",
+                fontFamily: MONO,
+                fontSize: 11,
+                letterSpacing: 2,
+                cursor: manualCode.trim() ? "pointer" : "not-allowed",
+                flexShrink: 0,
               }}
             >
-              {waiverOpen ? "HIDE FULL WAIVER" : "VIEW FULL WAIVER"}
-            </button>
-
-            {waiverOpen && (
-              <div
-                style={{
-                  border: "1px solid #555",
-                  padding: isMobile ? 14 : 16,
-                  maxHeight: isMobile ? 240 : 300,
-                  overflowY: "auto",
-                  whiteSpace: "pre-wrap",
-                  fontSize: 11,
-                  lineHeight: 1.55,
-                  color: "#d0d0d0",
-                  marginBottom: 8,
-                }}
-              >
-                <div
-                  style={{
-                    marginBottom: 12,
-                    fontSize: 12,
-                    color: "white",
-                    letterSpacing: 1.5,
-                  }}
-                >
-                  {WAIVER_TITLE}
-                </div>
-                {WAIVER_BODY}
-              </div>
-            )}
-
-            <div
-              style={{
-                ...reserveStyle,
-                minHeight: message ? 14 : 0,
-                marginTop: 2,
-                marginBottom: 2,
-              }}
-            >
-              {message}
-            </div>
-
-            <button type="button" onClick={continueFromConsent} style={buttonStyle}>
-              CONTINUE
+              SUBMIT
             </button>
           </div>
-        )}
+        </div>
+      </main>
+    );
+  }
 
-        {validateState === "ready" && step === "form" && (
-          <form onSubmit={onSubmitDetails} style={{ marginTop: 4 }}>
-            <div style={{ ...statusLineStyle, marginBottom: isMobile ? 16 : 10 }}>
-              {">"} COMPLETE CHECK-IN DETAILS.
-            </div>
+  // validating
+  if (appState === "validating") {
+    return (
+      <main
+        style={{
+          ...BASE,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        <div style={{ letterSpacing: 3, color: "#aaa" }}>
+          {">"} VALIDATING TOKEN...
+        </div>
+        <div style={{ letterSpacing: 2, color: "#555", fontSize: 13 }}>
+          {currentCode}
+        </div>
+      </main>
+    );
+  }
 
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="PHONE NUMBER"
-              style={inputStyle}
-            />
+  // confirm
+  if (appState === "confirm" && ticket) {
+    return (
+      <main style={{ ...BASE, padding: "32px 24px", maxWidth: 600, margin: "0 auto" }}>
+        <div style={{ marginBottom: 24, letterSpacing: 3, fontSize: 15 }}>
+          {">"} ENTRY TOKEN VALIDATED
+        </div>
 
-            <input
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              placeholder="GAMER TAG"
-              style={inputStyle}
-            />
-
-            <div
-              style={{
-                position: "relative",
-                marginBottom: isMobile ? 14 : 10,
-              }}
-            >
-              <select
-                value={team}
-                onChange={(e) => setTeam(e.target.value as "black" | "white" | "")}
-                style={{
-                  ...inputStyle,
-                  marginBottom: 0,
-                  appearance: "none",
-                  WebkitAppearance: "none",
-                  MozAppearance: "none",
-                  paddingRight: isMobile ? 56 : 54,
-                  minHeight: isMobile ? undefined : 46,
-                }}
-              >
-                <option value="">TEAM COLOR</option>
-                <option value="black">BLACK</option>
-                <option value="white">WHITE</option>
-              </select>
-
-              <div
-                style={{
-                  position: "absolute",
-                  top: 1,
-                  right: 1,
-                  bottom: 1,
-                  width: isMobile ? 48 : 44,
-                  borderLeft: "1px solid rgba(255,255,255,0.22)",
-                  background: "black",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  pointerEvents: "none",
-                }}
-              >
-                <div
-                  style={{
-                    width: 0,
-                    height: 0,
-                    borderLeft: isMobile
-                      ? "7px solid transparent"
-                      : "6px solid transparent",
-                    borderRight: isMobile
-                      ? "7px solid transparent"
-                      : "6px solid transparent",
-                    borderTop: isMobile ? "9px solid white" : "8px solid white",
-                    opacity: 0.9,
-                  }}
-                />
-              </div>
-            </div>
-
-            <input
-              value={serial}
-              onChange={(e) => setSerial(e.target.value.toUpperCase())}
-              placeholder="FLAG SERIAL NUMBER"
-              style={inputStyle}
-            />
-
-            <div
-              style={{
-                ...reserveStyle,
-                minHeight: message ? 14 : 4,
-                marginTop: 2,
-                marginBottom: isMobile ? 8 : 6,
-              }}
-            >
-              {message}
-            </div>
-
-            <button
-              type="submit"
-              style={buttonStyle}
-              disabled={sendingVerify}
-            >
-              {sendingVerify ? "SENDING..." : "SEND CODE"}
-            </button>
-          </form>
-        )}
-
-        {validateState === "ready" && step === "verify" && (
-          <form onSubmit={completeVerification} style={{ marginTop: 4 }}>
-            <div style={{ ...statusLineStyle, marginBottom: isMobile ? 16 : 10 }}>
-              {">"} ENTER THE CODE SENT TO YOUR PHONE.
-            </div>
-
-            <input
-              value={phone}
-              readOnly
-              style={{
-                ...inputStyle,
-                opacity: 0.72,
-              }}
-            />
-
-            <input
-              value={verifyCode}
-              onChange={(e) => setVerifyCode(e.target.value)}
-              placeholder="VERIFICATION CODE"
-              style={inputStyle}
-            />
-
-            <div
-              style={{
-                ...reserveStyle,
-                minHeight: message ? 14 : 4,
-                marginTop: 2,
-                marginBottom: isMobile ? 8 : 6,
-              }}
-            >
-              {message}
-            </div>
-
-            <button type="submit" style={buttonStyle} disabled={verifying || submitting}>
-              {verifying || submitting ? "VERIFYING..." : "COMPLETE CHECK-IN"}
-            </button>
-          </form>
-        )}
-
-        {validateState === "ready" && step === "success" && (
-          <div style={{ ...statusLineStyle, marginTop: 6, lineHeight: 2 }}>
-            <div>{">"} CHECK-IN COMPLETE.</div>
-            <div>{">"} STAY SAFE.</div>
+        <div
+          style={{
+            marginBottom: 24,
+            letterSpacing: 2,
+            lineHeight: 2.2,
+            fontSize: 13,
+            fontFamily: MONO,
+          }}
+        >
+          <div>
+            <span style={{ color: "#888" }}>CODE:{"   "}</span>
+            {ticket.code}
           </div>
-        )}
-      </div>
-    </main>
-  );
+          <div>
+            <span style={{ color: "#888" }}>TIER:{"   "}</span>
+            {getTier(ticket)}
+          </div>
+          <div>
+            <span style={{ color: "#888" }}>HOLDER: </span>
+            {ticket.holder?.name ?? "(UNKNOWN)"}
+          </div>
+          <div>
+            <span style={{ color: "#888" }}>PHONE:{"  "}</span>
+            {ticket.holder?.phone ?? "(UNKNOWN)"}
+          </div>
+        </div>
+
+        <div
+          style={{
+            border: "1px solid #333",
+            maxHeight: 200,
+            overflowY: "auto",
+            padding: "12px 14px",
+            marginBottom: 20,
+            fontSize: 10,
+            lineHeight: 1.65,
+            color: "#999",
+            whiteSpace: "pre-wrap",
+            fontFamily: MONO,
+          }}
+        >
+          {WAIVER_BODY}
+        </div>
+
+        <label
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 10,
+            marginBottom: 24,
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={waiverChecked}
+            onChange={(e) => setWaiverChecked(e.target.checked)}
+            style={{
+              flexShrink: 0,
+              marginTop: 3,
+              accentColor: "#9ca3af",
+              cursor: "pointer",
+              width: 16,
+              height: 16,
+            }}
+          />
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: 1.5,
+              lineHeight: 1.6,
+              fontFamily: MONO,
+            }}
+          >
+            PARTICIPANT HAS READ AND ACCEPTS THE HOLD-HARMLESS WAIVER
+          </span>
+        </label>
+
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            onClick={completeCheckIn}
+            disabled={!waiverChecked}
+            style={{
+              ...BTN,
+              flex: 1,
+              color: waiverChecked ? "white" : "#444",
+              borderColor: waiverChecked ? "white" : "#444",
+              cursor: waiverChecked ? "pointer" : "not-allowed",
+            }}
+          >
+            COMPLETE CHECK-IN
+          </button>
+          <button
+            onClick={() => setAppState("scanner")}
+            style={{
+              ...BTN,
+              flex: 1,
+              borderColor: "#555",
+              color: "#888",
+            }}
+          >
+            CANCEL
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // success
+  if (appState === "success") {
+    return (
+      <main
+        style={{
+          ...BASE,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 20,
+          padding: "32px 24px",
+        }}
+      >
+        <div style={{ fontSize: 80, lineHeight: 1, color: "#00cc44" }}>✓</div>
+        <div style={{ letterSpacing: 3, color: "#00cc44", fontSize: 14 }}>
+          {">"} CHECK-IN COMPLETE
+        </div>
+        <div style={{ letterSpacing: 2, color: "#666", fontSize: 12 }}>
+          {currentCode}
+        </div>
+        <button
+          onClick={scanNext}
+          style={{
+            ...BTN,
+            borderColor: "#00cc44",
+            color: "#00cc44",
+            marginTop: 8,
+          }}
+        >
+          SCAN NEXT
+        </button>
+        <div style={{ color: "#333", fontSize: 10, letterSpacing: 1.5 }}>
+          AUTO-RETURN IN 3S
+        </div>
+      </main>
+    );
+  }
+
+  // error
+  if (appState === "error") {
+    return (
+      <main
+        style={{
+          ...BASE,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 20,
+          padding: "32px 24px",
+        }}
+      >
+        <div style={{ color: "red", letterSpacing: 3, fontSize: 14 }}>
+          {">"} ERROR
+        </div>
+        <div style={{ color: "red", letterSpacing: 2, fontSize: 13 }}>
+          {errorMessage}
+        </div>
+        <div style={{ color: "#555", fontSize: 12, letterSpacing: 1.5 }}>
+          {currentCode}
+        </div>
+        <button
+          onClick={() => setAppState("scanner")}
+          style={{
+            ...BTN,
+            borderColor: "red",
+            color: "red",
+            marginTop: 8,
+          }}
+        >
+          SCAN ANOTHER
+        </button>
+      </main>
+    );
+  }
+
+  return null;
 }

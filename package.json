@@ -6,22 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "mkdir -p public/zxing-wasm && cp -f node_modules/zxing-wasm/dist/reader/zxing_reader.wasm public/zxing-wasm/zxing_reader.wasm 2>/dev/null || true"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.1.0",
     "@stripe/stripe-js": "^9.0.1",
     "@supabase/supabase-js": "^2.98.0",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "dom-to-image-more": "^3.7.2",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jsbarcode": "^3.12.3",
+    "jsqr": "^1.4.0",
     "next": "16.1.6",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "stripe": "^20.4.1",
-    "twilio": "^5.12.2"
+    "twilio": "^5.12.2",
+    "zxing-wasm": "^3.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
