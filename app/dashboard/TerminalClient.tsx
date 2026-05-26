@@ -1415,20 +1415,24 @@ export default function TerminalClient() {
               flexDirection: "column",
             }}
           >
-            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
-              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
-              <img
-                src="/group-name.png"
-                className="signup-group-name"
-                alt="Signo Research Group"
-              />
-            </div>
-
-            <div
-              className="signup-title signup-title-large"
-              style={generateTitleStyle}
-            >
-              Generate Tokens
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "44px 1fr 44px",
+              alignItems: "center",
+              minHeight: 104,
+              borderBottom: "1px solid rgba(255,255,255,0.62)",
+              marginBottom: 26,
+              flexShrink: 0,
+            }}>
+              <button
+                style={{ background: "none", border: "none", color: "white", fontSize: 22, cursor: "pointer", padding: "0 8px", lineHeight: 1, fontFamily: '"Courier New", monospace' }}
+                onClick={() => { setCheckoutMessage(""); setPurchaseOpen(false); setGaPromoCode(""); setGaPromoValid(null); setGaPromoDiscount(null); }}
+                aria-label="Close"
+              >◀</button>
+              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center", marginBottom: 0 }}>
+                GA TOKENS
+              </span>
+              <div />
             </div>
 
             {isMobile ? (
@@ -1618,6 +1622,37 @@ export default function TerminalClient() {
                   )}
                 </div>
 
+                <div style={{ marginBottom: 22 }}>
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    textAlign: "center",
+                    fontSize: 10,
+                    letterSpacing: 1.8,
+                    marginBottom: 6,
+                  }}>
+                    {([1, 2, 3] as const).map((t) => (
+                      <div key={t} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <span style={{ color: tierColor(t) }}>TIER {t}</span>
+                        <span style={{ color: "#888", fontSize: 9, marginTop: 2 }}>
+                          ${(tierPriceCents(t) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", width: "100%", height: 10, background: "#222" }}>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
+                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
+                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
+                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
                   QUANTITY
                 </div>
@@ -1711,7 +1746,7 @@ export default function TerminalClient() {
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : 300,
+                  width: "100%",
                   maxWidth: "100%",
                   minHeight: 54,
                   lineHeight: 1.02,
@@ -1755,20 +1790,24 @@ export default function TerminalClient() {
               flexDirection: "column",
             }}
           >
-            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
-              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
-              <img
-                src="/group-name.png"
-                className="signup-group-name"
-                alt="Signo Research Group"
-              />
-            </div>
-
-            <div
-              className="signup-title signup-title-large"
-              style={generateTitleStyle}
-            >
-              Generate VIP Tokens
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "44px 1fr 44px",
+              alignItems: "center",
+              minHeight: 104,
+              borderBottom: "1px solid rgba(255,255,255,0.62)",
+              marginBottom: 26,
+              flexShrink: 0,
+            }}>
+              <button
+                style={{ background: "none", border: "none", color: "white", fontSize: 22, cursor: "pointer", padding: "0 8px", lineHeight: 1, fontFamily: '"Courier New", monospace' }}
+                onClick={() => { setCheckoutMessage(""); setVipOpen(false); setVipPromoCode(""); setVipPromoValid(null); setVipPromoDiscount(null); }}
+                aria-label="Close"
+              >◀</button>
+              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center", marginBottom: 0 }}>
+                VIP TOKENS
+              </span>
+              <div />
             </div>
 
             {isMobile ? (
@@ -1787,6 +1826,18 @@ export default function TerminalClient() {
                     <span className="modal-status-text">
                       REMAINING VIP ALLOCATION: {Math.max(0, 50 - vipSold)}
                     </span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">PRIVATE AREA WITH UNOBSTRUCTED VIEW OF THE STAGE.</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">ASTROTURF FLOORING.</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">EXCLUSIVE BAR ACCESS.</span>
                   </div>
                 </div>
 
@@ -1900,6 +1951,18 @@ export default function TerminalClient() {
                       REMAINING VIP ALLOCATION: {Math.max(0, 50 - vipSold)}
                     </span>
                   </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">PRIVATE AREA WITH UNOBSTRUCTED VIEW OF THE STAGE.</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">ASTROTURF FLOORING.</span>
+                  </div>
+                  <div className="modal-status-line">
+                    <span className="modal-status-symbol">{">"}</span>
+                    <span className="modal-status-text">EXCLUSIVE BAR ACCESS.</span>
+                  </div>
                 </div>
 
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
@@ -1995,7 +2058,7 @@ export default function TerminalClient() {
               <button
                 className="cta-button"
                 style={{
-                  width: isMobile ? "100%" : 300,
+                  width: "100%",
                   maxWidth: "100%",
                   minHeight: 54,
                   lineHeight: 1.02,

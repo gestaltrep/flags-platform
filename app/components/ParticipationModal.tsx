@@ -825,7 +825,7 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
                   </div>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
-                    <span className="modal-status-text">PRIVATE ELEVATED AREA WITH UNOBSTRUCTED VIEW OF THE STAGE.</span>
+                    <span className="modal-status-text">PRIVATE AREA WITH UNOBSTRUCTED VIEW OF THE STAGE.</span>
                   </div>
                   <div className="modal-status-line">
                     <span className="modal-status-symbol">{">"}</span>
