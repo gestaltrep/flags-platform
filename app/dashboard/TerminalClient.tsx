@@ -1408,12 +1408,8 @@ export default function TerminalClient() {
       {purchaseOpen && (
         <div className="signup-overlay">
           <div
-            className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
-            style={{
-              ...mobileGenerateModalStyle,
-              display: "flex",
-              flexDirection: "column",
-            }}
+            className="signup-modal signup-modal-request"
+            style={{ display: "flex", flexDirection: "column" }}
           >
             <div style={{
               display: "grid",
@@ -1783,12 +1779,8 @@ export default function TerminalClient() {
       {vipOpen && (
         <div className="signup-overlay">
           <div
-            className={`signup-modal ${isMobile ? "" : "signup-modal-ticket"}`}
-            style={{
-              ...mobileGenerateModalStyle,
-              display: "flex",
-              flexDirection: "column",
-            }}
+            className="signup-modal signup-modal-request"
+            style={{ display: "flex", flexDirection: "column" }}
           >
             <div style={{
               display: "grid",
