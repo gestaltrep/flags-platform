@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { WAIVER_BODY, WAIVER_VERSION } from "@/lib/waiver";
 
 const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
@@ -33,14 +35,19 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const code = String(body.code || "").trim().toUpperCase();
+    const waiverAccepted = body.waiver_accepted === true;
 
     if (!code) {
       return Response.json({ success: false, message: "No code provided." }, { status: 400 });
     }
 
+    if (!waiverAccepted) {
+      return Response.json({ success: false, message: "Waiver not accepted." }, { status: 400 });
+    }
+
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
-      .select("id, code, claimed, refunded_at, event_id")
+      .select("id, code, claimed, refunded_at, event_id, buyer_user_id, claimed_by_user")
       .eq("event_id", EVENT_ID)
       .eq("code", code)
       .maybeSingle();
@@ -75,6 +82,51 @@ export async function POST(req: Request) {
       .from("checkin_tokens")
       .update({ last_used_at: new Date().toISOString() })
       .eq("token", staffToken);
+
+    // Waiver record — write after successful claim; never block entry on audit failure
+    try {
+      const holderId = ticket.claimed_by_user || ticket.buyer_user_id;
+      let holderName: string | null = null;
+      let holderPhone: string | null = null;
+
+      if (holderId) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("name, phone")
+          .eq("id", holderId)
+          .maybeSingle();
+
+        if (userData) {
+          holderName = userData.name ?? null;
+          holderPhone = userData.phone ?? null;
+        }
+      }
+
+      const waiverHash = createHash("sha256").update(WAIVER_BODY).digest("hex");
+
+      const ip =
+        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        req.headers.get("x-real-ip") ||
+        null;
+      const ua = req.headers.get("user-agent") || null;
+
+      await supabase.from("waiver_acceptances").insert({
+        ticket_code_id: ticket.id,
+        ticket_code: ticket.code,
+        event_id: EVENT_ID,
+        user_id: holderId || null,
+        holder_name: holderName,
+        holder_phone: holderPhone,
+        waiver_version: WAIVER_VERSION,
+        waiver_text: WAIVER_BODY,
+        waiver_text_sha256: waiverHash,
+        checked_in_by_token_id: tokenData.id,
+        ip_address: ip,
+        user_agent: ua,
+      });
+    } catch (waiverErr) {
+      console.error("WAIVER INSERT FAILED for ticket", code, waiverErr);
+    }
 
     return Response.json({ success: true, ticket_code: code });
   } catch (err) {
