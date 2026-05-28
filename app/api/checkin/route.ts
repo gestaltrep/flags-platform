@@ -67,15 +67,20 @@ export async function POST(req: Request) {
       return Response.json({ success: false, message: "Ticket already used." }, { status: 409 });
     }
 
-    const { error: ticketUpdateError } = await supabase
+    const { data: claimedRows, error: ticketUpdateError } = await supabase
       .from("ticket_codes")
       .update({ claimed: true, claimed_at: new Date().toISOString() })
       .eq("id", ticket.id)
-      .eq("claimed", false);
+      .eq("claimed", false)
+      .select("id");
 
     if (ticketUpdateError) {
       console.error("Ticket update error:", ticketUpdateError);
       return Response.json({ success: false, message: "Ticket claim failed." }, { status: 500 });
+    }
+
+    if (!claimedRows || claimedRows.length === 0) {
+      return Response.json({ success: false, message: "Ticket already used." }, { status: 409 });
     }
 
     await supabase
