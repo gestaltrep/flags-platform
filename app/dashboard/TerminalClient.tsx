@@ -6,6 +6,7 @@ import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
 import Countdown from "../components/Countdown";
 import { QRCodeSVG } from "qrcode.react";
 import { tierPriceCents, type Tier } from "@/lib/tier";
+import type { Event } from "@/lib/events";
 
 type Ticket = {
   id?: string;
@@ -24,7 +25,7 @@ type Ticket = {
   pending_status?: string | null;
 };
 
-export default function TerminalClient() {
+export default function TerminalClient({ activeEvent }: { activeEvent: Event | null }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -903,7 +904,7 @@ export default function TerminalClient() {
               {!showTierPanel && <span className="cursor">_</span>}
             </div>
 
-            {showTierPanel && (
+            {showTierPanel && !!activeEvent && (
               <div
                 style={{
                   border: "1px solid #888",
@@ -1152,7 +1153,7 @@ export default function TerminalClient() {
                 </div>
               )}
 
-              {showButtons && (
+              {showButtons && !!activeEvent && (
                 <div
                   style={{
                     display: "grid",
@@ -1346,7 +1347,7 @@ export default function TerminalClient() {
                 </div>
               )}
 
-              {showButtons && (
+              {showButtons && !!activeEvent && (
                 <div
                   style={{
                     display: "grid",
@@ -1405,7 +1406,7 @@ export default function TerminalClient() {
         </div>
       )}
 
-      {purchaseOpen && (
+      {purchaseOpen && !!activeEvent && (
         <div className="signup-overlay">
           <div
             className="signup-modal signup-modal-request"
@@ -1776,7 +1777,7 @@ export default function TerminalClient() {
         </div>
       )}
 
-      {vipOpen && (
+      {vipOpen && !!activeEvent && (
         <div className="signup-overlay">
           <div
             className="signup-modal signup-modal-request"

@@ -18,9 +18,10 @@ interface Props {
   step: ParticipationStep;
   onClose: () => void;
   onStepChange: (step: ParticipationStep) => void;
+  isDormant?: boolean;
 }
 
-export default function ParticipationModal({ step, onClose, onStepChange }: Props) {
+export default function ParticipationModal({ step, onClose, onStepChange, isDormant = false }: Props) {
   // Per-tier quantities (preserved across chooser ↔ tier navigation)
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
@@ -55,6 +56,9 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [optInSms, setOptInSms] = useState(false);
+
+  // Dormant opt-in sub-step (used when isDormant && step === "chooser")
+  const [dormantSubStep, setDormantSubStep] = useState<"form" | "otp" | "confirmed">("form");
 
   // Checkout context — captured when GENERATE is clicked
   const [checkoutSourceStep, setCheckoutSourceStep] = useState<"ga" | "vip" | "table">("ga");
@@ -316,6 +320,70 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     }
   }
 
+  // Dormant opt-in: send SMS code (requires name, phone, all consents including SMS)
+  async function sendDormantCode() {
+    setAuthMessage("");
+    if (!name.trim()) { setAuthMessage("Please enter your name."); return; }
+    if (!phone.trim()) { setAuthMessage("Please enter your phone number."); return; }
+    if (!termsChecked) { setAuthMessage("Please agree to the Terms & Conditions."); return; }
+    if (!privacyChecked) { setAuthMessage("Please agree to the Privacy Policy."); return; }
+    if (!optInSms) { setAuthMessage("SMS consent is required to be notified."); return; }
+    setAuthLoading(true);
+    try {
+      const res = await fetch("/api/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim(), name: name.trim(), optInSms: true }),
+      });
+      let data: any = null;
+      try { data = await res.json(); } catch { data = null; }
+      if (!res.ok || !data?.success) {
+        const raw = String(data?.error || "").toLowerCase();
+        if (raw.includes("invalid parameter")) setAuthMessage("SMS is not available right now.");
+        else if (raw.includes("invalid") && raw.includes("phone")) setAuthMessage("This phone number isn't valid.");
+        else setAuthMessage("We couldn't send your code. Please try again.");
+        return;
+      }
+      setOtpCode("");
+      setDormantSubStep("otp");
+    } catch {
+      setAuthMessage("We couldn't send your code. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  // Dormant opt-in: verify SMS code — on success show confirmation (no redirect)
+  async function verifyDormantCode() {
+    setAuthMessage("");
+    if (!otpCode.trim()) { setAuthMessage("Please enter the verification code."); return; }
+    setAuthLoading(true);
+    try {
+      const res = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: name.trim(), optInSms: true }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        if (res.status === 404 && data?.error) {
+          setAuthMessage(data.error);
+        } else {
+          const raw = String(data?.error || "").toLowerCase();
+          if (raw.includes("expired")) setAuthMessage("That code has expired.");
+          else if (raw.includes("incorrect") || raw.includes("invalid")) setAuthMessage("That code is incorrect.");
+          else setAuthMessage("We couldn't verify your code. Please try again.");
+        }
+        return;
+      }
+      setDormantSubStep("confirmed");
+    } catch {
+      setAuthMessage("We couldn't sign you in. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
   function tier1Fill() {
     if (tier > 1) return 1;
     return Math.max(0, Math.min(1, sold / 50));
@@ -538,8 +606,8 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
     <div className="signup-overlay">
       <div className="signup-modal signup-modal-request">
 
-        {/* ── CHOOSER ──────────────────────────────────── */}
-        {step === "chooser" && (
+        {/* ── CHOOSER (active sales) ────────────────────── */}
+        {step === "chooser" && !isDormant && (
           <>
             <div className="signup-header signup-header-home">
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
@@ -556,6 +624,174 @@ export default function ParticipationModal({ step, onClose, onStepChange }: Prop
             </div>
 
             <button className="signup-close" onClick={onClose}>CANCEL</button>
+          </>
+        )}
+
+        {/* ── DORMANT OPT-IN: form ─────────────────────── */}
+        {step === "chooser" && isDormant && dormantSubStep === "form" && (
+          <>
+            <div className="signup-header signup-header-home">
+              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+                alt="Signo Research Group"
+              />
+            </div>
+
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "6%" }}>
+              <input
+                placeholder="NAME"
+                className="signup-input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <input
+                placeholder="PHONE NUMBER"
+                className="signup-input"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                style={{ marginBottom: 22 }}
+              />
+              <label className="signup-checkbox">
+                <input
+                  type="checkbox"
+                  checked={termsChecked}
+                  onChange={(e) => setTermsChecked(e.target.checked)}
+                  style={{
+                    WebkitAppearance: "checkbox",
+                    appearance: "auto",
+                    accentColor: "#9ca3af",
+                    backgroundColor: "transparent",
+                    border: "1px solid rgba(255,255,255,0.8)",
+                    flexShrink: 0,
+                    alignSelf: "flex-start",
+                    marginTop: 3,
+                  }}
+                />
+                <span>I agree to the <a href="/terms">Terms &amp; Conditions</a></span>
+              </label>
+              <label className="signup-checkbox">
+                <input
+                  type="checkbox"
+                  checked={privacyChecked}
+                  onChange={(e) => setPrivacyChecked(e.target.checked)}
+                  style={{
+                    WebkitAppearance: "checkbox",
+                    appearance: "auto",
+                    accentColor: "#9ca3af",
+                    backgroundColor: "transparent",
+                    border: "1px solid rgba(255,255,255,0.8)",
+                    flexShrink: 0,
+                    alignSelf: "flex-start",
+                    marginTop: 3,
+                  }}
+                />
+                <span>I agree to the <a href="/privacy">Privacy Policy</a></span>
+              </label>
+              <label className="signup-checkbox">
+                <input
+                  type="checkbox"
+                  checked={optInSms}
+                  onChange={(e) => setOptInSms(e.target.checked)}
+                  style={{
+                    WebkitAppearance: "checkbox",
+                    appearance: "auto",
+                    accentColor: "#9ca3af",
+                    backgroundColor: "transparent",
+                    border: "1px solid rgba(255,255,255,0.8)",
+                    flexShrink: 0,
+                    alignSelf: "flex-start",
+                    marginTop: 3,
+                  }}
+                />
+                <span>
+                  I agree to receive recurring text messages from Signo Research Group about events, updates, and announcements. Msg frequency varies. Msg &amp; data rates may apply. Reply STOP to cancel.
+                </span>
+              </label>
+            </div>
+
+            {authMessageSlot}
+
+            <div className="signup-request-button-wrap" style={{ paddingTop: 0 }}>
+              <button
+                className="cta-button modal-primary-button"
+                onClick={sendDormantCode}
+                disabled={authLoading}
+              >
+                {authLoading ? "SENDING..." : "SEND CODE"}
+              </button>
+            </div>
+
+            <button className="signup-close" onClick={onClose}>CANCEL</button>
+          </>
+        )}
+
+        {/* ── DORMANT OPT-IN: otp ──────────────────────── */}
+        {step === "chooser" && isDormant && dormantSubStep === "otp" && (
+          <>
+            <div className="signup-header signup-header-home">
+              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+                alt="Signo Research Group"
+              />
+            </div>
+
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "20%" }}>
+              <input
+                placeholder="6 DIGIT CODE"
+                className="signup-input"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                style={{ marginBottom: 0 }}
+              />
+            </div>
+
+            {authMessageSlot}
+
+            <div className="signup-request-button-wrap">
+              <button
+                className="cta-button modal-primary-button"
+                onClick={verifyDormantCode}
+                disabled={authLoading}
+              >
+                {authLoading ? "VERIFYING..." : "VERIFY"}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── DORMANT OPT-IN: confirmed ─────────────────── */}
+        {step === "chooser" && isDormant && dormantSubStep === "confirmed" && (
+          <>
+            <div className="signup-header signup-header-home">
+              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+                alt="Signo Research Group"
+              />
+            </div>
+
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: 18 }}>
+              <div className="signup-title signup-title-large" style={{ marginBottom: 0 }}>
+                INITIATION COMPLETE.
+              </div>
+              <div style={{
+                color: "#888",
+                fontFamily: '"Courier New", monospace',
+                fontSize: 12,
+                letterSpacing: 1.5,
+                lineHeight: 1.6,
+                maxWidth: 280,
+              }}>
+                YOU'LL BE NOTIFIED WHEN THE NEXT INITIATION OPENS.
+              </div>
+            </div>
+
+            <button className="signup-close" onClick={onClose}>CLOSE</button>
           </>
         )}
 
