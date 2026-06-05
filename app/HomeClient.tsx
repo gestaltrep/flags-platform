@@ -268,20 +268,20 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
                 pointerEvents: "none",
                 zIndex: 10,
               }}>
-                <div style={{ height: 1, background: "white" }} />
+                <div style={{ height: 1, background: "#888" }} />
                 <div style={{ background: "rgba(0,0,0,0.82)", padding: "22px 0", textAlign: "center" }}>
                   <span style={{
                     color: "white",
                     fontFamily: "Arial, Helvetica, sans-serif",
                     fontWeight: 900,
                     fontSize: 36,
-                    letterSpacing: "0.15em",
+                    letterSpacing: "0.02em",
                     textTransform: "uppercase",
                   }}>
                     INITIATION COMPLETE
                   </span>
                 </div>
-                <div style={{ height: 1, background: "white" }} />
+                <div style={{ height: 1, background: "#888" }} />
               </div>
             )}
           </div>
@@ -366,20 +366,20 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
               pointerEvents: "none",
               zIndex: 10,
             }}>
-              <div style={{ height: 1, background: "white" }} />
+              <div style={{ height: 1, background: "#888" }} />
               <div style={{ background: "rgba(0,0,0,0.82)", padding: "14px 0", textAlign: "center" }}>
                 <span style={{
                   color: "white",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 900,
                   fontSize: 22,
-                  letterSpacing: "0.12em",
+                  letterSpacing: "0.02em",
                   textTransform: "uppercase",
                 }}>
                   INITIATION COMPLETE
                 </span>
               </div>
-              <div style={{ height: 1, background: "white" }} />
+              <div style={{ height: 1, background: "#888" }} />
             </div>
           )}
         </div>
