@@ -269,7 +269,7 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
                 zIndex: 10,
               }}>
                 <div style={{ height: 1, background: "white" }} />
-                <div style={{ background: "black", padding: "22px 0", textAlign: "center" }}>
+                <div style={{ background: "rgba(0,0,0,0.82)", padding: "22px 0", textAlign: "center" }}>
                   <span style={{
                     color: "white",
                     fontFamily: "Arial, Helvetica, sans-serif",
@@ -367,7 +367,7 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
               zIndex: 10,
             }}>
               <div style={{ height: 1, background: "white" }} />
-              <div style={{ background: "black", padding: "14px 0", textAlign: "center" }}>
+              <div style={{ background: "rgba(0,0,0,0.82)", padding: "14px 0", textAlign: "center" }}>
                 <span style={{
                   color: "white",
                   fontFamily: "Arial, Helvetica, sans-serif",
