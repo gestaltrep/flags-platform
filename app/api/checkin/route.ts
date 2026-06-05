@@ -2,8 +2,6 @@ import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { WAIVER_BODY, WAIVER_VERSION } from "@/lib/waiver";
 
-const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
-
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -48,7 +46,6 @@ export async function POST(req: Request) {
     const { data: ticket, error: ticketError } = await supabase
       .from("ticket_codes")
       .select("id, code, claimed, refunded_at, event_id, buyer_user_id, claimed_by_user")
-      .eq("event_id", EVENT_ID)
       .eq("code", code)
       .maybeSingle();
 
@@ -118,7 +115,7 @@ export async function POST(req: Request) {
       await supabase.from("waiver_acceptances").insert({
         ticket_code_id: ticket.id,
         ticket_code: ticket.code,
-        event_id: EVENT_ID,
+        event_id: ticket.event_id,
         user_id: holderId || null,
         holder_name: holderName,
         holder_phone: holderPhone,

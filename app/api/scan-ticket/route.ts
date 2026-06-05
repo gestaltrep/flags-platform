@@ -1,7 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 
-const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
-
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -40,7 +38,6 @@ export async function POST(req: Request) {
     const { data: ticket, error } = await supabase
       .from("ticket_codes")
       .select("id, code, claimed, refunded_at, buyer_user_id, claimed_by_user, is_vip, is_table, event_id")
-      .eq("event_id", EVENT_ID)
       .eq("code", code)
       .maybeSingle();
 

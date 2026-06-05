@@ -1,15 +1,23 @@
 import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { getActiveSalesEvent } from "@/lib/events";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
 
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get("user_id")?.value;
     if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+    const event = await getActiveSalesEvent();
+    if (!event) {
+      return Response.json(
+        { error: "No event currently on sale." },
+        { status: 400 }
+      );
+    }
 
     const body = await req.json().catch(() => ({}));
     const quantity = Math.max(1, Math.min(10, Number(body.quantity || 1)));
@@ -23,7 +31,7 @@ export async function POST(req: Request) {
     const { count } = await supabase
       .from("ticket_codes")
       .select("*", { count: "exact", head: true })
-      .eq("event_id", EVENT_ID)
+      .eq("event_id", event.id)
       .eq("is_vip", true)
       .not("buyer_user_id", "is", null)
       .is("refunded_at", null);
@@ -88,7 +96,7 @@ export async function POST(req: Request) {
         user_id: userId,
         quantity: String(quantity),
         is_vip: "true",
-        event_id: EVENT_ID,
+        event_id: event.id,
         promo_code_id: promoCodeId ?? "",
         discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * discountPercent / 100) : 0),
       },

@@ -7,8 +7,6 @@ import crypto from "crypto";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
-
 function makeCode() {
   return crypto.randomBytes(3).toString("hex").toUpperCase();
 }
@@ -65,7 +63,11 @@ export async function POST(req: Request) {
     const quantity = parseInt(paymentIntent.metadata?.quantity || "1", 10);
     const isVip = paymentIntent.metadata?.is_vip === "true";
     const isTable = paymentIntent.metadata?.is_table === "true";
-    const eventId = paymentIntent.metadata?.event_id || EVENT_ID;
+    const eventId = paymentIntent.metadata?.event_id;
+    if (!eventId) {
+      console.error("stripe-webhook: PaymentIntent missing event_id metadata", paymentIntent.id);
+      return new Response("Missing event_id in PaymentIntent metadata", { status: 400 });
+    }
     const promoCodeId = paymentIntent.metadata?.promo_code_id || "";
     const discountApplied = Number(paymentIntent.metadata?.discount_applied ?? 0);
 

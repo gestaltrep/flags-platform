@@ -1,9 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { calculateTier, TIER_TWO_TRIGGER } from "@/lib/tier";
-
-const EVENT_ID = "d61cd74b-a259-4c80-b280-446850b4723b";
+import { getActiveSalesEvent } from "@/lib/events";
 
 export async function GET() {
+  const event = await getActiveSalesEvent();
+  if (!event) {
+    return Response.json({ tier: 1, sold: 0, vipSold: 0, generalSoldOut: false, vipSoldOut: false, tierStartedAtSold: 0 });
+  }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -12,7 +16,7 @@ export async function GET() {
   const { count: gaCount } = await supabase
     .from("ticket_codes")
     .select("*", { count: "exact", head: true })
-    .eq("event_id", EVENT_ID)
+    .eq("event_id", event.id)
     .eq("is_vip", false)
     .eq("comp", false)
     .not("buyer_user_id", "is", null)
@@ -21,7 +25,7 @@ export async function GET() {
   const { count: vipCount } = await supabase
     .from("ticket_codes")
     .select("*", { count: "exact", head: true })
-    .eq("event_id", EVENT_ID)
+    .eq("event_id", event.id)
     .eq("is_vip", true)
     .eq("comp", false)
     .not("buyer_user_id", "is", null)
@@ -37,7 +41,7 @@ export async function GET() {
     const { count: preTriggerSold } = await supabase
       .from("ticket_codes")
       .select("*", { count: "exact", head: true })
-      .eq("event_id", EVENT_ID)
+      .eq("event_id", event.id)
       .eq("is_vip", false)
       .eq("comp", false)
       .not("buyer_user_id", "is", null)
