@@ -152,7 +152,7 @@ export default async function RecordsPage() {
                   flexShrink: 0,
                 }}
               >
-                {count > 0 ? `${count} RECORDS` : "RECORDS PENDING"}
+                {count > 0 ? `${count} RECORD${count === 1 ? "" : "S"}` : "RECORDS PENDING"}
               </div>
             </div>
           </Link>
