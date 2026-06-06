@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function UnauthorizedTerminalClient() {
+export default function UnauthorizedTerminalClient({ title = "Terminal" }: { title?: string }) {
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   const [showFinalBlock, setShowFinalBlock] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
@@ -110,7 +110,7 @@ export default function UnauthorizedTerminalClient() {
               marginBottom: 24,
             }}
           >
-            Terminal
+            {title}
           </div>
 
           <div
@@ -160,7 +160,7 @@ export default function UnauthorizedTerminalClient() {
               marginBottom: 16,
             }}
           >
-            Terminal
+            {title}
           </div>
 
           <div

@@ -36,7 +36,7 @@ export default async function RecordDetailPage({
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_id")?.value;
 
-  if (!userId) return <UnauthorizedTerminalClient />;
+  if (!userId) return <UnauthorizedTerminalClient title="Records" />;
 
   const resolvedParams = await params;
   const eventSlug = resolvedParams["event-slug"];
@@ -127,7 +127,7 @@ export default async function RecordDetailPage({
             marginBottom: 4,
           }}
         >
-          <span>{event.name.toUpperCase()}</span>
+          <span>{event.name}</span>
           {event.status === "archived" && (
             <span style={{ color: "#555", fontSize: 10, letterSpacing: 1.5 }}>
               ARCHIVED

@@ -1155,7 +1155,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   <div key={group.event.id} style={{ marginBottom: 28 }}>
                     <div style={{ height: 1, background: '#333', marginBottom: 8 }} />
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, marginBottom: 4 }}>
-                      <span>{group.event.name.toUpperCase()}</span>
+                      <span>{group.event.name}</span>
                       <span style={{ color: '#555', fontSize: isCompactDesktop ? 11 : 10 }}>ARCHIVED</span>
                     </div>
                     <div style={{ fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 11 : 10, letterSpacing: 1.5, color: '#555', marginBottom: group.event.headliner ? 2 : 8 }}>
@@ -1326,7 +1326,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                     <div key={group.event.id} style={{ marginBottom: 28 }}>
                       <div style={{ height: 1, background: '#333', marginBottom: 8 }} />
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, marginBottom: 4 }}>
-                        <span>{group.event.name.toUpperCase()}</span>
+                        <span>{group.event.name}</span>
                         <span style={{ color: '#555', fontSize: 10 }}>ARCHIVED</span>
                       </div>
                       <div style={{ fontFamily: '"Courier New", monospace', fontSize: 10, letterSpacing: 1.5, color: '#555', marginBottom: group.event.headliner ? 2 : 8 }}>

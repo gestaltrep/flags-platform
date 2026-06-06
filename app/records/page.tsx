@@ -18,7 +18,7 @@ export default async function RecordsPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_id")?.value;
 
-  if (!userId) return <UnauthorizedTerminalClient />;
+  if (!userId) return <UnauthorizedTerminalClient title="Records" />;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -113,7 +113,7 @@ export default async function RecordsPage() {
                     marginBottom: 5,
                   }}
                 >
-                  {event.name.toUpperCase()}
+                  {event.name}
                 </div>
                 <div
                   style={{
