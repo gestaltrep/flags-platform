@@ -12,6 +12,7 @@ export type Event = {
   slug: string;
   name: string;
   location: string | null;
+  headliner: string | null;
   start_time: string | null;
   end_time: string | null;
   hero_image: string | null;

@@ -28,6 +28,7 @@ type Ticket = {
     slug: string;
     name: string;
     location: string | null;
+    headliner: string | null;
     start_time: string | null;
     end_time: string | null;
     status: string;
@@ -1075,7 +1076,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                           style={{ background: 'none', border: 'none', color: '#666', fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0 }}
                           onClick={() => setViewMode('archive')}
                         >
-                          {">"} VIEW PAST INITIATIONS
+                          {">"} VIEW ARCHIVE
                         </button>
                       </div>
                     )}
@@ -1137,7 +1138,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                     style={{ background: 'none', border: 'none', color: '#555', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginTop: 22 }}
                     onClick={() => setViewMode('archive')}
                   >
-                    {">"} VIEW PAST INITIATIONS
+                    {">"} VIEW ARCHIVE
                   </button>
                 )}
               </div>
@@ -1158,7 +1159,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                       <span style={{ color: '#555', fontSize: isCompactDesktop ? 11 : 10 }}>ARCHIVED</span>
                     </div>
                     <div style={{ fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 11 : 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
-                      {formatEventDate(group.event.start_time)}{group.event.location ? ` · ${group.event.location}` : ''}
+                      {formatEventDate(group.event.start_time)}{group.event.headliner ? ` · ${group.event.headliner}` : ''}
                     </div>
                     <div style={{ height: 1, background: '#333', marginBottom: 18 }} />
                     <div style={mobileEntryCardGridStyle}>
@@ -1246,7 +1247,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                             style={{ background: 'none', border: 'none', color: '#666', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0 }}
                             onClick={() => setViewMode('archive')}
                           >
-                            {">"} VIEW PAST INITIATIONS
+                            {">"} VIEW ARCHIVE
                           </button>
                         </div>
                       )}
@@ -1303,7 +1304,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                       style={{ background: 'none', border: 'none', color: '#555', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginTop: 20 }}
                       onClick={() => setViewMode('archive')}
                     >
-                      {">"} VIEW PAST INITIATIONS
+                      {">"} VIEW ARCHIVE
                     </button>
                   )}
                 </>
@@ -1324,7 +1325,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                         <span style={{ color: '#555', fontSize: 10 }}>ARCHIVED</span>
                       </div>
                       <div style={{ fontFamily: '"Courier New", monospace', fontSize: 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
-                        {formatEventDate(group.event.start_time)}{group.event.location ? ` · ${group.event.location}` : ''}
+                        {formatEventDate(group.event.start_time)}{group.event.headliner ? ` · ${group.event.headliner}` : ''}
                       </div>
                       <div style={{ height: 1, background: '#333', marginBottom: 14 }} />
                       <div style={mobileEntryCardGridStyle}>
