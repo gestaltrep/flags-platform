@@ -23,6 +23,15 @@ type Ticket = {
   pending_transfer_id?: string | null;
   pending_recipient_phone?: string | null;
   pending_status?: string | null;
+  event?: {
+    id: string;
+    slug: string;
+    name: string;
+    location: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    status: string;
+  } | null;
 };
 
 export default function TerminalClient({ activeEvent }: { activeEvent: Event | null }) {
@@ -70,6 +79,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
   const [sendCopiedTicketId, setSendCopiedTicketId] = useState<string | null>(null);
   const [cancellingTicketId, setCancellingTicketId] = useState<string | null>(null);
   const [sendModalTicket, setSendModalTicket] = useState<Ticket | null>(null);
+  const [viewMode, setViewMode] = useState<'current' | 'archive'>('current');
 
   const timeoutIdsRef = useRef<number[]>([]);
   const gaPromoTimer = useRef<number | null>(null);
@@ -97,8 +107,27 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
   const isMobile = viewportWidth < 900;
   const isCompactDesktop = !isMobile && viewportWidth >= 1180 && viewportWidth <= 1550;
 
+  const currentTickets = tickets.filter(t => {
+    const s = t.event?.status;
+    return !s || s === 'upcoming' || s === 'live' || s === 'draft';
+  });
+  const archivedTickets = tickets.filter(t => {
+    const s = t.event?.status;
+    return s === 'archived' || s === 'locked';
+  });
+  type ArchiveGroup = { event: NonNullable<Ticket['event']>; tickets: Ticket[] };
+  const archivedEventGroups: ArchiveGroup[] = Object.values(
+    archivedTickets.reduce<Record<string, ArchiveGroup>>((acc, t) => {
+      const ev = t.event;
+      if (!ev) return acc;
+      if (!acc[ev.id]) acc[ev.id] = { event: ev, tickets: [] };
+      acc[ev.id].tickets.push(t);
+      return acc;
+    }, {})
+  ).sort((a, b) => (b.event.start_time ?? '').localeCompare(a.event.start_time ?? ''));
+
   const isDesktopEmptyWallet =
-    !isMobile && showEntrySection && !loadingTickets && tickets.length === 0;
+    !isMobile && showEntrySection && !loadingTickets && currentTickets.length === 0;
 
   async function loadTickets() {
     try {
@@ -241,6 +270,11 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
 
   function vipProgressPercent() {
     return Math.max(0, Math.min(100, (vipSold / 50) * 100));
+  }
+
+  function formatEventDate(iso: string | null): string {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
 
@@ -1015,173 +1049,143 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                 marginBottom: 16,
               }}
             >
-              Entry Tokens
+              {viewMode === 'archive' ? 'Archive' : 'Entry Tokens'}
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                minHeight: isDesktopEmptyWallet ? (isCompactDesktop ? 210 : 190) : undefined,
-              }}
-            >
-              {!showEntrySection && (
-                <div
-                  style={{
-                    fontSize: isCompactDesktop ? 15 : 14,
-                    letterSpacing: 2,
-                    marginBottom: 18,
-                  }}
-                >
-                  Loading...
-                </div>
-              )}
+            {viewMode === 'current' ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: isDesktopEmptyWallet ? (isCompactDesktop ? 210 : 190) : undefined,
+                }}
+              >
+                {!showEntrySection && (
+                  <div style={{ fontSize: isCompactDesktop ? 15 : 14, letterSpacing: 2, marginBottom: 18 }}>
+                    Loading...
+                  </div>
+                )}
 
-              {showEntrySection && !loadingTickets && tickets.length === 0 && (
-                <div
-                  style={{
-                    fontSize: isCompactDesktop ? 15 : 14,
-                    letterSpacing: 2,
-                    marginBottom: 18,
-                  }}
-                >
-                  {">"} USER HAS NO ENTRY TOKENS
-                </div>
-              )}
-
-              {showEntrySection && tickets.length > 0 && (
-                <div
-                  style={{
-                    fontSize: isCompactDesktop ? 13 : 12,
-                    letterSpacing: 2,
-                    lineHeight: 1.8,
-                    marginBottom: 18,
-                    color: "#c8c8c8",
-                  }}
-                >
-                  <div>{">"} TOKENS REGISTERED TO USER</div>
-                  <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
-                </div>
-              )}
-
-              {showEntrySection && !loadingTickets && tickets.length > 0 && (
-                <div style={mobileEntryCardGridStyle}>
-                  {tickets.map((ticket, index) => {
-                    const isVip = ticket.is_vip || ticket.vip;
-                    const isTable = ticket.is_table;
-                    const isUsed = !!ticket.claimed;
-                    const isPending = !!ticket.can_cancel;
-                    const isRefunded = !!ticket.refunded_at;
-
-                    return (
-                      <div
-                        key={ticket.id || index}
-                        style={mobileEntryCardStyle}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 12,
-                            fontSize: desktopCardMetaFont,
-                            letterSpacing: 2,
-                          }}
+                {showEntrySection && !loadingTickets && currentTickets.length === 0 && (
+                  <div style={{ fontSize: isCompactDesktop ? 15 : 14, letterSpacing: 2, marginBottom: 18 }}>
+                    {">"} USER HAS NO ENTRY TOKENS
+                    {archivedTickets.length > 0 && (
+                      <div style={{ marginTop: 14 }}>
+                        <button
+                          style={{ background: 'none', border: 'none', color: '#666', fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0 }}
+                          onClick={() => setViewMode('archive')}
                         >
-                          <span>{isTable ? (
-                            <span style={{ color: '#ff3333', fontWeight: 'bold' }}>VIP TABLE</span>
-                          ) : isVip ? (
-                            <span>VIP</span>
-                          ) : (
-                            <span>GA</span>
-                          )}</span>
-                          <span style={{ color: (isRefunded || isUsed) ? "#888" : "#fff" }}>
-                            {isRefunded ? "REFUNDED" : isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
-                          </span>
-                        </div>
-
-                        <QRCodeSVG
-                          value={`${qrBase}/checkin?code=${ticket.code}`}
-                          size={desktopQrSize}
-                          marginSize={1}
-                          style={{ opacity: isRefunded ? 0.35 : 1 }}
-                        />
-
-                        <div
-                          style={{
-                            marginTop: 10,
-                            fontSize: desktopCardMetaFont,
-                            letterSpacing: 2,
-                            color: "#b8b8b8",
-                          }}
-                        >
-                          TOKEN CODE
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: desktopCardCodeFont,
-                            letterSpacing: 2,
-                            marginTop: 4,
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {ticket.code}
-                        </div>
-
-                        {(ticket.can_send || ticket.can_cancel) && !isUsed && !isRefunded && ticket.id && (
-                          <button
-                            style={sendTriggerStyle}
-                            onClick={() => openSendModal(ticket)}
-                          >
-                            {ticket.can_cancel ? "VIEW CLAIM LINK" : "SEND TOKEN"}
-                          </button>
-                        )}
-
-                        {ticket.can_cancel && !isUsed && ticket.id && (
-                          <button
-                            style={cancelTriggerStyle}
-                            onClick={() => cancelSend(ticket.id!)}
-                            disabled={cancellingTicketId === ticket.id}
-                          >
-                            {cancellingTicketId === ticket.id ? "CANCELLING..." : "CANCEL SEND"}
-                          </button>
-                        )}
+                          {">"} VIEW PAST INITIATIONS
+                        </button>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
 
-              {showButtons && !!activeEvent && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `${desktopRightWidth}px`,
-                    gap: 18,
-                    maxWidth: desktopRightWidth,
-                    marginTop: isDesktopEmptyWallet ? "auto" : 0,
-                  }}
+                {showEntrySection && currentTickets.length > 0 && (
+                  <div style={{ fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, lineHeight: 1.8, marginBottom: 18, color: "#c8c8c8" }}>
+                    <div>{">"} TOKENS REGISTERED TO USER</div>
+                    <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
+                  </div>
+                )}
+
+                {showEntrySection && !loadingTickets && currentTickets.length > 0 && (
+                  <div style={mobileEntryCardGridStyle}>
+                    {currentTickets.map((ticket, index) => {
+                      const isVip = ticket.is_vip || ticket.vip;
+                      const isTable = ticket.is_table;
+                      const isUsed = !!ticket.claimed;
+                      const isPending = !!ticket.can_cancel;
+                      const isRefunded = !!ticket.refunded_at;
+
+                      return (
+                        <div key={ticket.id || index} style={mobileEntryCardStyle}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, fontSize: desktopCardMetaFont, letterSpacing: 2 }}>
+                            <span>{isTable ? <span style={{ color: '#ff3333', fontWeight: 'bold' }}>VIP TABLE</span> : isVip ? <span>VIP</span> : <span>GA</span>}</span>
+                            <span style={{ color: (isRefunded || isUsed) ? "#888" : "#fff" }}>
+                              {isRefunded ? "REFUNDED" : isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
+                            </span>
+                          </div>
+                          <QRCodeSVG value={`${qrBase}/checkin?code=${ticket.code}`} size={desktopQrSize} marginSize={1} style={{ opacity: isRefunded ? 0.35 : 1 }} />
+                          <div style={{ marginTop: 10, fontSize: desktopCardMetaFont, letterSpacing: 2, color: "#b8b8b8" }}>TOKEN CODE</div>
+                          <div style={{ fontSize: desktopCardCodeFont, letterSpacing: 2, marginTop: 4, wordBreak: "break-word" }}>{ticket.code}</div>
+                          {(ticket.can_send || ticket.can_cancel) && !isUsed && !isRefunded && ticket.id && (
+                            <button style={sendTriggerStyle} onClick={() => openSendModal(ticket)}>
+                              {ticket.can_cancel ? "VIEW CLAIM LINK" : "SEND TOKEN"}
+                            </button>
+                          )}
+                          {ticket.can_cancel && !isUsed && ticket.id && (
+                            <button style={cancelTriggerStyle} onClick={() => cancelSend(ticket.id!)} disabled={cancellingTicketId === ticket.id}>
+                              {cancellingTicketId === ticket.id ? "CANCELLING..." : "CANCEL SEND"}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {showButtons && !!activeEvent && (
+                  <div style={{ display: "grid", gridTemplateColumns: `${desktopRightWidth}px`, gap: 18, maxWidth: desktopRightWidth, marginTop: isDesktopEmptyWallet ? "auto" : 0 }}>
+                    <button className="cta-button" style={actionButtonStyle} onClick={() => setPurchaseOpen(true)}>GA TOKENS</button>
+                    <button className="cta-button" style={actionButtonStyle} onClick={() => setVipOpen(true)}>VIP TOKENS</button>
+                  </div>
+                )}
+
+                {showEntrySection && archivedTickets.length > 0 && currentTickets.length > 0 && (
+                  <button
+                    style={{ background: 'none', border: 'none', color: '#555', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginTop: 22 }}
+                    onClick={() => setViewMode('archive')}
+                  >
+                    {">"} VIEW PAST INITIATIONS
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div>
+                <button
+                  style={{ background: 'none', border: 'none', color: '#888', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginBottom: 24, display: 'block' }}
+                  onClick={() => setViewMode('current')}
                 >
-                  <button
-                    className="cta-button"
-                    style={actionButtonStyle}
-                    onClick={() => setPurchaseOpen(true)}
-                  >
-                    GA TOKENS
-                  </button>
+                  {"← BACK TO TERMINAL"}
+                </button>
 
-                  <button
-                    className="cta-button"
-                    style={actionButtonStyle}
-                    onClick={() => setVipOpen(true)}
-                  >
-                    VIP TOKENS
-                  </button>
-
-                </div>
-              )}
-            </div>
+                {archivedEventGroups.map((group) => (
+                  <div key={group.event.id} style={{ marginBottom: 28 }}>
+                    <div style={{ height: 1, background: '#333', marginBottom: 8 }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, marginBottom: 4 }}>
+                      <span>{group.event.name.toUpperCase()}</span>
+                      <span style={{ color: '#555', fontSize: isCompactDesktop ? 11 : 10 }}>ARCHIVED</span>
+                    </div>
+                    <div style={{ fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 11 : 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
+                      {formatEventDate(group.event.start_time)}{group.event.location ? ` · ${group.event.location}` : ''}
+                    </div>
+                    <div style={{ height: 1, background: '#333', marginBottom: 18 }} />
+                    <div style={mobileEntryCardGridStyle}>
+                      {group.tickets.map((ticket, index) => {
+                        const isVip = ticket.is_vip || ticket.vip;
+                        const isTable = ticket.is_table;
+                        const isClaimed = !!ticket.claimed;
+                        const isRefunded = !!ticket.refunded_at;
+                        const statusLabel = isRefunded ? 'REFUNDED' : isClaimed ? 'ENTERED' : 'UNUSED';
+                        return (
+                          <div key={ticket.id || index} style={{ ...mobileEntryCardStyle, filter: 'grayscale(1)', opacity: 0.72, position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: 6, right: 8, fontFamily: '"Courier New", monospace', fontSize: 8, letterSpacing: 1.5, color: '#555' }}>ARCHIVED</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, fontSize: desktopCardMetaFont, letterSpacing: 2, paddingRight: 54 }}>
+                              <span>{isTable ? 'VIP TABLE' : isVip ? 'VIP' : 'GA'}</span>
+                              <span style={{ color: '#666' }}>{statusLabel}</span>
+                            </div>
+                            <QRCodeSVG value={`${qrBase}/checkin?code=${ticket.code}`} size={desktopQrSize} marginSize={1} />
+                            <div style={{ marginTop: 10, fontSize: desktopCardMetaFont, letterSpacing: 2, color: '#666' }}>TOKEN CODE</div>
+                            <div style={{ fontSize: desktopCardCodeFont, letterSpacing: 2, marginTop: 4, wordBreak: 'break-word' }}>{ticket.code}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -1222,184 +1226,133 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
 
           {showEntrySection && (
             <>
-              <div
-                style={{
-                  fontSize: 20,
-                  letterSpacing: 3.2,
-                  marginBottom: 10,
-                }}
-              >
-                Entry Tokens
+              <div style={{ fontSize: 20, letterSpacing: 3.2, marginBottom: 10 }}>
+                {viewMode === 'archive' ? 'Archive' : 'Entry Tokens'}
               </div>
 
-              {tickets.length > 0 ? (
-                <div
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: 2,
-                    lineHeight: 1.7,
-                    marginBottom: 12,
-                  }}
-                >
-                  <div>{">"} TOKENS REGISTERED TO USER</div>
-                  <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
-                </div>
-              ) : !loadingTickets ? (
-                <div
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: 2,
-                    lineHeight: 1.7,
-                    marginBottom: 12,
-                  }}
-                >
-                  <div>{">"} USER HAS NO ENTRY TOKENS</div>
-                </div>
-              ) : null}
-
-              {!loadingTickets && tickets.length > 0 && (
-                <div style={mobileEntryCardGridStyle}>
-                  {tickets.map((ticket, index) => {
-                    const isVip = ticket.is_vip || ticket.vip;
-                    const isTable = ticket.is_table;
-                    const isUsed = !!ticket.claimed;
-                    const isPending = !!ticket.can_cancel;
-                    const isRefunded = !!ticket.refunded_at;
-
-                    return (
-                      <div
-                        key={ticket.id || index}
-                        style={mobileEntryCardStyle}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 8,
-                            fontSize: 10,
-                            letterSpacing: 1.8,
-                          }}
-                        >
-                          <span>{isTable ? (
-                            <span style={{ color: '#ff3333', fontWeight: 'bold' }}>VIP TABLE</span>
-                          ) : isVip ? (
-                            <span>VIP</span>
-                          ) : (
-                            <span>GA</span>
-                          )}</span>
-                          <span style={{ color: (isRefunded || isUsed) ? "#888" : "#fff" }}>
-                            {isRefunded ? "REFUNDED" : isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
-                          </span>
-                        </div>
-
-                        <div style={{ display: "flex", justifyContent: "center", opacity: isRefunded ? 0.35 : 1 }}>
-                          <QRCodeSVG
-                            value={`${qrBase}/checkin?code=${ticket.code}`}
-                            size={110}
-                            marginSize={1}
-                          />
-                        </div>
-
-                        <div
-                          style={{
-                            marginTop: 8,
-                            fontSize: 9,
-                            letterSpacing: 1.8,
-                            color: "#b8b8b8",
-                          }}
-                        >
-                          TOKEN CODE
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: 13,
-                            letterSpacing: 1.6,
-                            marginTop: 4,
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {ticket.code}
-                        </div>
-
-                        {(ticket.can_send || ticket.can_cancel) && !isUsed && !isRefunded && ticket.id && (
+              {viewMode === 'current' ? (
+                <>
+                  {currentTickets.length > 0 ? (
+                    <div style={{ fontSize: 11, letterSpacing: 2, lineHeight: 1.7, marginBottom: 12 }}>
+                      <div>{">"} TOKENS REGISTERED TO USER</div>
+                      <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
+                    </div>
+                  ) : !loadingTickets ? (
+                    <div style={{ fontSize: 11, letterSpacing: 2, lineHeight: 1.7, marginBottom: 12 }}>
+                      <div>{">"} USER HAS NO ENTRY TOKENS</div>
+                      {archivedTickets.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
                           <button
-                            style={sendTriggerStyle}
-                            onClick={() => openSendModal(ticket)}
+                            style={{ background: 'none', border: 'none', color: '#666', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0 }}
+                            onClick={() => setViewMode('archive')}
                           >
-                            {ticket.can_cancel ? "VIEW CLAIM LINK" : "SEND TOKEN"}
+                            {">"} VIEW PAST INITIATIONS
                           </button>
-                        )}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
 
-                        {ticket.can_cancel && !isUsed && ticket.id && (
-                          <button
-                            style={cancelTriggerStyle}
-                            onClick={() => cancelSend(ticket.id!)}
-                            disabled={cancellingTicketId === ticket.id}
-                          >
-                            {cancellingTicketId === ticket.id ? "CANCELLING..." : "CANCEL SEND"}
-                          </button>
-                        )}
+                  {!loadingTickets && currentTickets.length > 0 && (
+                    <div style={mobileEntryCardGridStyle}>
+                      {currentTickets.map((ticket, index) => {
+                        const isVip = ticket.is_vip || ticket.vip;
+                        const isTable = ticket.is_table;
+                        const isUsed = !!ticket.claimed;
+                        const isPending = !!ticket.can_cancel;
+                        const isRefunded = !!ticket.refunded_at;
+
+                        return (
+                          <div key={ticket.id || index} style={mobileEntryCardStyle}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, fontSize: 10, letterSpacing: 1.8 }}>
+                              <span>{isTable ? <span style={{ color: '#ff3333', fontWeight: 'bold' }}>VIP TABLE</span> : isVip ? <span>VIP</span> : <span>GA</span>}</span>
+                              <span style={{ color: (isRefunded || isUsed) ? "#888" : "#fff" }}>
+                                {isRefunded ? "REFUNDED" : isUsed ? "USED" : isPending ? "PENDING" : "ACTIVE"}
+                              </span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "center", opacity: isRefunded ? 0.35 : 1 }}>
+                              <QRCodeSVG value={`${qrBase}/checkin?code=${ticket.code}`} size={110} marginSize={1} />
+                            </div>
+                            <div style={{ marginTop: 8, fontSize: 9, letterSpacing: 1.8, color: "#b8b8b8" }}>TOKEN CODE</div>
+                            <div style={{ fontSize: 13, letterSpacing: 1.6, marginTop: 4, wordBreak: "break-word" }}>{ticket.code}</div>
+                            {(ticket.can_send || ticket.can_cancel) && !isUsed && !isRefunded && ticket.id && (
+                              <button style={sendTriggerStyle} onClick={() => openSendModal(ticket)}>
+                                {ticket.can_cancel ? "VIEW CLAIM LINK" : "SEND TOKEN"}
+                              </button>
+                            )}
+                            {ticket.can_cancel && !isUsed && ticket.id && (
+                              <button style={cancelTriggerStyle} onClick={() => cancelSend(ticket.id!)} disabled={cancellingTicketId === ticket.id}>
+                                {cancellingTicketId === ticket.id ? "CANCELLING..." : "CANCEL SEND"}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {showButtons && !!activeEvent && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
+                      <button className="cta-button" style={{ width: "100%", minHeight: 58, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.08, padding: "12px 16px", fontSize: 13, letterSpacing: 3, whiteSpace: "nowrap", fontFamily: "Arial, Helvetica, sans-serif", fontWeight: 700 }} onClick={() => setPurchaseOpen(true)}>GA TOKENS</button>
+                      <button className="cta-button" style={{ width: "100%", minHeight: 58, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.08, padding: "12px 16px", fontSize: 13, letterSpacing: 3, whiteSpace: "nowrap", fontFamily: "Arial, Helvetica, sans-serif", fontWeight: 700 }} onClick={() => setVipOpen(true)}>VIP TOKENS</button>
+                    </div>
+                  )}
+
+                  {archivedTickets.length > 0 && currentTickets.length > 0 && (
+                    <button
+                      style={{ background: 'none', border: 'none', color: '#555', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginTop: 20 }}
+                      onClick={() => setViewMode('archive')}
+                    >
+                      {">"} VIEW PAST INITIATIONS
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button
+                    style={{ background: 'none', border: 'none', color: '#888', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginBottom: 20, display: 'block' }}
+                    onClick={() => setViewMode('current')}
+                  >
+                    {"← BACK TO TERMINAL"}
+                  </button>
+
+                  {archivedEventGroups.map((group) => (
+                    <div key={group.event.id} style={{ marginBottom: 28 }}>
+                      <div style={{ height: 1, background: '#333', marginBottom: 8 }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, marginBottom: 4 }}>
+                        <span>{group.event.name.toUpperCase()}</span>
+                        <span style={{ color: '#555', fontSize: 10 }}>ARCHIVED</span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {showButtons && !!activeEvent && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr",
-                    gap: 14,
-                  }}
-                >
-                  <button
-                    className="cta-button"
-                    style={{
-                      width: "100%",
-                      minHeight: 58,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textAlign: "center",
-                      lineHeight: 1.08,
-                      padding: "12px 16px",
-                      fontSize: 13,
-                      letterSpacing: 3,
-                      whiteSpace: "nowrap",
-                      fontFamily: "Arial, Helvetica, sans-serif",
-                      fontWeight: 700,
-                    }}
-                    onClick={() => setPurchaseOpen(true)}
-                  >
-                    GA TOKENS
-                  </button>
-
-                  <button
-                    className="cta-button"
-                    style={{
-                      width: "100%",
-                      minHeight: 58,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textAlign: "center",
-                      lineHeight: 1.08,
-                      padding: "12px 16px",
-                      fontSize: 13,
-                      letterSpacing: 3,
-                      whiteSpace: "nowrap",
-                      fontFamily: "Arial, Helvetica, sans-serif",
-                      fontWeight: 700,
-                    }}
-                    onClick={() => setVipOpen(true)}
-                  >
-                    VIP TOKENS
-                  </button>
-
-                </div>
+                      <div style={{ fontFamily: '"Courier New", monospace', fontSize: 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
+                        {formatEventDate(group.event.start_time)}{group.event.location ? ` · ${group.event.location}` : ''}
+                      </div>
+                      <div style={{ height: 1, background: '#333', marginBottom: 14 }} />
+                      <div style={mobileEntryCardGridStyle}>
+                        {group.tickets.map((ticket, index) => {
+                          const isVip = ticket.is_vip || ticket.vip;
+                          const isTable = ticket.is_table;
+                          const isClaimed = !!ticket.claimed;
+                          const isRefunded = !!ticket.refunded_at;
+                          const statusLabel = isRefunded ? 'REFUNDED' : isClaimed ? 'ENTERED' : 'UNUSED';
+                          return (
+                            <div key={ticket.id || index} style={{ ...mobileEntryCardStyle, filter: 'grayscale(1)', opacity: 0.72, position: 'relative' }}>
+                              <div style={{ position: 'absolute', top: 6, right: 8, fontFamily: '"Courier New", monospace', fontSize: 8, letterSpacing: 1.5, color: '#555' }}>ARCHIVED</div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 9, letterSpacing: 1.8, paddingRight: 52 }}>
+                                <span>{isTable ? 'VIP TABLE' : isVip ? 'VIP' : 'GA'}</span>
+                                <span style={{ color: '#666' }}>{statusLabel}</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <QRCodeSVG value={`${qrBase}/checkin?code=${ticket.code}`} size={110} marginSize={1} />
+                              </div>
+                              <div style={{ marginTop: 8, fontSize: 9, letterSpacing: 1.8, color: '#666' }}>TOKEN CODE</div>
+                              <div style={{ fontSize: 13, letterSpacing: 1.6, marginTop: 4, wordBreak: 'break-word' }}>{ticket.code}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </>
               )}
             </>
           )}
