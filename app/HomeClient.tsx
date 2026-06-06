@@ -355,12 +355,12 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
               zIndex: 10,
             }}>
               <div style={{ height: 1, background: "#888" }} />
-              <div style={{ background: "rgba(0,0,0,0.82)", padding: "14px 0", textAlign: "center" }}>
+              <div style={{ background: "rgba(0,0,0,0.82)", padding: "18px 0", textAlign: "center", lineHeight: 1 }}>
                 <span style={{
                   color: "white",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 900,
-                  fontSize: 22,
+                  fontSize: 28,
                   letterSpacing: "0.02em",
                   textTransform: "uppercase",
                 }}>
