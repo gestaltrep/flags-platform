@@ -22,7 +22,7 @@ export default function Navbar() {
     <>
       <div className="navbar desktop-navbar">
         <div className="nav-left">
-          <Link href="/" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+          <Link href="/" aria-label="Home" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
             <img src="/logo.png" className="nav-logo" alt="Signo logo" />
 
             <img
@@ -35,19 +35,19 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="nav-right">
-            <Link href="/" className="nav-link">
-              Home
-            </Link>
-
             <Link href="/dashboard" className="nav-link">
               Terminal
+            </Link>
+
+            <Link href="/records" className="nav-link">
+              Records
             </Link>
           </div>
         )}
       </div>
 
       <div className="navbar-mobile">
-        <Link href="/" style={{ cursor: "pointer" }}>
+        <Link href="/" aria-label="Home" style={{ cursor: "pointer" }}>
           <img
             src="/logo.png"
             alt="Signo logo"
@@ -57,12 +57,12 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="navbar-mobile-links">
-            <Link href="/" className="navbar-mobile-link">
-              Home
-            </Link>
-
             <Link href="/dashboard" className="navbar-mobile-link">
               Terminal
+            </Link>
+
+            <Link href="/records" className="navbar-mobile-link">
+              Records
             </Link>
           </div>
         )}
