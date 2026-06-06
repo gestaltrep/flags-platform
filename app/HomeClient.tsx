@@ -344,18 +344,6 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
 
         <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
           <HeroGlitch className="home-mobile-poster" />
-          <div style={{
-            position: "absolute",
-            bottom: 10,
-            right: 6,
-            left: "auto",
-            fontFamily: '"Courier New", monospace',
-            fontSize: 11,
-            letterSpacing: 1.5,
-            color: "#ffffff",
-          }}>
-            RAVE_Initiation.html
-          </div>
           {isDormant && (
             <div style={{
               position: "absolute",
@@ -382,6 +370,18 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
               <div style={{ height: 1, background: "#888" }} />
             </div>
           )}
+          <div style={{
+            position: "absolute",
+            bottom: 10,
+            right: 6,
+            left: "auto",
+            fontFamily: '"Courier New", monospace',
+            fontSize: 11,
+            letterSpacing: 1.5,
+            color: "#ffffff",
+          }}>
+            RAVE_Initiation.html
+          </div>
         </div>
 
         <div className="home-mobile-cta-wrap">
