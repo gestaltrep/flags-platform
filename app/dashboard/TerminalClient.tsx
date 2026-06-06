@@ -1158,9 +1158,14 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                       <span>{group.event.name.toUpperCase()}</span>
                       <span style={{ color: '#555', fontSize: isCompactDesktop ? 11 : 10 }}>ARCHIVED</span>
                     </div>
-                    <div style={{ fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 11 : 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
-                      {formatEventDate(group.event.start_time)}{group.event.headliner ? ` · ${group.event.headliner}` : ''}
+                    <div style={{ fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 11 : 10, letterSpacing: 1.5, color: '#555', marginBottom: group.event.headliner ? 2 : 8 }}>
+                      {formatEventDate(group.event.start_time)}{group.event.location ? ` · ${group.event.location}` : ''}
                     </div>
+                    {group.event.headliner && (
+                      <div style={{ fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 11 : 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
+                        {group.event.headliner}
+                      </div>
+                    )}
                     <div style={{ height: 1, background: '#333', marginBottom: 18 }} />
                     <div style={mobileEntryCardGridStyle}>
                       {group.tickets.map((ticket, index) => {
@@ -1324,9 +1329,14 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                         <span>{group.event.name.toUpperCase()}</span>
                         <span style={{ color: '#555', fontSize: 10 }}>ARCHIVED</span>
                       </div>
-                      <div style={{ fontFamily: '"Courier New", monospace', fontSize: 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
-                        {formatEventDate(group.event.start_time)}{group.event.headliner ? ` · ${group.event.headliner}` : ''}
+                      <div style={{ fontFamily: '"Courier New", monospace', fontSize: 10, letterSpacing: 1.5, color: '#555', marginBottom: group.event.headliner ? 2 : 8 }}>
+                        {formatEventDate(group.event.start_time)}{group.event.location ? ` · ${group.event.location}` : ''}
                       </div>
+                      {group.event.headliner && (
+                        <div style={{ fontFamily: '"Courier New", monospace', fontSize: 10, letterSpacing: 1.5, color: '#555', marginBottom: 8 }}>
+                          {group.event.headliner}
+                        </div>
+                      )}
                       <div style={{ height: 1, background: '#333', marginBottom: 14 }} />
                       <div style={mobileEntryCardGridStyle}>
                         {group.tickets.map((ticket, index) => {
