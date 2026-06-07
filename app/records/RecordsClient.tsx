@@ -94,23 +94,24 @@ export default function RecordsClient({
             href={`/records/${event.slug}`}
             style={{ display: "block", textDecoration: "none", color: "inherit" }}
           >
-            <div
-              style={{
-                borderTop: "1px solid #333",
-                padding: "16px 0",
-                display: "flex",
-                flexDirection: isMobile ? "column" : "row",
-                justifyContent: "space-between",
-                alignItems: isMobile ? "stretch" : "flex-start",
-              }}
-            >
-              <div>
+            <div style={{ borderTop: "1px solid #333", padding: "16px 0" }}>
+              {/* Top row: event name + record count */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  gap: 12,
+                  marginBottom: 5,
+                }}
+              >
                 <div
                   style={{
                     fontFamily: mono,
                     fontSize: 13,
                     letterSpacing: 2,
-                    marginBottom: 5,
+                    flex: "1 1 auto",
+                    minWidth: 0,
                   }}
                 >
                   {event.name}
@@ -120,41 +121,42 @@ export default function RecordsClient({
                     fontFamily: mono,
                     fontSize: 10,
                     letterSpacing: 1.5,
-                    color: "#666",
-                    marginBottom: event.headliner ? 2 : 0,
+                    color: count > 0 ? "#aaa" : "#555",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
                   }}
                 >
-                  {formatDate(event.start_time)}
-                  {event.location ? ` · ${event.location}` : ""}
+                  {count > 0 ? `${count} RECORD${count === 1 ? "" : "S"}` : "RECORDS PENDING"}
                 </div>
-                {event.headliner && (
-                  <div
-                    style={{
-                      fontFamily: mono,
-                      fontSize: 10,
-                      letterSpacing: 1.5,
-                      color: "#666",
-                    }}
-                  >
-                    {event.headliner}
-                  </div>
-                )}
               </div>
+
+              {/* Date · venue */}
               <div
                 style={{
                   fontFamily: mono,
                   fontSize: 10,
                   letterSpacing: 1.5,
-                  color: count > 0 ? "#aaa" : "#555",
-                  whiteSpace: "nowrap",
-                  paddingLeft: isMobile ? 0 : 20,
-                  paddingTop: isMobile ? 0 : 2,
-                  flexShrink: 0,
-                  marginTop: isMobile ? 8 : 0,
+                  color: "#666",
+                  marginBottom: event.headliner ? 2 : 0,
                 }}
               >
-                {count > 0 ? `${count} RECORD${count === 1 ? "" : "S"}` : "RECORDS PENDING"}
+                {formatDate(event.start_time)}
+                {event.location ? ` · ${event.location}` : ""}
               </div>
+
+              {/* Headliner (optional) */}
+              {event.headliner && (
+                <div
+                  style={{
+                    fontFamily: mono,
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    color: "#666",
+                  }}
+                >
+                  {event.headliner}
+                </div>
+              )}
             </div>
           </Link>
         );
