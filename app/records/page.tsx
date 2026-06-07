@@ -2,17 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
-import Link from "next/link";
 import UnauthorizedTerminalClient from "../dashboard/UnauthorizedTerminalClient";
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+import RecordsClient from "./RecordsClient";
 
 export default async function RecordsPage() {
   const cookieStore = await cookies();
@@ -42,122 +33,10 @@ export default async function RecordsPage() {
           .in("event_id", eventIds)
       : { data: [] };
 
-  const countMap = new Map<string, number>();
+  const counts: Record<string, number> = {};
   (recordRows ?? []).forEach((r: { event_id: string }) => {
-    countMap.set(r.event_id, (countMap.get(r.event_id) ?? 0) + 1);
+    counts[r.event_id] = (counts[r.event_id] ?? 0) + 1;
   });
 
-  const mono = '"Courier New", monospace';
-
-  return (
-    <main
-      style={{
-        marginTop: 72,
-        marginLeft: 120,
-        marginRight: 40,
-        marginBottom: 60,
-      }}
-    >
-      {/* Page header */}
-      <div
-        style={{
-          fontSize: 30,
-          letterSpacing: 6,
-          marginBottom: 24,
-        }}
-      >
-        RECORDS
-      </div>
-
-      {/* Event cards */}
-      {eventList.map((event) => {
-        const count = countMap.get(event.id) ?? 0;
-        return (
-          <Link
-            key={event.id}
-            href={`/records/${event.slug}`}
-            style={{ display: "block", textDecoration: "none", color: "inherit" }}
-          >
-            <div
-              style={{
-                borderTop: "1px solid #333",
-                padding: "16px 0",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontFamily: mono,
-                    fontSize: 13,
-                    letterSpacing: 2,
-                    marginBottom: 5,
-                  }}
-                >
-                  {event.name}
-                </div>
-                <div
-                  style={{
-                    fontFamily: mono,
-                    fontSize: 10,
-                    letterSpacing: 1.5,
-                    color: "#666",
-                    marginBottom: event.headliner ? 2 : 0,
-                  }}
-                >
-                  {formatDate(event.start_time)}
-                  {event.location ? ` · ${event.location}` : ""}
-                </div>
-                {event.headliner && (
-                  <div
-                    style={{
-                      fontFamily: mono,
-                      fontSize: 10,
-                      letterSpacing: 1.5,
-                      color: "#666",
-                    }}
-                  >
-                    {event.headliner}
-                  </div>
-                )}
-              </div>
-              <div
-                style={{
-                  fontFamily: mono,
-                  fontSize: 10,
-                  letterSpacing: 1.5,
-                  color: count > 0 ? "#aaa" : "#555",
-                  whiteSpace: "nowrap",
-                  paddingLeft: 20,
-                  paddingTop: 2,
-                  flexShrink: 0,
-                }}
-              >
-                {count > 0 ? `${count} RECORD${count === 1 ? "" : "S"}` : "RECORDS PENDING"}
-              </div>
-            </div>
-          </Link>
-        );
-      })}
-      {eventList.length > 0 && (
-        <div style={{ height: 1, background: "#333" }} />
-      )}
-
-      {eventList.length === 0 && (
-        <div
-          style={{
-            fontFamily: mono,
-            fontSize: 11,
-            letterSpacing: 2,
-            color: "#555",
-            paddingTop: 24,
-          }}
-        >
-          {">"} NO RECORDS FOUND
-        </div>
-      )}
-    </main>
-  );
+  return <RecordsClient events={eventList} counts={counts} />;
 }
