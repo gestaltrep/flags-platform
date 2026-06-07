@@ -134,16 +134,8 @@ export default async function RecordDetailPage({
             </span>
           )}
         </div>
-        <div
-          className="records-detail-venue"
-          style={{
-            fontFamily: mono,
-            marginBottom: event.headliner ? 2 : 0,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {formatDate(event.start_time)}
-          {event.location ? ` · ${event.location}` : ""}
+        <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: 1.5, color: "#555", marginBottom: event.headliner ? 2 : 8 }}>
+          {formatDate(event.start_time)}{event.location ? ` · ${event.location}` : ""}
         </div>
         {event.headliner && (
           <div

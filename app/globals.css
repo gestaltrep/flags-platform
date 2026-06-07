@@ -882,20 +882,6 @@ body::before {
   }
 }
 
-/* ---------- Records detail venue line ---------- */
-
-.records-detail-venue {
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  color: #555;
-}
-
-@media (max-width: 899px) {
-  .records-detail-venue {
-    font-size: 9px;
-  }
-}
-
 /* ---------- Hero glitch effect (homepage only) ---------- */
 @keyframes hero-glitch-slice-0 {
   0%, 100%   { transform: translateX(0); filter: none; }
