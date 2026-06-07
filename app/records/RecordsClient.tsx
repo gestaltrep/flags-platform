@@ -99,8 +99,9 @@ export default function RecordsClient({
                 borderTop: "1px solid #333",
                 padding: "16px 0",
                 display: "flex",
+                flexDirection: isMobile ? "column" : "row",
                 justifyContent: "space-between",
-                alignItems: "flex-start",
+                alignItems: isMobile ? "stretch" : "flex-start",
               }}
             >
               <div>
@@ -146,9 +147,10 @@ export default function RecordsClient({
                   letterSpacing: 1.5,
                   color: count > 0 ? "#aaa" : "#555",
                   whiteSpace: "nowrap",
-                  paddingLeft: 20,
-                  paddingTop: 2,
+                  paddingLeft: isMobile ? 0 : 20,
+                  paddingTop: isMobile ? 0 : 2,
                   flexShrink: 0,
+                  marginTop: isMobile ? 8 : 0,
                 }}
               >
                 {count > 0 ? `${count} RECORD${count === 1 ? "" : "S"}` : "RECORDS PENDING"}
