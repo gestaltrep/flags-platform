@@ -141,6 +141,7 @@ export default async function RecordDetailPage({
             letterSpacing: 1.5,
             color: "#555",
             marginBottom: event.headliner ? 2 : 0,
+            whiteSpace: "nowrap",
           }}
         >
           {formatDate(event.start_time)}
