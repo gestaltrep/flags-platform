@@ -88,13 +88,10 @@ export default async function RecordDetailPage({
 
   return (
     <main
+      className="records-detail-main"
       style={{
         marginTop: 60,
-        marginLeft: "auto",
-        marginRight: "auto",
         marginBottom: 60,
-        maxWidth: 1200,
-        padding: "0 24px",
       }}
     >
       {/* Back link */}

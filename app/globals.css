@@ -882,6 +882,24 @@ body::before {
   }
 }
 
+/* ---------- Records detail page layout ---------- */
+
+.records-detail-main {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1200px;
+  padding: 0 24px;
+}
+
+@media (max-width: 899px) {
+  .records-detail-main {
+    margin-left: 20px;
+    margin-right: 20px;
+    max-width: none;
+    padding: 0;
+  }
+}
+
 /* ---------- Hero glitch effect (homepage only) ---------- */
 @keyframes hero-glitch-slice-0 {
   0%, 100%   { transform: translateX(0); filter: none; }
