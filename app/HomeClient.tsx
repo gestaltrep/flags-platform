@@ -360,7 +360,7 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
                   color: "white",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 900,
-                  fontSize: 28,
+                  fontSize: 24,
                   letterSpacing: "0.02em",
                   textTransform: "uppercase",
                 }}>

@@ -135,11 +135,9 @@ export default async function RecordDetailPage({
           )}
         </div>
         <div
+          className="records-detail-venue"
           style={{
             fontFamily: mono,
-            fontSize: 10,
-            letterSpacing: 1.5,
-            color: "#555",
             marginBottom: event.headliner ? 2 : 0,
             whiteSpace: "nowrap",
           }}
