@@ -8,7 +8,7 @@ const CSP = [
   "font-src 'self'",
   "frame-src https://js.stripe.com",
   "connect-src 'self' https://api.stripe.com https://*.supabase.co",
-  "media-src 'self'",
+  "media-src 'self' https://*.supabase.co",
   "worker-src 'self' blob:",
 ].join("; ");
 

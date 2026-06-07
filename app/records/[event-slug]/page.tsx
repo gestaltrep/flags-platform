@@ -193,7 +193,7 @@ export default async function RecordDetailPage({
           }}
         >
           {validRecords.map(({ record, signedUrl, index }) => {
-            const docNum = `DOC ${String(record.display_order ?? index + 1).padStart(3, "0")}`;
+            const docNum = String(record.display_order ?? index + 1).padStart(3, "0");
 
             if (record.kind === "photo") {
               return (
@@ -218,26 +218,73 @@ export default async function RecordDetailPage({
                       borderTop: "1px solid #222",
                     }}
                   >
-                    {record.caption ?? docNum}
+                    {record.caption ? `${docNum}    ${record.caption}` : docNum}
                   </div>
                 </div>
               );
             }
 
-            // Non-photo placeholder for future kinds
+            if (record.kind === "video") {
+              return (
+                <div
+                  key={record.id}
+                  style={{ border: "1px solid #333", overflow: "hidden" }}
+                >
+                  <video
+                    src={signedUrl}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    style={{ display: "block", width: "100%", height: "auto" }}
+                  />
+                  <div
+                    style={{
+                      padding: "8px 12px",
+                      fontFamily: mono,
+                      fontSize: 10,
+                      letterSpacing: 1.5,
+                      color: "#666",
+                      borderTop: "1px solid #222",
+                    }}
+                  >
+                    {record.caption ? `${docNum}    ${record.caption}` : docNum}
+                  </div>
+                </div>
+              );
+            }
+
+            // Defensive fallback for unimplemented kinds
             return (
               <div
                 key={record.id}
                 style={{
                   border: "1px solid #333",
-                  padding: "28px 16px",
-                  fontFamily: mono,
-                  fontSize: 11,
-                  letterSpacing: 1.5,
-                  color: "#555",
+                  overflow: "hidden",
                 }}
               >
-                {record.kind.toUpperCase()} RECORD — {docNum}
+                <div
+                  style={{
+                    padding: "40px 20px",
+                    textAlign: "center",
+                    fontFamily: mono,
+                    fontSize: 11,
+                    color: "#666",
+                  }}
+                >
+                  {record.kind.toUpperCase()} RECORD — viewer not yet implemented
+                </div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    fontFamily: mono,
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    color: "#666",
+                    borderTop: "1px solid #222",
+                  }}
+                >
+                  {record.caption ? `${docNum}    ${record.caption}` : docNum}
+                </div>
               </div>
             );
           })}
