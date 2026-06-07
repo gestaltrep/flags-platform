@@ -1148,7 +1148,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   style={{ background: 'none', border: 'none', color: '#888', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginBottom: 24, display: 'block' }}
                   onClick={() => setViewMode('current')}
                 >
-                  {"← BACK TO TERMINAL"}
+                  {"← BACK TO ENTRY TOKENS"}
                 </button>
 
                 {archivedEventGroups.map((group) => (
@@ -1319,7 +1319,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                     style={{ background: 'none', border: 'none', color: '#888', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginBottom: 20, display: 'block' }}
                     onClick={() => setViewMode('current')}
                   >
-                    {"← BACK TO TERMINAL"}
+                    {"← BACK TO ENTRY TOKENS"}
                   </button>
 
                   {archivedEventGroups.map((group) => (

@@ -187,9 +187,8 @@ export default async function RecordDetailPage({
       ) : (
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-            gap: 20,
+            columnWidth: 340,
+            columnGap: 20,
           }}
         >
           {validRecords.map(({ record, signedUrl, index }) => {
@@ -199,7 +198,7 @@ export default async function RecordDetailPage({
               return (
                 <div
                   key={record.id}
-                  style={{ border: "1px solid #333", overflow: "hidden" }}
+                  style={{ display: "block", breakInside: "avoid", marginBottom: 20, border: "1px solid #333", overflow: "hidden" }}
                 >
                   <img
                     src={signedUrl}
@@ -228,7 +227,7 @@ export default async function RecordDetailPage({
               return (
                 <div
                   key={record.id}
-                  style={{ border: "1px solid #333", overflow: "hidden" }}
+                  style={{ display: "block", breakInside: "avoid", marginBottom: 20, border: "1px solid #333", overflow: "hidden" }}
                 >
                   <video
                     src={signedUrl}
@@ -258,6 +257,9 @@ export default async function RecordDetailPage({
               <div
                 key={record.id}
                 style={{
+                  display: "block",
+                  breakInside: "avoid",
+                  marginBottom: 20,
                   border: "1px solid #333",
                   overflow: "hidden",
                 }}

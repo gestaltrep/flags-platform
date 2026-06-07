@@ -52,38 +52,21 @@ export default async function RecordsPage() {
   return (
     <main
       style={{
-        marginTop: 60,
-        marginLeft: "auto",
-        marginRight: "auto",
+        marginTop: 72,
+        marginLeft: 120,
+        marginRight: 40,
         marginBottom: 60,
-        maxWidth: 900,
-        padding: "0 24px",
       }}
     >
       {/* Page header */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ height: 1, background: "#333", marginBottom: 12 }} />
-        <div
-          style={{
-            fontFamily: mono,
-            fontSize: 30,
-            letterSpacing: 6,
-            marginBottom: 6,
-          }}
-        >
-          RECORDS
-        </div>
-        <div
-          style={{
-            fontFamily: mono,
-            fontSize: 11,
-            letterSpacing: 2,
-            color: "#666",
-          }}
-        >
-          DECLASSIFIED ARCHIVE
-        </div>
-        <div style={{ height: 1, background: "#333", marginTop: 12 }} />
+      <div
+        style={{
+          fontSize: 30,
+          letterSpacing: 6,
+          marginBottom: 24,
+        }}
+      >
+        RECORDS
       </div>
 
       {/* Event cards */}
