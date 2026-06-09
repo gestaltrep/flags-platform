@@ -361,7 +361,7 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
       const res = await fetch("/api/verify-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: name.trim(), optInSms: true }),
+        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim(), name: name.trim(), optInSms }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
