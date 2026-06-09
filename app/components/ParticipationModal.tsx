@@ -320,20 +320,19 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     }
   }
 
-  // Dormant opt-in: send SMS code (requires name, phone, all consents including SMS)
+  // Dormant opt-in: send SMS code (requires name, phone, terms, privacy; SMS opt-in optional)
   async function sendDormantCode() {
     setAuthMessage("");
     if (!name.trim()) { setAuthMessage("Please enter your name."); return; }
     if (!phone.trim()) { setAuthMessage("Please enter your phone number."); return; }
     if (!termsChecked) { setAuthMessage("Please agree to the Terms & Conditions."); return; }
     if (!privacyChecked) { setAuthMessage("Please agree to the Privacy Policy."); return; }
-    if (!optInSms) { setAuthMessage("SMS consent is required to be notified."); return; }
     setAuthLoading(true);
     try {
       const res = await fetch("/api/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), name: name.trim(), optInSms: true }),
+        body: JSON.stringify({ phone: phone.trim(), name: name.trim(), optInSms }),
       });
       let data: any = null;
       try { data = await res.json(); } catch { data = null; }
