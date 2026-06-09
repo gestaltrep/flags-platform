@@ -58,7 +58,7 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
   const [optInSms, setOptInSms] = useState(false);
 
   // Dormant opt-in sub-step (used when isDormant && step === "chooser")
-  const [dormantSubStep, setDormantSubStep] = useState<"form" | "otp" | "confirmed">("form");
+  const [dormantSubStep, setDormantSubStep] = useState<"form" | "otp">("form");
 
   // Checkout context — captured when GENERATE is clicked
   const [checkoutSourceStep, setCheckoutSourceStep] = useState<"ga" | "vip" | "table">("ga");
@@ -375,7 +375,7 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
         }
         return;
       }
-      setDormantSubStep("confirmed");
+      window.location.href = "/dashboard";
     } catch {
       setAuthMessage("We couldn't sign you in. Please try again.");
     } finally {
@@ -759,38 +759,6 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
                 {authLoading ? "VERIFYING..." : "VERIFY"}
               </button>
             </div>
-          </>
-        )}
-
-        {/* ── DORMANT OPT-IN: confirmed ─────────────────── */}
-        {step === "chooser" && isDormant && dormantSubStep === "confirmed" && (
-          <>
-            <div className="signup-header signup-header-home">
-              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
-              <img
-                src="/group-name.png"
-                className="signup-group-name"
-                alt="Signo Research Group"
-              />
-            </div>
-
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: 18 }}>
-              <div className="signup-title signup-title-large" style={{ marginBottom: 0 }}>
-                INITIATION COMPLETE.
-              </div>
-              <div style={{
-                color: "#888",
-                fontFamily: '"Courier New", monospace',
-                fontSize: 12,
-                letterSpacing: 1.5,
-                lineHeight: 1.6,
-                maxWidth: 280,
-              }}>
-                YOU'LL BE NOTIFIED WHEN THE NEXT INITIATION OPENS.
-              </div>
-            </div>
-
-            <button className="signup-close" onClick={onClose}>CLOSE</button>
           </>
         )}
 
