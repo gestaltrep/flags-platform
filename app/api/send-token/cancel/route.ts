@@ -1,10 +1,9 @@
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { getVerifiedUserId } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const senderUserId = cookieStore.get("user_id")?.value;
+    const senderUserId = await getVerifiedUserId();
 
     if (!senderUserId) {
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });

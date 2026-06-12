@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { getVerifiedUserId } from "@/lib/auth";
 
 function serviceClient() {
   return createClient(
@@ -13,9 +13,8 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  // Auth: same cookie check as app/records/[event-slug]/page.tsx
-  const cookieStore = await cookies();
-  if (!cookieStore.get("user_id")?.value) {
+  const userId = await getVerifiedUserId();
+  if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
 

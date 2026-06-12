@@ -1,15 +1,14 @@
 import Stripe from "stripe";
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { calculateTier, tierPriceCents } from "@/lib/tier";
 import { getActiveSalesEvent } from "@/lib/events";
+import { getVerifiedUserId } from "@/lib/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("user_id")?.value;
+    const userId = await getVerifiedUserId();
     if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const event = await getActiveSalesEvent();

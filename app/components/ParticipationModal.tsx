@@ -118,11 +118,11 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     }
   }, [step]);
 
-  // Auth detection — user_id cookie is httpOnly:false, readable from JS
+  // Auth detection — reads the non-sensitive authed hint cookie (httpOnly:false)
   function isAuthenticated(): boolean {
     if (typeof document === "undefined") return false;
-    const cookie = document.cookie.split(";").find((c) => c.trim().startsWith("user_id="));
-    return !!cookie && cookie.split("=").slice(1).join("=").trim().length > 0;
+    const cookie = document.cookie.split(";").find((c) => c.trim().startsWith("authed="));
+    return !!cookie && cookie.split("=").slice(1).join("=").trim() === "1";
   }
 
   // Promo handlers — identical pattern to Terminal

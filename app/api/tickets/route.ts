@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { getVerifiedUserId } from "@/lib/auth";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  const userId = await getVerifiedUserId();
 
   if (!userId) {
     return Response.json([]);

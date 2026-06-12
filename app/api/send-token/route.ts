@@ -1,6 +1,6 @@
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { randomBytes } from "crypto";
+import { getVerifiedUserId } from "@/lib/auth";
 
 const CLAIM_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -11,8 +11,7 @@ function generateClaimToken(): string {
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const senderUserId = cookieStore.get("user_id")?.value;
+    const senderUserId = await getVerifiedUserId();
 
     if (!senderUserId) {
       return Response.json(

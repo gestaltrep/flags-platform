@@ -1,13 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import UnauthorizedTerminalClient from "../dashboard/UnauthorizedTerminalClient";
 import RecordsClient from "./RecordsClient";
+import { getVerifiedUserId } from "@/lib/auth";
 
 export default async function RecordsPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  const userId = await getVerifiedUserId();
 
   if (!userId) return <UnauthorizedTerminalClient title="Records" />;
 

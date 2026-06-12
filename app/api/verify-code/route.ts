@@ -2,6 +2,7 @@ import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { normalizeUSPhone } from "@/lib/phone";
+import { signSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -116,11 +117,19 @@ export async function POST(req: Request) {
     }
 
     const cookieStore = await cookies();
-    cookieStore.set("user_id", userId, {
-      httpOnly: false,
+    cookieStore.set("user_id", signSession(userId), {
+      httpOnly: true,
+      secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    cookieStore.set("authed", "1", {
+      httpOnly: false,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
     });
 
     return Response.json({ success: true });

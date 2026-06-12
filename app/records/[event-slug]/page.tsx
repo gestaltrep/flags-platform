@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import UnauthorizedTerminalClient from "../../dashboard/UnauthorizedTerminalClient";
 import HlsVideo from "./HlsVideo";
+import { getVerifiedUserId } from "@/lib/auth";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -34,8 +34,7 @@ export default async function RecordDetailPage({
 }: {
   params: Promise<{ "event-slug": string }>;
 }) {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  const userId = await getVerifiedUserId();
 
   if (!userId) return <UnauthorizedTerminalClient title="Records" />;
 

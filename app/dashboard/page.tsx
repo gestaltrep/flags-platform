@@ -1,12 +1,11 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import TerminalClient from "./TerminalClient";
 import UnauthorizedTerminalClient from "./UnauthorizedTerminalClient";
 import { getActiveSalesEvent } from "@/lib/events";
+import { getVerifiedUserId } from "@/lib/auth";
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  const userId = await getVerifiedUserId();
 
   if (!userId) {
     return <UnauthorizedTerminalClient />;
