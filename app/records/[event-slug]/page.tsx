@@ -65,22 +65,40 @@ export default async function RecordDetailPage({
 
   const recordList = (records ?? []) as EventRecord[];
 
-  // Generate signed URLs server-side (1-hour expiry)
+  // Generate signed URLs server-side (1-hour expiry).
+  // Photos: sign the thumbnail derivative (thumb_path); fall back to original if not yet processed.
+  // Videos: sign the video source (storage_path) + the poster derivative (poster_path) if present.
   const recordsWithUrls = await Promise.all(
     recordList.map(async (record, index) => {
+      const meta = (record.metadata ?? {}) as Record<string, string>;
+
+      const sourcePath =
+        record.kind === "photo"
+          ? (meta.thumb_path ?? record.storage_path)
+          : record.storage_path;
+
       const { data, error } = await supabase.storage
         .from("records")
-        .createSignedUrl(record.storage_path, 3600);
+        .createSignedUrl(sourcePath, 3600);
       if (error) {
         console.error(`Failed to sign URL for record ${record.id}:`, error);
         return null;
       }
-      return { record, signedUrl: data.signedUrl, index };
+
+      let signedPosterUrl: string | null = null;
+      if (record.kind === "video" && meta.poster_path) {
+        const { data: pd } = await supabase.storage
+          .from("records")
+          .createSignedUrl(meta.poster_path, 3600);
+        signedPosterUrl = pd?.signedUrl ?? null;
+      }
+
+      return { record, signedUrl: data.signedUrl, signedPosterUrl, index };
     })
   );
 
   const validRecords = recordsWithUrls.filter(
-    (r): r is { record: EventRecord; signedUrl: string; index: number } =>
+    (r): r is { record: EventRecord; signedUrl: string; signedPosterUrl: string | null; index: number } =>
       r !== null
   );
 
@@ -179,7 +197,7 @@ export default async function RecordDetailPage({
             columnGap: 20,
           }}
         >
-          {validRecords.map(({ record, signedUrl, index }) => {
+          {validRecords.map(({ record, signedUrl, signedPosterUrl, index }) => {
             const docNum = String(record.display_order ?? index + 1).padStart(3, "0");
 
             if (record.kind === "photo") {
@@ -193,6 +211,8 @@ export default async function RecordDetailPage({
                     alt={record.caption ?? docNum}
                     width={record.width ?? undefined}
                     height={record.height ?? undefined}
+                    loading="lazy"
+                    decoding="async"
                     style={{ display: "block", width: "100%", height: "auto" }}
                   />
                   <div
@@ -221,7 +241,10 @@ export default async function RecordDetailPage({
                     src={signedUrl}
                     controls
                     playsInline
-                    preload="metadata"
+                    preload="none"
+                    poster={signedPosterUrl ?? undefined}
+                    width={record.width ?? undefined}
+                    height={record.height ?? undefined}
                     style={{ display: "block", width: "100%", height: "auto" }}
                   />
                   <div
