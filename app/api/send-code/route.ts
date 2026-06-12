@@ -1,6 +1,7 @@
 import Twilio from "twilio";
 import { createClient } from "@supabase/supabase-js";
 import { normalizeUSPhone } from "@/lib/phone";
+import { checkOtpRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
@@ -20,6 +21,15 @@ export async function POST(req: Request) {
       return Response.json(
         { success: false, error: "Invalid phone number." },
         { status: 400 }
+      );
+    }
+
+    const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
+    const rl = await checkOtpRateLimit({ phone: normalizedPhone, ip });
+    if (!rl.ok) {
+      return Response.json(
+        { success: false, error: "Too many requests. Please wait a moment and try again." },
+        { status: 429 }
       );
     }
 

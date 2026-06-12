@@ -11,6 +11,12 @@ export async function POST(req: Request) {
     const userId = await getVerifiedUserId();
     if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
+    const { data: knownUser } = await createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    ).from("users").select("id").eq("id", userId).maybeSingle();
+    if (!knownUser) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
     const event = await getActiveSalesEvent();
     if (!event) {
       return Response.json(
