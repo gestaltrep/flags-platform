@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";
 import { join, basename, extname } from "path";
-import { writeFileSync, unlinkSync } from "fs";
+import { writeFileSync, readFileSync, unlinkSync, openSync, readSync, closeSync } from "fs";
 import { randomUUID } from "crypto";
 
 const EVENT_SLUG = process.argv[2] ?? "rave-initiation-2026-05";
@@ -65,7 +65,37 @@ async function uploadBuffer(buf, destPath, contentType) {
   if (error) throw new Error(`Upload failed for ${destPath}: ${error.message}`);
 }
 
-// ── ffprobe / frame extract ───────────────────────────────────────────────────
+// ── Fast-start detection ──────────────────────────────────────────────────────
+// Walk top-level MP4 box headers to check whether moov precedes mdat.
+// Reads only box size+type (8 bytes per box), never the box payload.
+function isFastStart(filePath) {
+  const fd = openSync(filePath, "r");
+  const hdr = Buffer.alloc(8);
+  let pos = 0;
+  try {
+    while (true) {
+      if (readSync(fd, hdr, 0, 8, pos) < 8) break;
+      const size = hdr.readUInt32BE(0);
+      const type = hdr.subarray(4, 8).toString("ascii");
+      if (type === "moov") return true;
+      if (type === "mdat") return false;
+      if (size === 0) break; // "runs to EOF" sentinel
+      if (size === 1) {
+        // 64-bit extended size stored in the next 8 bytes
+        const ext = Buffer.alloc(8);
+        readSync(fd, ext, 0, 8, pos + 8);
+        pos += ext.readUInt32BE(0) * 0x100000000 + ext.readUInt32BE(4);
+      } else {
+        pos += size;
+      }
+    }
+  } finally {
+    closeSync(fd);
+  }
+  return false; // could not determine (malformed or unknown container)
+}
+
+// ── ffprobe ───────────────────────────────────────────────────────────────────
 function ffprobeVideo(filePath) {
   const r = spawnSync(
     FFPROBE,
@@ -78,12 +108,16 @@ function ffprobeVideo(filePath) {
   const vs = info.streams.find((s) => s.codec_type === "video");
   if (!vs) throw new Error("No video stream found");
 
-  const duration = parseFloat(
-    info.format?.duration ?? vs.duration ?? "0"
-  );
-  return { width: vs.width, height: vs.height, duration };
+  return {
+    width:      vs.width,
+    height:     vs.height,
+    duration:   parseFloat(info.format?.duration ?? vs.duration ?? "0"),
+    codec_name: vs.codec_name,
+    pix_fmt:    vs.pix_fmt,
+  };
 }
 
+// ── Frame extraction ──────────────────────────────────────────────────────────
 async function extractFrameWebp(filePath, seekSec) {
   const outPng = join(tmpdir(), `frame-${randomUUID()}.png`);
   const scaleFilter = `scale='min(${MAX_WIDTH},iw)':-2`;
@@ -136,8 +170,12 @@ for (const record of records) {
   const meta = metadata ?? {};
   const baseName = basename(storage_path, extname(storage_path));
 
-  const derivativePresent = kind === "photo" ? meta.thumb_path : meta.poster_path;
-  if (width != null && height != null && derivativePresent) {
+  // Skip when every applicable step is already done.
+  // Videos require faststart=true in addition to dimensions+poster.
+  const derivativePresent = kind === "photo" ? !!meta.thumb_path : !!meta.poster_path;
+  const faststartDone     = kind !== "video" || meta.faststart === true;
+
+  if (width != null && height != null && derivativePresent && faststartDone) {
     console.log(`[SKIP] ${storage_path}`);
     skipped++;
     continue;
@@ -170,32 +208,71 @@ for (const record of records) {
 
     } else if (kind === "video") {
       const buf = await downloadToBuffer(storage_path);
-      const tmpVideo = join(tmpdir(), `video-${randomUUID()}${extname(storage_path) || ".mp4"}`);
+      const ext = extname(storage_path) || ".mp4";
+      const tmpVideo = join(tmpdir(), `video-${randomUUID()}${ext}`);
       writeFileSync(tmpVideo, buf);
+      let tmpRemuxed = null;
 
       try {
-        const { width: vW, height: vH, duration } = ffprobeVideo(tmpVideo);
-        const seekSec = duration < 2 ? duration / 2 : 1;
-        const posterBuf = await extractFrameWebp(tmpVideo, seekSec);
+        const newMeta = { ...meta };
+        const updFields = {};
 
-        const posterPath = `${EVENT_SLUG}/posters/${baseName}.webp`;
-        await uploadBuffer(posterBuf, posterPath, "image/webp");
+        // ── Step 1: fast-start guarantee ──────────────────────────────
+        if (newMeta.faststart !== true) {
+          const probe = ffprobeVideo(tmpVideo);
 
+          if (isFastStart(tmpVideo)) {
+            newMeta.faststart = true;
+            console.log(`       fast-start: ✓ already OK`);
+          } else if (probe.codec_name === "h264" && probe.pix_fmt === "yuv420p") {
+            tmpRemuxed = join(tmpdir(), `video-fs-${randomUUID()}${ext}`);
+            const r = spawnSync(
+              FFMPEG,
+              ["-i", tmpVideo, "-c", "copy", "-movflags", "+faststart", "-y", tmpRemuxed],
+              { encoding: "utf8" }
+            );
+            if (r.status !== 0) throw new Error(`faststart remux failed:\n${r.stderr}`);
+
+            const remuxedBuf = readFileSync(tmpRemuxed);
+            await uploadBuffer(remuxedBuf, storage_path, "video/mp4");
+            // Replace tmpVideo with remuxed content so the poster step uses the fixed file
+            writeFileSync(tmpVideo, remuxedBuf);
+            newMeta.faststart = true;
+            console.log(`       fast-start: remuxed + upserted (${(remuxedBuf.length / 1024 / 1024).toFixed(1)} MB)`);
+          } else {
+            console.log(`       fast-start: WARNING codec=${probe.codec_name} pix_fmt=${probe.pix_fmt} — not h264/yuv420p, remux skipped`);
+          }
+        }
+
+        // ── Step 2: dimensions + poster ───────────────────────────────
+        if (width == null || height == null || !meta.poster_path) {
+          const { width: vW, height: vH, duration } = ffprobeVideo(tmpVideo);
+          const seekSec = duration < 2 ? duration / 2 : 1;
+          const posterBuf = await extractFrameWebp(tmpVideo, seekSec);
+
+          const posterPath = `${EVENT_SLUG}/posters/${baseName}.webp`;
+          await uploadBuffer(posterBuf, posterPath, "image/webp");
+
+          updFields.width            = vW;
+          updFields.height           = vH;
+          updFields.duration_seconds = Math.round(duration);
+          newMeta.poster_path        = posterPath;
+
+          console.log(`       ${vW}×${vH}  ${duration.toFixed(3)}s  →  ${posterPath}`);
+        }
+
+        // ── Row update (always runs — at least faststart flag changed) ─
         const { error: updErr } = await supabase
           .from("records")
-          .update({
-            width: vW,
-            height: vH,
-            duration_seconds: Math.round(duration),
-            metadata: { ...meta, poster_path: posterPath },
-          })
+          .update({ ...updFields, metadata: newMeta })
           .eq("id", id);
         if (updErr) throw new Error(`Row update failed: ${updErr.message}`);
 
-        console.log(`       ${vW}×${vH}  ${duration.toFixed(3)}s  →  ${posterPath}  [row updated]`);
+        console.log(`       [row updated]`);
         processed++;
       } finally {
         try { unlinkSync(tmpVideo); } catch { /* ignore */ }
+        if (tmpRemuxed) try { unlinkSync(tmpRemuxed); } catch { /* ignore */ }
       }
 
     } else {
