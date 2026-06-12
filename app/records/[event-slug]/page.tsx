@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import UnauthorizedTerminalClient from "../../dashboard/UnauthorizedTerminalClient";
+import HlsVideo from "./HlsVideo";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -232,21 +233,31 @@ export default async function RecordDetailPage({
             }
 
             if (record.kind === "video") {
+              const hlsMaster = (record.metadata as any)?.hls?.master as string | undefined;
               return (
                 <div
                   key={record.id}
                   style={{ display: "block", breakInside: "avoid", marginBottom: 20, border: "1px solid #333", overflow: "hidden" }}
                 >
-                  <video
-                    src={signedUrl}
-                    controls
-                    playsInline
-                    preload="none"
-                    poster={signedPosterUrl ?? undefined}
-                    width={record.width ?? undefined}
-                    height={record.height ?? undefined}
-                    style={{ display: "block", width: "100%", height: "auto" }}
-                  />
+                  {hlsMaster ? (
+                    <HlsVideo
+                      masterUrl={`/api/hls/${hlsMaster}`}
+                      poster={signedPosterUrl}
+                      width={record.width}
+                      height={record.height}
+                    />
+                  ) : (
+                    <video
+                      src={signedUrl}
+                      controls
+                      playsInline
+                      preload="none"
+                      poster={signedPosterUrl ?? undefined}
+                      width={record.width ?? undefined}
+                      height={record.height ?? undefined}
+                      style={{ display: "block", width: "100%", height: "auto" }}
+                    />
+                  )}
                   <div
                     style={{
                       padding: "8px 12px",
