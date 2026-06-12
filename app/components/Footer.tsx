@@ -18,10 +18,10 @@ export default function Footer() {
         </div>
 
         <p style={{ maxWidth: "600px", lineHeight: "1.7", marginBottom: "14px", opacity: 0.85 }}>
-          Signo Research Group produces electronic music events and live
-          experiences in Southwest Florida. We operate ticketed shows featuring
-          electronic and bass music artists, and send event updates, ticketing
-          information, and announcements by SMS to attendees who opt in.
+          Signo Research Group operates the ticketing platform at
+          signoresearchgroup.com for electronic music events in Southwest
+          Florida, and sends event updates, ticketing information, and
+          announcements by SMS to members who opt in.
         </p>
 
         <div style={{ marginBottom: "10px" }}>
