@@ -1,5 +1,6 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import { ReactNode } from "react";
 
 export const metadata = {
@@ -27,7 +28,7 @@ export default function RootLayout({
         <div style={{ minHeight: 'calc(100vh - 80px)' }}>
           {children}
         </div>
-        <div className="global-help-text">HELP: support.signoresearchgroup@gmail.com</div>
+        <Footer />
 
       </body>
     </html>

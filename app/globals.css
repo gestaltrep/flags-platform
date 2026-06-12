@@ -319,16 +319,6 @@ body::before {
   margin-top: 14px;
 }
 
-.global-help-text {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  letter-spacing: 1px;
-  color: #ffffff;
-  text-align: left;
-  padding: 12px 20px 24px 20px;
-  margin-top: 15vh;
-}
-
 /* OTHER DESKTOP / LAPTOP HOME UPSCALE ONLY */
 /* Leaves larger desktops untouched */
 
