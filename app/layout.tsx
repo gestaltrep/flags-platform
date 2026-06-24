@@ -25,7 +25,7 @@ export default function RootLayout({
 
         <Navbar />
 
-        <div style={{ minHeight: 'calc(100vh - 80px)' }}>
+        <div style={{ minHeight: '460px' }}>
           {children}
         </div>
         <Footer />

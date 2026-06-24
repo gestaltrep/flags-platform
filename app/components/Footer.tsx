@@ -7,7 +7,7 @@ export default function Footer() {
         letterSpacing: "1px",
         color: "#ffffff",
         padding: "32px 20px 28px 20px",
-        marginTop: "15vh",
+        marginTop: "28px",
         borderTop: "1px solid #333",
         lineHeight: "1.8",
       }}
