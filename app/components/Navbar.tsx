@@ -44,7 +44,7 @@ export default function Navbar() {
             </Link>
 
             <Link href="/sms-opt-in" className="nav-link">
-              SMS Terms
+              SMS
             </Link>
           </div>
         )}
@@ -70,7 +70,7 @@ export default function Navbar() {
             </Link>
 
             <Link href="/sms-opt-in" className="navbar-mobile-link">
-              SMS Terms
+              SMS
             </Link>
           </div>
         )}
