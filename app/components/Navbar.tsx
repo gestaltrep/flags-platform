@@ -35,16 +35,16 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="nav-right">
-            <Link href="/sms-opt-in" className="nav-link">
-              SMS Terms
-            </Link>
-
             <Link href="/dashboard" className="nav-link">
               Terminal
             </Link>
 
             <Link href="/records" className="nav-link">
               Records
+            </Link>
+
+            <Link href="/sms-opt-in" className="nav-link">
+              SMS Terms
             </Link>
           </div>
         )}
@@ -61,16 +61,16 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="navbar-mobile-links">
-            <Link href="/sms-opt-in" className="navbar-mobile-link">
-              SMS Terms
-            </Link>
-
             <Link href="/dashboard" className="navbar-mobile-link">
               Terminal
             </Link>
 
             <Link href="/records" className="navbar-mobile-link">
               Records
+            </Link>
+
+            <Link href="/sms-opt-in" className="navbar-mobile-link">
+              SMS Terms
             </Link>
           </div>
         )}
