@@ -35,6 +35,10 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="nav-right">
+            <Link href="/sms-opt-in" className="nav-link">
+              SMS Terms
+            </Link>
+
             <Link href="/dashboard" className="nav-link">
               Terminal
             </Link>
@@ -57,6 +61,10 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="navbar-mobile-links">
+            <Link href="/sms-opt-in" className="navbar-mobile-link">
+              SMS Terms
+            </Link>
+
             <Link href="/dashboard" className="navbar-mobile-link">
               Terminal
             </Link>
