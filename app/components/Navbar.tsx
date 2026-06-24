@@ -42,10 +42,6 @@ export default function Navbar() {
             <Link href="/records" className="nav-link">
               Records
             </Link>
-
-            <Link href="/sms-opt-in" className="nav-link">
-              SMS
-            </Link>
           </div>
         )}
       </div>
@@ -67,10 +63,6 @@ export default function Navbar() {
 
             <Link href="/records" className="navbar-mobile-link">
               Records
-            </Link>
-
-            <Link href="/sms-opt-in" className="navbar-mobile-link">
-              SMS
             </Link>
           </div>
         )}
