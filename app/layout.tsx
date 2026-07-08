@@ -4,8 +4,15 @@ import Footer from "./components/Footer";
 import { ReactNode } from "react";
 
 export const metadata = {
-  title: "RAVE_Initiation.html",
-  description: "May 30 | Charlotte County Fair | Yheti b2b~ Toadface, RAFEEKI, Palpa, Omnichroma, KRiMSUN, Like Butter, DOM | GA, VIP sold in Terminal",
+  title: "Signo Research Group — Electronic Music Event Ticketing",
+  description: "Signo Research Group is a ticketing platform for electronic music events in Southwest Florida. We send event updates, ticketing information, and announcements by SMS to members who opt in.",
+  openGraph: {
+    title: "Signo Research Group — Electronic Music Event Ticketing",
+    description: "Signo Research Group is a ticketing platform for electronic music events in Southwest Florida. We send event updates, ticketing information, and announcements by SMS to members who opt in.",
+    siteName: "Signo Research Group",
+    type: "website",
+    url: "https://signoresearchgroup.com",
+  },
 };
 
 export default function RootLayout({
