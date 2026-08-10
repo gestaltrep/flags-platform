@@ -136,7 +136,7 @@ export default function UnauthorizedTerminalClient({ title = "Terminal" }: { tit
                 </div>
                 <div className="modal-status-line">
                   <span className="modal-status-symbol" style={{ visibility: "hidden" }}>{">"}</span>
-                  <span className="modal-status-text">OBTAIN TERMINAL ACCESS</span>
+                  <span className="modal-status-text">{"OBTAIN " + title.toUpperCase() + " ACCESS"}</span>
                 </div>
               </div>
             )}
@@ -188,7 +188,7 @@ export default function UnauthorizedTerminalClient({ title = "Terminal" }: { tit
                 </div>
                 <div className="modal-status-line">
                   <span className="modal-status-symbol" style={{ visibility: "hidden" }}>{">"}</span>
-                  <span className="modal-status-text">OBTAIN TERMINAL ACCESS</span>
+                  <span className="modal-status-text">{"OBTAIN " + title.toUpperCase() + " ACCESS"}</span>
                 </div>
               </div>
             )}
