@@ -17,6 +17,8 @@ type AppState =
   | "success"
   | "error";
 
+type AgeBracket = "over_21" | "under_21";
+
 interface TicketHolder {
   name: string | null;
   phone: string | null;
@@ -198,9 +200,14 @@ export default function CheckInPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [checkedInCount, setCheckedInCount] = useState(0);
   const [waiverChecked, setWaiverChecked] = useState(false);
+  const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
+  const [under21Count, setUnder21Count] = useState(0);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [manualCode, setManualCode] = useState("");
+
+  // Hard gate: waiver accepted AND an age bracket chosen.
+  const canCompleteCheckIn = waiverChecked && ageBracket !== null;
 
   useEffect(() => {
     return () => {
@@ -210,6 +217,21 @@ export default function CheckInPage() {
 
   // ── Auth check on mount ──────────────────────────────────────────────────
   useEffect(() => {
+    // Server-side under-21 tally, so the number survives a page refresh.
+    async function loadUnder21Count(token: string) {
+      try {
+        const res = await fetch("/api/checkin", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (typeof data.under_21_count === "number") setUnder21Count(data.under_21_count);
+      } catch {
+        // offline — leave the last known value alone
+      }
+    }
+
     async function checkAuth() {
       const params = new URLSearchParams(window.location.search);
       const keyParam = params.get("key");
@@ -237,6 +259,7 @@ export default function CheckInPage() {
             String(data.valid_until_ms)
           );
           setAppState("scanner");
+          loadUnder21Count(token);
           return;
         }
 
@@ -311,6 +334,7 @@ export default function CheckInPage() {
         if (res.ok && data.success) {
           setTicket(data.ticket);
           setWaiverChecked(false);
+          setAgeBracket(null);
           setAppState("confirm");
         }
       })
@@ -347,6 +371,8 @@ export default function CheckInPage() {
 
   // ── Check-in submit ──────────────────────────────────────────────────────
   async function completeCheckIn() {
+    if (!waiverChecked || !ageBracket) return;
+
     const token = localStorage.getItem("checkin_staff_token") || "";
 
     try {
@@ -356,7 +382,11 @@ export default function CheckInPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code: currentCode, waiver_accepted: true }),
+        body: JSON.stringify({
+          code: currentCode,
+          waiver_accepted: true,
+          age_bracket: ageBracket,
+        }),
       });
 
       if (res.status === 401) {
@@ -374,6 +404,7 @@ export default function CheckInPage() {
       }
 
       setCheckedInCount((n) => n + 1);
+      if (typeof data.under_21_count === "number") setUnder21Count(data.under_21_count);
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
       setAppState("success");
       successTimerRef.current = setTimeout(() => setAppState("scanner"), 3000);
@@ -489,6 +520,19 @@ export default function CheckInPage() {
           }}
         >
           CHECKED IN: {checkedInCount}
+        </div>
+
+        <div
+          style={{
+            margin: "0 20px",
+            color: "#444",
+            fontSize: 10,
+            letterSpacing: 1.5,
+            fontFamily: MONO,
+            marginBottom: 8,
+          }}
+        >
+          UNDER 21 ADMITTED: {under21Count}
         </div>
 
         <div
@@ -666,16 +710,51 @@ export default function CheckInPage() {
           </span>
         </label>
 
+        <div
+          style={{
+            fontSize: 11,
+            letterSpacing: 1.5,
+            color: "#888",
+            marginBottom: 10,
+            fontFamily: MONO,
+          }}
+        >
+          AGE BRACKET (REQUIRED)
+        </div>
+        <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+          {([
+            ["over_21", "21+"],
+            ["under_21", "UNDER 21"],
+          ] as const).map(([value, label]) => {
+            const selected = ageBracket === value;
+            return (
+              <button
+                key={value}
+                onClick={() => setAgeBracket(value)}
+                style={{
+                  ...BTN,
+                  flex: 1,
+                  color: selected ? "black" : "white",
+                  background: selected ? "white" : "black",
+                  borderColor: selected ? "white" : "#555",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={completeCheckIn}
-            disabled={!waiverChecked}
+            disabled={!canCompleteCheckIn}
             style={{
               ...BTN,
               flex: 1,
-              color: waiverChecked ? "white" : "#444",
-              borderColor: waiverChecked ? "white" : "#444",
-              cursor: waiverChecked ? "pointer" : "not-allowed",
+              color: canCompleteCheckIn ? "white" : "#444",
+              borderColor: canCompleteCheckIn ? "white" : "#444",
+              cursor: canCompleteCheckIn ? "pointer" : "not-allowed",
             }}
           >
             COMPLETE CHECK-IN

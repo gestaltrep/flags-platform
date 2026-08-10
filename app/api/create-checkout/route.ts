@@ -1,10 +1,12 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { calculateTier, tierPriceCents } from "@/lib/tier";
 import { getActiveSalesEvent } from "@/lib/events";
 import { getVerifiedUserId } from "@/lib/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+/** How long a reserved seat is held while the buyer completes payment. */
+const RESERVATION_TTL_SECONDS = 900;
 
 export async function POST(req: Request) {
   try {
@@ -34,22 +36,59 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { count } = await supabase
-      .from("ticket_codes")
-      .select("*", { count: "exact", head: true })
-      .eq("event_id", event.id)
-      .eq("is_vip", false)
-      .eq("comp", false)
-      .not("buyer_user_id", "is", null)
-      .is("refunded_at", null);
+    // Capacity gate. One atomic call picks the active tier, holds the seats
+    // all-or-nothing within that single tier, and never spans tiers.
+    const { data: reservationRows, error: reserveError } = await supabase.rpc(
+      "reserve_ga_capacity",
+      {
+        p_event_id: event.id,
+        p_qty: quantity,
+        p_payment_intent_id: null,
+        p_ttl_seconds: RESERVATION_TTL_SECONDS,
+      }
+    );
 
-    const sold = count ?? 0;
-    const remaining = 1000 - sold;
-    if (remaining <= 0) return Response.json({ error: "General admission sold out" }, { status: 400 });
-    if (quantity > remaining) return Response.json({ error: `Only ${remaining} tokens remain.` }, { status: 400 });
+    if (reserveError) {
+      console.error("Reservation error:", reserveError);
+      return Response.json({ error: "Checkout creation failed" }, { status: 500 });
+    }
 
-    const tier = calculateTier(sold);
-    const baseAmount = tierPriceCents(tier) * quantity;
+    const reservation = Array.isArray(reservationRows) ? reservationRows[0] : reservationRows;
+    if (!reservation) {
+      return Response.json({ error: "Checkout creation failed" }, { status: 500 });
+    }
+
+    const {
+      tier_id: tierId,
+      price_cents: priceCents,
+      reserved_qty: reservedQty,
+      remaining,
+      reservation_id: reservationId,
+    } = reservation as {
+      tier_id: string | null;
+      price_cents: number | null;
+      reserved_qty: number;
+      remaining: number;
+      reservation_id: string | null;
+    };
+
+    if (reservedQty === 0) {
+      // Nothing was held — never charge for a partial quantity.
+      if (!tierId) {
+        return Response.json({ error: "General admission sold out" }, { status: 400 });
+      }
+      return Response.json(
+        {
+          error:
+            `Only ${remaining} remain at this price. ` +
+            `Reduce your quantity to ${remaining} — the rest are a separate purchase at the next tier.`,
+          remaining,
+        },
+        { status: 400 }
+      );
+    }
+
+    const baseAmount = priceCents! * reservedQty;
 
     let discountPercent = 0;
     let promoCodeId: string | null = null;
@@ -91,24 +130,44 @@ export async function POST(req: Request) {
       ? Math.round(baseAmount * (1 - discountPercent / 100))
       : baseAmount;
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: finalAmount,
-      currency: "usd",
-      automatic_payment_methods: { enabled: true },
-      payment_method_options: {
-        card: {
-          setup_future_usage: undefined,
+    let paymentIntent: Stripe.PaymentIntent;
+    try {
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: finalAmount,
+        currency: "usd",
+        automatic_payment_methods: { enabled: true },
+        payment_method_options: {
+          card: {
+            setup_future_usage: undefined,
+          },
         },
-      },
-      metadata: {
-        user_id: userId,
-        quantity: String(quantity),
-        is_vip: "false",
-        event_id: event.id,
-        promo_code_id: promoCodeId ?? "",
-        discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * discountPercent / 100) : 0),
-      },
-    });
+        metadata: {
+          user_id: userId,
+          quantity: String(reservedQty),
+          is_vip: "false",
+          event_id: event.id,
+          tier_id: tierId!,
+          reservation_id: reservationId ?? "",
+          promo_code_id: promoCodeId ?? "",
+          discount_applied: String(discountPercent > 0 ? Math.round(baseAmount * discountPercent / 100) : 0),
+        },
+      });
+    } catch (stripeErr) {
+      // Release the hold immediately rather than leaving seats parked for the TTL.
+      if (reservationId) {
+        await supabase.from("tier_reservations").delete().eq("id", reservationId);
+      }
+      throw stripeErr;
+    }
+
+    // Bind the hold to the PaymentIntent so the webhook can retire it on success.
+    if (reservationId) {
+      const { error: bindError } = await supabase
+        .from("tier_reservations")
+        .update({ payment_intent_id: paymentIntent.id })
+        .eq("id", reservationId);
+      if (bindError) console.error("Reservation bind error:", bindError);
+    }
 
     return Response.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {

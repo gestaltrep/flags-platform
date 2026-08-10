@@ -1,9 +1,19 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Countdown from "./Countdown";
 import EmbeddedCheckoutModal from "./EmbeddedCheckoutModal";
-import { tierPriceCents, type Tier } from "@/lib/tier";
+
+/** One configured tier as published by /api/tier-status. */
+type TierInfo = {
+  id: string;
+  name: string;
+  sortOrder: number;
+  priceCents: number;
+  capacity: number;
+  sold: number;
+  remaining: number;
+  active: boolean;
+};
 
 type ParticipationStep =
   | "chooser"
@@ -65,10 +75,9 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
   const [checkoutAmount, setCheckoutAmount] = useState(0);
   const [ticketBaseline, setTicketBaseline] = useState(0);
 
+  const [tiers, setTiers] = useState<TierInfo[]>([]);
   const [tier, setTier] = useState(1);
-  const [sold, setSold] = useState(0);
   const [vipSold, setVipSold] = useState(0);
-  const [tierStartedAtSold, setTierStartedAtSold] = useState(0);
   const [tableSold, setTableSold] = useState(0);
 
   const [viewportWidth, setViewportWidth] = useState(1400);
@@ -89,10 +98,9 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     fetch("/api/tier-status", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
-        setTier(d.tier ?? 1);
-        setSold(d.sold ?? 0);
+        setTiers(Array.isArray(d.tiers) ? d.tiers : []);
+        setTier(d.activeTierSortOrder ?? 0);
         setVipSold(d.vipSold ?? 0);
-        setTierStartedAtSold(d.tierStartedAtSold ?? 0);
       })
       .catch(() => {});
     fetch("/api/table-status", { cache: "no-store" })
@@ -207,7 +215,7 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     // Compute display amount for the Stripe modal header
     let amount = 0;
     if (src === "ga") {
-      const base = tierPriceCents(tier as Tier) * gaQuantity;
+      const base = (activeTier?.priceCents ?? 0) * gaQuantity;
       amount = gaPromoValid && gaPromoDiscount ? Math.round(base * (1 - gaPromoDiscount / 100)) : base;
     } else if (src === "vip") {
       const base = 6667 * vipQuantity;
@@ -383,35 +391,22 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     }
   }
 
-  function tier1Fill() {
-    if (tier > 1) return 1;
-    return Math.max(0, Math.min(1, sold / 50));
+  // Tier presentation is driven entirely by the published config: each segment
+  // fills with its own sold/capacity. No dates, no thresholds in the client.
+  const activeTier = tiers.find((t) => t.active) ?? null;
+  const nextTier = activeTier
+    ? tiers.find((t) => t.sortOrder > activeTier.sortOrder) ?? null
+    : null;
+
+  function tierFill(t: TierInfo) {
+    if (t.capacity <= 0) return 0;
+    return Math.max(0, Math.min(1, t.sold / t.capacity));
   }
-  function tier2Fill() {
-    if (tier > 2) return 1;
-    if (tier < 2) return 0;
-    const d = 125 - tierStartedAtSold;
-    if (d <= 0) return 1;
-    return Math.max(0, Math.min(1, (sold - tierStartedAtSold) / d));
-  }
-  function tier3Fill() {
-    if (tier < 3) return 0;
-    return Math.max(0, Math.min(1, (sold - 125) / 875));
+  function priceLabel(t: TierInfo | null) {
+    return t ? `$${(t.priceCents / 100).toFixed(2)}` : "—";
   }
   function tierColor(t: number) {
     return tier === t ? "#ffffff" : "#555555";
-  }
-
-  function loadTier() {
-    fetch("/api/tier-status", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => {
-        setTier(d.tier ?? 1);
-        setSold(d.sold ?? 0);
-        setVipSold(d.vipSold ?? 0);
-        setTierStartedAtSold(d.tierStartedAtSold ?? 0);
-      })
-      .catch(() => {});
   }
 
   const arrowBtnStyle: React.CSSProperties = {
@@ -893,58 +888,36 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
             {step === "ga" && (
               <>
                 <div className="modal-status-copy" style={{ marginBottom: 18 }}>
-                  {tier === 1 ? (
+                  {activeTier ? (
                     <>
+                      <div className="modal-status-line">
+                        <span className="modal-status-symbol">{">"}</span>
+                        <span className="modal-status-text">
+                          {activeTier.name.toUpperCase()} ACTIVE - $
+                          {gaPromoValid && gaPromoDiscount != null
+                            ? (Math.round(activeTier.priceCents * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)
+                            : (activeTier.priceCents / 100).toFixed(2)}
+                        </span>
+                      </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text" style={{ color: "#ff3333" }}>
-                          TIER 1 END:{" "}
-                          <Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                          {activeTier.remaining} LEFT AT THIS PRICE
                         </span>
                       </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">
-                          TIER 1 ACTIVE - $
-                          {gaPromoValid && gaPromoDiscount != null
-                            ? (Math.round(tierPriceCents(1) * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)
-                            : (tierPriceCents(1) / 100).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">
-                          NEXT TIER - ${(tierPriceCents(2) / 100).toFixed(2)}
-                        </span>
-                      </div>
-                    </>
-                  ) : tier === 2 ? (
-                    <>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">
-                          TIER 2 ACTIVE - $
-                          {gaPromoValid && gaPromoDiscount != null
-                            ? (Math.round(tierPriceCents(2) * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)
-                            : (tierPriceCents(2) / 100).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">
-                          NEXT TIER - ${(tierPriceCents(3) / 100).toFixed(2)}
-                        </span>
-                      </div>
+                      {nextTier && (
+                        <div className="modal-status-line">
+                          <span className="modal-status-symbol">{">"}</span>
+                          <span className="modal-status-text">
+                            NEXT TIER - {priceLabel(nextTier)}
+                          </span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="modal-status-line">
                       <span className="modal-status-symbol">{">"}</span>
-                      <span className="modal-status-text">
-                        TIER {tier} ACTIVE - $
-                        {gaPromoValid && gaPromoDiscount != null
-                          ? (Math.round(tierPriceCents(tier as Tier) * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)
-                          : (tierPriceCents(tier as Tier) / 100).toFixed(2)}
-                      </span>
+                      <span className="modal-status-text">SOLD OUT</span>
                     </div>
                   )}
                 </div>
@@ -953,31 +926,35 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
                 <div style={{ marginBottom: 22 }}>
                   <div style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
                     textAlign: "center",
                     fontSize: 10,
                     letterSpacing: 1.8,
                     marginBottom: 6,
                   }}>
-                    {([1, 2, 3] as const).map((t) => (
-                      <div key={t} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <span style={{ color: tierColor(t) }}>TIER {t}</span>
+                    {tiers.map((t) => (
+                      <div key={t.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <span style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</span>
                         <span style={{ color: "#888", fontSize: 9, marginTop: 2 }}>
-                          ${(tierPriceCents(t) / 100).toFixed(2)}
+                          {priceLabel(t)}
                         </span>
                       </div>
                     ))}
                   </div>
                   <div style={{ display: "flex", width: "100%", height: 10, background: "#222" }}>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
-                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
+                    {tiers.map((t, i) => (
+                      <div
+                        key={t.id}
+                        style={{
+                          width: `${100 / Math.max(1, tiers.length)}%`,
+                          height: "100%",
+                          position: "relative",
+                          borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
+                        }}
+                      >
+                        <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 

@@ -3,10 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
-import Countdown from "../components/Countdown";
 import { QRCodeSVG } from "qrcode.react";
-import { tierPriceCents, type Tier } from "@/lib/tier";
 import type { Event } from "@/lib/events";
+
+/** One configured tier as published by /api/tier-status. */
+type TierInfo = {
+  id: string;
+  name: string;
+  sortOrder: number;
+  priceCents: number;
+  capacity: number;
+  sold: number;
+  remaining: number;
+  active: boolean;
+};
 
 type Ticket = {
   id?: string;
@@ -42,10 +52,9 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
 
+  const [tiers, setTiers] = useState<TierInfo[]>([]);
   const [tier, setTier] = useState(1);
-  const [sold, setSold] = useState(0);
   const [vipSold, setVipSold] = useState(0);
-  const [tierStartedAtSold, setTierStartedAtSold] = useState(0);
 
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   const [showTierPanel, setShowTierPanel] = useState(false);
@@ -147,10 +156,9 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
       const res = await fetch("/api/tier-status", { cache: "no-store" });
       const data = await res.json();
 
-      setTier(data.tier ?? 1);
-      setSold(data.sold ?? 0);
+      setTiers(Array.isArray(data.tiers) ? data.tiers : []);
+      setTier(data.activeTierSortOrder ?? 0);
       setVipSold(data.vipSold ?? 0);
-      setTierStartedAtSold(data.tierStartedAtSold ?? 0);
     } catch (err) {
       console.error("Tier load failed", err);
     }
@@ -253,20 +261,20 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
     return tier === targetTier ? "#ffffff" : "#555555";
   }
 
-  function tier1Fill() {
-    if (tier > 1) return 1;
-    return Math.max(0, Math.min(1, sold / 50));
+  // Tier presentation is driven entirely by the published config: each segment
+  // fills with its own sold/capacity. No dates, no thresholds in the client.
+  const activeTier = tiers.find((t) => t.active) ?? null;
+  const nextTier = activeTier
+    ? tiers.find((t) => t.sortOrder > activeTier.sortOrder) ?? null
+    : null;
+
+  function tierFill(t: TierInfo) {
+    if (t.capacity <= 0) return 0;
+    return Math.max(0, Math.min(1, t.sold / t.capacity));
   }
-  function tier2Fill() {
-    if (tier > 2) return 1;
-    if (tier < 2) return 0;
-    const denominator = 125 - tierStartedAtSold;
-    if (denominator <= 0) return 1;
-    return Math.max(0, Math.min(1, (sold - tierStartedAtSold) / denominator));
-  }
-  function tier3Fill() {
-    if (tier < 3) return 0;
-    return Math.max(0, Math.min(1, (sold - 125) / 875));
+
+  function priceLabel(t: TierInfo | null) {
+    return t ? `$${(t.priceCents / 100).toFixed(2)}` : "—";
   }
 
   function vipProgressPercent() {
@@ -350,7 +358,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
     }
     setCheckoutMessage("");
     setCheckoutType("ga");
-    const pricePerToken = tierPriceCents(tier as Tier);
+    const pricePerToken = activeTier?.priceCents ?? 0;
     const base = pricePerToken * gaQuantity;
     const disc = gaPromoDiscount ?? 0;
     setCheckoutAmount(gaPromoValid && disc > 0 ? Math.round(base * (1 - disc / 100)) : base);
@@ -959,9 +967,9 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   }}
                 >
                   <span>TOKENS</span>
-                  {tier === 1 && (
+                  {activeTier && (
                     <span style={{ color: '#ff3333', fontFamily: '"Courier New", monospace' }}>
-                      TIER 1 END:{" "}<Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                      {activeTier.remaining} LEFT AT {priceLabel(activeTier)}
                     </span>
                   )}
                 </div>
@@ -970,24 +978,18 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   style={{
                     width: desktopProgressWidth,
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
                     textAlign: "center",
                     fontSize: desktopSmallLabel,
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ color: tierColor(1) }}>TIER 1</span>
-                    <span style={{ color: tierColor(1) }}>${(tierPriceCents(1) / 100).toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ color: tierColor(2) }}>TIER 2</span>
-                    <span style={{ color: tierColor(2) }}>${(tierPriceCents(2) / 100).toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ color: tierColor(3) }}>TIER 3</span>
-                    <span style={{ color: tierColor(3) }}>${(tierPriceCents(3) / 100).toFixed(2)}</span>
-                  </div>
+                  {tiers.map((t) => (
+                    <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</span>
+                      <span style={{ color: tierColor(t.sortOrder) }}>{priceLabel(t)}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div
@@ -1000,15 +1002,19 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   }}
                 >
                   <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
-                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
+                    {tiers.map((t, i) => (
+                      <div
+                        key={t.id}
+                        style={{
+                          width: `${100 / Math.max(1, tiers.length)}%`,
+                          height: "100%",
+                          position: "relative",
+                          borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
+                        }}
+                      >
+                        <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -1399,38 +1405,31 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  {tier === 1 ? (
+                  {activeTier ? (
                     <>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
-                          TIER 1 END:{" "}<Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                        <span className="modal-status-text">
+                          {activeTier.name.toUpperCase()} ACTIVE - {priceLabel(activeTier)}
                         </span>
                       </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                          {activeTier.remaining} LEFT AT THIS PRICE
+                        </span>
                       </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
-                      </div>
-                    </>
-                  ) : tier === 2 ? (
-                    <>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">TIER 2 ACTIVE - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
-                      </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(3) / 100).toFixed(2)}</span>
-                      </div>
+                      {nextTier && (
+                        <div className="modal-status-line">
+                          <span className="modal-status-symbol">{">"}</span>
+                          <span className="modal-status-text">NEXT TIER - {priceLabel(nextTier)}</span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="modal-status-line">
                       <span className="modal-status-symbol">{">"}</span>
-                      <span className="modal-status-text">TIER {tier} ACTIVE - ${(tierPriceCents(tier as Tier) / 100).toFixed(2)}</span>
+                      <span className="modal-status-text">SOLD OUT</span>
                     </div>
                   )}
                 </div>
@@ -1439,27 +1438,31 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
                       textAlign: "center",
                       ...mobileTierLabelStyle,
                     }}
                   >
-                    <div style={{ color: tierColor(1) }}>TIER 1</div>
-                    <div style={{ color: tierColor(2) }}>TIER 2</div>
-                    <div style={{ color: tierColor(3) }}>TIER 3</div>
+                    {tiers.map((t) => (
+                      <div key={t.id} style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</div>
+                    ))}
                   </div>
 
                   <div style={mobileTierTrackStyle}>
                     <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                      <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                        <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
-                      </div>
-                      <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                        <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
-                      </div>
-                      <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
-                        <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
-                      </div>
+                      {tiers.map((t, i) => (
+                        <div
+                          key={t.id}
+                          style={{
+                            width: `${100 / Math.max(1, tiers.length)}%`,
+                            height: "100%",
+                            position: "relative",
+                            borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
+                          }}
+                        >
+                          <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1547,38 +1550,31 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
             ) : (
               <>
                 <div className="modal-status-copy" style={generateStatusCopyStyle}>
-                  {tier === 1 ? (
+                  {activeTier ? (
                     <>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
-                          TIER 1 END:{" "}<Countdown targetDate="2026-05-14T23:59:59-04:00" onExpire={loadTier} />
+                        <span className="modal-status-text">
+                          {activeTier.name.toUpperCase()} ACTIVE - {priceLabel(activeTier)}
                         </span>
                       </div>
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">TIER 1 ACTIVE - ${(tierPriceCents(1) / 100).toFixed(2)}</span>
+                        <span className="modal-status-text" style={{ color: "#ff3333" }}>
+                          {activeTier.remaining} LEFT AT THIS PRICE
+                        </span>
                       </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
-                      </div>
-                    </>
-                  ) : tier === 2 ? (
-                    <>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">TIER 2 ACTIVE - ${(tierPriceCents(2) / 100).toFixed(2)}</span>
-                      </div>
-                      <div className="modal-status-line">
-                        <span className="modal-status-symbol">{">"}</span>
-                        <span className="modal-status-text">NEXT TIER - ${(tierPriceCents(3) / 100).toFixed(2)}</span>
-                      </div>
+                      {nextTier && (
+                        <div className="modal-status-line">
+                          <span className="modal-status-symbol">{">"}</span>
+                          <span className="modal-status-text">NEXT TIER - {priceLabel(nextTier)}</span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="modal-status-line">
                       <span className="modal-status-symbol">{">"}</span>
-                      <span className="modal-status-text">TIER {tier} ACTIVE - ${(tierPriceCents(tier as Tier) / 100).toFixed(2)}</span>
+                      <span className="modal-status-text">SOLD OUT</span>
                     </div>
                   )}
                 </div>
@@ -1586,31 +1582,35 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                 <div style={{ marginBottom: 22 }}>
                   <div style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
                     textAlign: "center",
                     fontSize: 10,
                     letterSpacing: 1.8,
                     marginBottom: 6,
                   }}>
-                    {([1, 2, 3] as const).map((t) => (
-                      <div key={t} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <span style={{ color: tierColor(t) }}>TIER {t}</span>
+                    {tiers.map((t) => (
+                      <div key={t.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <span style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</span>
                         <span style={{ color: "#888", fontSize: 9, marginTop: 2 }}>
-                          ${(tierPriceCents(t) / 100).toFixed(2)}
+                          {priceLabel(t)}
                         </span>
                       </div>
                     ))}
                   </div>
                   <div style={{ display: "flex", width: "100%", height: 10, background: "#222" }}>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier1Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3333%", height: "100%", position: "relative", borderRight: "1px solid #888" }}>
-                      <div style={{ width: `${tier2Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
-                    <div style={{ width: "33.3334%", height: "100%", position: "relative" }}>
-                      <div style={{ width: `${tier3Fill() * 100}%`, height: "100%", background: "white" }} />
-                    </div>
+                    {tiers.map((t, i) => (
+                      <div
+                        key={t.id}
+                        style={{
+                          width: `${100 / Math.max(1, tiers.length)}%`,
+                          height: "100%",
+                          position: "relative",
+                          borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
+                        }}
+                      >
+                        <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 

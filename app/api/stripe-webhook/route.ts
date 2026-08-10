@@ -68,6 +68,8 @@ export async function POST(req: Request) {
       console.error("stripe-webhook: PaymentIntent missing event_id metadata", paymentIntent.id);
       return new Response("Missing event_id in PaymentIntent metadata", { status: 400 });
     }
+    const tierId = paymentIntent.metadata?.tier_id || null;
+    const reservationId = paymentIntent.metadata?.reservation_id || "";
     const promoCodeId = paymentIntent.metadata?.promo_code_id || "";
     const discountApplied = Number(paymentIntent.metadata?.discount_applied ?? 0);
 
@@ -110,6 +112,7 @@ export async function POST(req: Request) {
       event_id: eventId,
       buyer_user_id: userId,
       code: makeCode(),
+      tier_id: tierId,
       is_vip: isVip,
       vip: isVip,
       is_table: isTable,
@@ -127,6 +130,20 @@ export async function POST(req: Request) {
     if (ticketError) {
       console.error("Ticket insert error:", ticketError);
       return new Response("Ticket insert failed", { status: 500 });
+    }
+
+    // Seats are now held by real ticket_codes rows — retire the capacity hold.
+    // Never fail the webhook on this: a stale hold expires on its own TTL.
+    const { error: reservationDeleteError } = await supabase
+      .from("tier_reservations")
+      .delete()
+      .eq("payment_intent_id", paymentIntent.id);
+    if (reservationDeleteError) {
+      console.error("Reservation delete error:", reservationDeleteError);
+    }
+    // Fallback for the rare case where the PaymentIntent id never got bound.
+    if (reservationId) {
+      await supabase.from("tier_reservations").delete().eq("id", reservationId);
     }
 
     if (promoCodeId) {

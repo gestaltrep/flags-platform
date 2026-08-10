@@ -1,39 +1,83 @@
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { WAIVER_BODY, WAIVER_VERSION } from "@/lib/waiver";
+import { getLiveEvent } from "@/lib/events";
+
+function admin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+type SupabaseAdmin = ReturnType<typeof admin>;
+
+/** Staff bearer token -> checkin_tokens row, or null. */
+async function authStaff(req: Request, supabase: SupabaseAdmin) {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+
+  const staffToken = authHeader.slice(7).trim();
+  if (!staffToken) return null;
+
+  const { data } = await supabase
+    .from("checkin_tokens")
+    .select("id")
+    .eq("token", staffToken)
+    .is("revoked_at", null)
+    .maybeSingle();
+
+  return data ? { id: data.id as string, token: staffToken } : null;
+}
+
+/**
+ * Server-side count of under-21 admissions for the live event. Counts every
+ * admitted token including comps — this is the venue settlement input.
+ */
+async function under21Count(supabase: SupabaseAdmin): Promise<number> {
+  const live = await getLiveEvent();
+  if (!live) return 0;
+
+  const { count } = await supabase
+    .from("ticket_codes")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", live.id)
+    .eq("claimed", true)
+    .eq("admitted_under_21", true);
+
+  return count ?? 0;
+}
+
+/** Scanner screen reads the running under-21 tally here so it survives a refresh. */
+export async function GET(req: Request) {
+  const supabase = admin();
+
+  const staff = await authStaff(req, supabase);
+  if (!staff) {
+    return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+
+  return Response.json({ success: true, under_21_count: await under21Count(supabase) });
+}
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get("Authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    const staffToken = authHeader.slice(7).trim();
-    if (!staffToken) {
-      return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
-
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: tokenData } = await supabase
-      .from("checkin_tokens")
-      .select("id")
-      .eq("token", staffToken)
-      .is("revoked_at", null)
-      .maybeSingle();
-
-    if (!tokenData) {
+    const staff = await authStaff(req, supabase);
+    if (!staff) {
       return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
+    const tokenData = { id: staff.id };
+    const staffToken = staff.token;
 
     const body = await req.json();
     const code = String(body.code || "").trim().toUpperCase();
     const waiverAccepted = body.waiver_accepted === true;
+    const ageBracket = body.age_bracket;
 
     if (!code) {
       return Response.json({ success: false, message: "No code provided." }, { status: 400 });
@@ -41,6 +85,10 @@ export async function POST(req: Request) {
 
     if (!waiverAccepted) {
       return Response.json({ success: false, message: "Waiver not accepted." }, { status: 400 });
+    }
+
+    if (ageBracket !== "over_21" && ageBracket !== "under_21") {
+      return Response.json({ success: false, message: "Age bracket required." }, { status: 400 });
     }
 
     const { data: ticket, error: ticketError } = await supabase
@@ -66,7 +114,11 @@ export async function POST(req: Request) {
 
     const { data: claimedRows, error: ticketUpdateError } = await supabase
       .from("ticket_codes")
-      .update({ claimed: true, claimed_at: new Date().toISOString() })
+      .update({
+        claimed: true,
+        claimed_at: new Date().toISOString(),
+        admitted_under_21: ageBracket === "under_21",
+      })
       .eq("id", ticket.id)
       .eq("claimed", false)
       .select("id");
@@ -130,7 +182,12 @@ export async function POST(req: Request) {
       console.error("WAIVER INSERT FAILED for ticket", code, waiverErr);
     }
 
-    return Response.json({ success: true, ticket_code: code });
+    return Response.json({
+      success: true,
+      ticket_code: code,
+      admitted_under_21: ageBracket === "under_21",
+      under_21_count: await under21Count(supabase),
+    });
   } catch (err) {
     console.error("CHECKIN ERROR", err);
     return Response.json({ success: false, message: "Server error." }, { status: 500 });
