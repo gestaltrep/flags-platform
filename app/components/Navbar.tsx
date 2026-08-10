@@ -2,9 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
+
+  // Carry a preview key across navigation so a preview session stays inside
+  // itself. Read after mount from the URL the visitor already has, so server
+  // markup is untouched and no page needs a Suspense boundary. Every
+  // destination re-validates the key server-side; a wrong one lands on the
+  // normal unauthorized screen.
+  const [previewQuery, setPreviewQuery] = useState("");
+
+  useEffect(() => {
+    const key = new URLSearchParams(window.location.search).get("key");
+    setPreviewQuery(key ? `?key=${encodeURIComponent(key)}` : "");
+  }, [pathname]);
+
+  const terminalHref = `/dashboard${previewQuery}`;
+  const recordsHref = `/records${previewQuery}`;
 
   const hideNavbarCompletely =
     pathname?.startsWith("/claim") || pathname === "/checkin";
@@ -35,11 +51,11 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="nav-right">
-            <Link href="/dashboard" className="nav-link">
+            <Link href={terminalHref} className="nav-link">
               Terminal
             </Link>
 
-            <Link href="/records" className="nav-link">
+            <Link href={recordsHref} className="nav-link">
               Records
             </Link>
           </div>
@@ -57,11 +73,11 @@ export default function Navbar() {
 
         {!hideNavLinks && (
           <div className="navbar-mobile-links">
-            <Link href="/dashboard" className="navbar-mobile-link">
+            <Link href={terminalHref} className="navbar-mobile-link">
               Terminal
             </Link>
 
-            <Link href="/records" className="navbar-mobile-link">
+            <Link href={recordsHref} className="navbar-mobile-link">
               Records
             </Link>
           </div>

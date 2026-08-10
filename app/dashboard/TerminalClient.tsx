@@ -6,6 +6,17 @@ import EmbeddedCheckoutModal from "../components/EmbeddedCheckoutModal";
 import { QRCodeSVG } from "qrcode.react";
 import type { Event } from "@/lib/events";
 
+/** Quote returned by the create-checkout preview branch. */
+type PreviewQuote = {
+  preview: true;
+  soldOut?: boolean;
+  tierName: string | null;
+  unitPriceCents: number;
+  quantity: number;
+  discountPercent: number;
+  finalAmountCents: number;
+};
+
 /** One configured tier as published by /api/tier-status. */
 type TierInfo = {
   id: string;
@@ -45,12 +56,32 @@ type Ticket = {
   } | null;
 };
 
-export default function TerminalClient({ activeEvent }: { activeEvent: Event | null }) {
+export default function TerminalClient({
+  activeEvent,
+  previewMode = false,
+  previewKey = "",
+}: {
+  activeEvent: Event | null;
+  /** Token-gated preview: no session, no reservation, no Stripe. */
+  previewMode?: boolean;
+  previewKey?: string;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // VIP surfaces are per-event configuration. Event two has no VIP tier.
+  const vipEnabled = activeEvent?.vip_enabled === true;
+
+  const previewSuffix = previewMode && previewKey
+    ? `?previewKey=${encodeURIComponent(previewKey)}`
+    : "";
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
+
+  const [previewPanelOpen, setPreviewPanelOpen] = useState(false);
+  const [previewQuote, setPreviewQuote] = useState<PreviewQuote | null>(null);
+  const [previewQuoteError, setPreviewQuoteError] = useState("");
 
   const [tiers, setTiers] = useState<TierInfo[]>([]);
   const [tier, setTier] = useState(1);
@@ -142,8 +173,15 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
   async function loadTickets() {
     try {
       const res = await fetch("/api/tickets", { cache: "no-store" });
+      // Preview has no session, so 401 here is expected: fall through to the
+      // normal empty-wallet state rather than erroring.
+      if (!res.ok) {
+        setTickets([]);
+        setLoadingTickets(false);
+        return;
+      }
       const data = await res.json();
-      setTickets(data || []);
+      setTickets(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Ticket load failed", err);
       setTickets([]);
@@ -153,7 +191,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
 
   async function loadTier() {
     try {
-      const res = await fetch("/api/tier-status", { cache: "no-store" });
+      const res = await fetch(`/api/tier-status${previewSuffix}`, { cache: "no-store" });
       const data = await res.json();
 
       setTiers(Array.isArray(data.tiers) ? data.tiers : []);
@@ -358,12 +396,42 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
     }
     setCheckoutMessage("");
     setCheckoutType("ga");
+
+    // Preview resolves the price read-only and never opens Stripe.
+    if (previewMode) {
+      setPurchaseOpen(false);
+      setPreviewPanelOpen(true);
+      loadPreviewQuote();
+      return;
+    }
+
     const pricePerToken = activeTier?.priceCents ?? 0;
     const base = pricePerToken * gaQuantity;
     const disc = gaPromoDiscount ?? 0;
     setCheckoutAmount(gaPromoValid && disc > 0 ? Math.round(base * (1 - disc / 100)) : base);
     setCheckoutOpen(true);
     setPurchaseOpen(false);
+  }
+
+  /** Read-only quote from the create-checkout preview branch. */
+  async function loadPreviewQuote() {
+    setPreviewQuote(null);
+    setPreviewQuoteError("");
+    try {
+      const res = await fetch(`/api/create-checkout${previewSuffix}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity: gaQuantity, promoCode: gaPromoCode || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.preview) {
+        setPreviewQuoteError(data?.error || "Preview quote unavailable.");
+        return;
+      }
+      setPreviewQuote(data as PreviewQuote);
+    } catch {
+      setPreviewQuoteError("Preview quote unavailable.");
+    }
   }
 
   function generateVipTokens() {
@@ -907,6 +975,29 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
 
   return (
     <main style={desktopMainStyle}>
+      {previewMode && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 2000,
+            background: "#3d0000",
+            borderBottom: "1px solid #ff3333",
+            color: "#ff8888",
+            fontFamily: '"Courier New", monospace',
+            fontSize: 11,
+            letterSpacing: 3,
+            textAlign: "center",
+            padding: "6px 12px",
+            pointerEvents: "none",
+            textTransform: "uppercase",
+          }}
+        >
+          PREVIEW — NOT LIVE
+        </div>
+      )}
       {!isMobile ? (
         <div
           style={{
@@ -1018,32 +1109,36 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    fontSize: desktopSmallLabel,
-                    marginBottom: 8,
-                    letterSpacing: 2,
-                  }}
-                >
-                  VIP TOKENS
-                </div>
+                {vipEnabled && (
+                  <>
+                    <div
+                      style={{
+                        fontSize: desktopSmallLabel,
+                        marginBottom: 8,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      VIP TOKENS
+                    </div>
 
-                <div
-                  style={{
-                    position: "relative",
-                    width: desktopProgressWidth,
-                    height: desktopProgressHeight,
-                    background: "#222",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${vipProgressPercent()}%`,
-                      height: "100%",
-                      background: "white",
-                    }}
-                  />
-                </div>
+                    <div
+                      style={{
+                        position: "relative",
+                        width: desktopProgressWidth,
+                        height: desktopProgressHeight,
+                        background: "#222",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${vipProgressPercent()}%`,
+                          height: "100%",
+                          background: "white",
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -1135,7 +1230,9 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                 {showButtons && !!activeEvent && (
                   <div style={{ display: "grid", gridTemplateColumns: `${desktopRightWidth}px`, gap: 18, maxWidth: desktopRightWidth, marginTop: isDesktopEmptyWallet ? "auto" : 0 }}>
                     <button className="cta-button" style={actionButtonStyle} onClick={() => setPurchaseOpen(true)}>GA TOKENS</button>
-                    <button className="cta-button" style={actionButtonStyle} onClick={() => setVipOpen(true)}>VIP TOKENS</button>
+                    {vipEnabled && (
+                      <button className="cta-button" style={actionButtonStyle} onClick={() => setVipOpen(true)}>VIP TOKENS</button>
+                    )}
                   </div>
                 )}
 
@@ -1306,7 +1403,9 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
                   {showButtons && !!activeEvent && (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
                       <button className="cta-button" style={{ width: "100%", minHeight: 58, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.08, padding: "12px 16px", fontSize: 13, letterSpacing: 3, whiteSpace: "nowrap", fontFamily: "Arial, Helvetica, sans-serif", fontWeight: 700 }} onClick={() => setPurchaseOpen(true)}>GA TOKENS</button>
-                      <button className="cta-button" style={{ width: "100%", minHeight: 58, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.08, padding: "12px 16px", fontSize: 13, letterSpacing: 3, whiteSpace: "nowrap", fontFamily: "Arial, Helvetica, sans-serif", fontWeight: 700 }} onClick={() => setVipOpen(true)}>VIP TOKENS</button>
+                      {vipEnabled && (
+                        <button className="cta-button" style={{ width: "100%", minHeight: 58, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.08, padding: "12px 16px", fontSize: 13, letterSpacing: 3, whiteSpace: "nowrap", fontFamily: "Arial, Helvetica, sans-serif", fontWeight: 700 }} onClick={() => setVipOpen(true)}>VIP TOKENS</button>
+                      )}
                     </div>
                   )}
 
@@ -1741,7 +1840,7 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
         </div>
       )}
 
-      {vipOpen && !!activeEvent && (
+      {vipOpen && vipEnabled && !!activeEvent && (
         <div className="signup-overlay">
           <div
             className="signup-modal signup-modal-request"
@@ -2049,8 +2148,105 @@ export default function TerminalClient({ activeEvent }: { activeEvent: Event | n
         </div>
       )}
 
+      {/* PREVIEW — NO CHARGE: price confirmation only. No Stripe Elements,
+          no pay button, nothing that can charge or reserve. */}
+      {previewMode && previewPanelOpen && (
+        <div
+          style={{
+            position: "fixed", inset: 0, width: "100vw", height: "100vh",
+            background: "rgba(0,0,0,0.88)", zIndex: 1000,
+            display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "flex-start", overflowY: "auto",
+            padding: isMobile ? "24px 16px 40px" : "40px 24px 60px",
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setPreviewPanelOpen(false); }}
+        >
+          <div style={{
+            width: "100%", maxWidth: 520,
+            border: "1px solid #ff3333", background: "black",
+            fontFamily: '"Courier New", monospace',
+          }}>
+            <div style={{
+              borderBottom: "1px solid #333",
+              padding: isMobile ? "14px 18px" : "16px 24px",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <span style={{
+                fontSize: isMobile ? 11 : 12, letterSpacing: 3,
+                color: "#ff8888", textTransform: "uppercase",
+              }}>
+                PREVIEW — NO CHARGE
+              </span>
+              <button
+                onClick={() => setPreviewPanelOpen(false)}
+                style={{
+                  background: "none", border: "none", color: "#666",
+                  cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 16px",
+                }}
+              >×</button>
+            </div>
+
+            <div style={{
+              padding: isMobile ? "20px 18px" : "24px 24px",
+              fontSize: isMobile ? 11 : 12, letterSpacing: 1.5,
+            }}>
+              {previewQuoteError && (
+                <div style={{ color: "#ff4444", textTransform: "uppercase" }}>
+                  {">"} {previewQuoteError}
+                </div>
+              )}
+
+              {!previewQuoteError && !previewQuote && (
+                <div style={{ color: "#666", letterSpacing: 3, textTransform: "uppercase" }}>
+                  RESOLVING PRICE...
+                </div>
+              )}
+
+              {previewQuote?.soldOut && (
+                <div style={{ color: "#ff4444", textTransform: "uppercase" }}>
+                  {">"} SOLD OUT — NO TIER WITH REMAINING CAPACITY
+                </div>
+              )}
+
+              {previewQuote && !previewQuote.soldOut && (
+                <>
+                  {([
+                    ["TIER", String(previewQuote.tierName ?? "—").toUpperCase()],
+                    ["UNIT PRICE", `$${(previewQuote.unitPriceCents / 100).toFixed(2)}`],
+                    ["QUANTITY", String(previewQuote.quantity)],
+                    ["PROMO", previewQuote.discountPercent > 0
+                      ? `${gaPromoCode.toUpperCase()} (-${previewQuote.discountPercent}%)`
+                      : "NONE"],
+                  ] as const).map(([label, value]) => (
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 8 }}>
+                      <span style={{ color: "#888" }}>{label}</span>
+                      <span style={{ color: "white", textAlign: "right" }}>{value}</span>
+                    </div>
+                  ))}
+                  <div style={{ borderTop: "1px solid #333", marginTop: 14, paddingTop: 14, display: "flex", justifyContent: "space-between", gap: 16 }}>
+                    <span style={{ color: "#888" }}>TOTAL</span>
+                    <span style={{ color: "white" }}>
+                      ${(previewQuote.finalAmountCents / 100).toFixed(2)} USD
+                    </span>
+                  </div>
+                </>
+              )}
+
+              <div style={{
+                marginTop: 22, paddingTop: 14, borderTop: "1px solid #333",
+                color: "#666", fontSize: 10, letterSpacing: 2,
+                textTransform: "uppercase", lineHeight: 1.8,
+              }}>
+                <div>{"> PREVIEW ONLY. NO PAYMENT METHOD IS COLLECTED."}</div>
+                <div>{"> NO CAPACITY RESERVED, NO TOKEN GENERATED."}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <EmbeddedCheckoutModal
-        isOpen={checkoutOpen}
+        isOpen={checkoutOpen && !previewMode}
         onClose={() => {
           setCheckoutOpen(false);
           setGaPromoCode(""); setGaPromoValid(null); setGaPromoDiscount(null);

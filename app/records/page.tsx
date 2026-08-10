@@ -4,9 +4,23 @@ import { createClient } from "@supabase/supabase-js";
 import UnauthorizedTerminalClient from "../dashboard/UnauthorizedTerminalClient";
 import RecordsClient from "./RecordsClient";
 import { getVerifiedUserId } from "@/lib/auth";
+import { isValidPreviewKey } from "@/lib/preview";
 
-export default async function RecordsPage() {
-  const userId = await getVerifiedUserId();
+export default async function RecordsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ key?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const raw = params?.key;
+  const key = Array.isArray(raw) ? raw[0] : raw;
+
+  // A valid preview key stands in for a session; everything below is the same
+  // view a logged-in user gets. Event two stays absent until it is archived —
+  // the query below deliberately excludes draft.
+  const previewing = isValidPreviewKey(key);
+
+  const userId = previewing ? "preview" : await getVerifiedUserId();
 
   if (!userId) return <UnauthorizedTerminalClient title="Records" />;
 

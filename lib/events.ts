@@ -18,6 +18,8 @@ export type Event = {
   hero_image: string | null;
   description: string | null;
   status: EventStatus;
+  /** Null on rows predating the column; treat null as false. */
+  vip_enabled: boolean | null;
   sales_open_at: string | null;
   sales_close_at: string | null;
   created_at: string;
