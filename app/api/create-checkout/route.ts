@@ -1,15 +1,116 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { getActiveSalesEvent } from "@/lib/events";
+import { getActiveSalesEvent, getMostRecentDraftEvent } from "@/lib/events";
 import { getVerifiedUserId } from "@/lib/auth";
+import { getEventTiers } from "@/lib/tier";
+import { isPreviewRequest } from "@/lib/preview";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 /** How long a reserved seat is held while the buyer completes payment. */
 const RESERVATION_TTL_SECONDS = 900;
 
+/** Resolve a promo code to a discount percent. Same lookup and gate as checkout. */
+async function resolveDiscountPercent(promoCode: unknown): Promise<number> {
+  if (!promoCode || typeof promoCode !== "string" || promoCode.trim().length === 0) return 0;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(promoCode.toUpperCase().trim())}&select=id,active,discount_percent&limit=1`,
+      {
+        signal: controller.signal,
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const rows = await res.json();
+    const promo = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+    return promo?.active ? promo.discount_percent ?? 0 : 0;
+  } catch {
+    return 0;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
+ * Read-only price quote for the token-gated preview.
+ *
+ * Deliberately returns before every side effect in the real flow: no login is
+ * required, no capacity is reserved, and Stripe is never called. It only reads
+ * ticket_tiers, counts paid ticket_codes, and applies the promo logic.
+ */
+async function previewQuote(req: Request): Promise<Response> {
+  const event = await getMostRecentDraftEvent();
+  if (!event) {
+    return Response.json({ error: "No draft event to preview." }, { status: 400 });
+  }
+
+  const body = await req.json().catch(() => ({}));
+  const quantity = Math.max(1, Math.min(10, Number(body.quantity || 1)));
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const tiers = await getEventTiers(event.id);
+
+  const { data: paidRows } = await supabase
+    .from("ticket_codes")
+    .select("tier_id")
+    .eq("event_id", event.id)
+    .eq("comp", false)
+    .not("buyer_user_id", "is", null)
+    .is("refunded_at", null);
+
+  const soldByTier = new Map<string, number>();
+  for (const row of (paidRows as { tier_id: string | null }[] | null) ?? []) {
+    if (row.tier_id) soldByTier.set(row.tier_id, (soldByTier.get(row.tier_id) ?? 0) + 1);
+  }
+
+  const active = tiers.find((t) => t.capacity - (soldByTier.get(t.id) ?? 0) > 0) ?? null;
+  if (!active) {
+    return Response.json({
+      preview: true,
+      soldOut: true,
+      tierName: null,
+      unitPriceCents: 0,
+      quantity,
+      discountPercent: 0,
+      finalAmountCents: 0,
+    });
+  }
+
+  const baseAmount = active.price_cents * quantity;
+  const discountPercent = await resolveDiscountPercent(body.promoCode);
+  const finalAmountCents =
+    discountPercent > 0 ? Math.round(baseAmount * (1 - discountPercent / 100)) : baseAmount;
+
+  return Response.json({
+    preview: true,
+    tierName: active.name,
+    unitPriceCents: active.price_cents,
+    quantity,
+    discountPercent,
+    finalAmountCents,
+  });
+}
+
 export async function POST(req: Request) {
   try {
+    // Preview short-circuit — must stay ahead of auth, reservation and Stripe.
+    if (isPreviewRequest(req)) {
+      return await previewQuote(req);
+    }
+
     const userId = await getVerifiedUserId();
     if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 

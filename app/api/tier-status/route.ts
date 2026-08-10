@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { getEventTiers, totalCapacity } from "@/lib/tier";
-import { getActiveSalesEvent } from "@/lib/events";
+import { getActiveSalesEvent, getMostRecentDraftEvent } from "@/lib/events";
+import { isPreviewRequest } from "@/lib/preview";
 
 /**
  * Public published-counts endpoint.
@@ -10,8 +11,12 @@ import { getActiveSalesEvent } from "@/lib/events";
  * for an actual purchase is decided by reserve_ga_capacity, which does account
  * for live holds.
  */
-export async function GET() {
-  const event = await getActiveSalesEvent();
+export async function GET(req: Request) {
+  // A valid preview key resolves the draft event instead. Without one — or with
+  // a wrong one, or with PREVIEW_TOKEN unset — this is exactly the public path.
+  const event = isPreviewRequest(req)
+    ? await getMostRecentDraftEvent()
+    : await getActiveSalesEvent();
   if (!event) {
     return Response.json({
       tiers: [],

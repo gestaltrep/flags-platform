@@ -29,9 +29,30 @@ interface Props {
   onClose: () => void;
   onStepChange: (step: ParticipationStep) => void;
   isDormant?: boolean;
+  /** Token-gated preview: no login, no reservation, no Stripe. */
+  previewMode?: boolean;
+  previewKey?: string;
 }
 
-export default function ParticipationModal({ step, onClose, onStepChange, isDormant = false }: Props) {
+/** Quote returned by the create-checkout preview branch. */
+type PreviewQuote = {
+  preview: true;
+  soldOut?: boolean;
+  tierName: string | null;
+  unitPriceCents: number;
+  quantity: number;
+  discountPercent: number;
+  finalAmountCents: number;
+};
+
+export default function ParticipationModal({
+  step,
+  onClose,
+  onStepChange,
+  isDormant = false,
+  previewMode = false,
+  previewKey = "",
+}: Props) {
   // Per-tier quantities (preserved across chooser ↔ tier navigation)
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
@@ -93,9 +114,17 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
 
   const isMobile = viewportWidth < 900;
 
+  // Preview quote for the PREVIEW — NO CHARGE panel
+  const [previewQuote, setPreviewQuote] = useState<PreviewQuote | null>(null);
+  const [previewQuoteError, setPreviewQuoteError] = useState("");
+
+  const previewSuffix = previewMode && previewKey
+    ? `?previewKey=${encodeURIComponent(previewKey)}`
+    : "";
+
   // Fetch tier/table data once on mount
   useEffect(() => {
-    fetch("/api/tier-status", { cache: "no-store" })
+    fetch(`/api/tier-status${previewSuffix}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         setTiers(Array.isArray(d.tiers) ? d.tiers : []);
@@ -118,13 +147,44 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
   // Snapshot existing ticket count just before Stripe checkout mounts so the
   // post-payment poll knows what delta to wait for
   useEffect(() => {
-    if (step === "checkout") {
+    if (step === "checkout" && !previewMode) {
       fetch("/api/tickets", { cache: "no-store" })
         .then((r) => r.json())
         .then((d) => setTicketBaseline(Array.isArray(d) ? d.length : 0))
         .catch(() => setTicketBaseline(0));
     }
-  }, [step]);
+  }, [step, previewMode]);
+
+  // Preview: fetch the read-only quote when the confirmation panel opens.
+  useEffect(() => {
+    if (step !== "checkout" || !previewMode) return;
+
+    let cancelled = false;
+    setPreviewQuote(null);
+    setPreviewQuoteError("");
+
+    fetch(`/api/create-checkout${previewSuffix}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantity: gaQuantity, promoCode: gaPromo || undefined }),
+    })
+      .then(async (r) => {
+        const d = await r.json();
+        if (cancelled) return;
+        if (!r.ok || !d?.preview) {
+          setPreviewQuoteError(d?.error || "Preview quote unavailable.");
+          return;
+        }
+        setPreviewQuote(d as PreviewQuote);
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewQuoteError("Preview quote unavailable.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, previewMode, previewSuffix, gaQuantity, gaPromo]);
 
   // Auth detection — reads the non-sensitive authed hint cookie (httpOnly:false)
   function isAuthenticated(): boolean {
@@ -230,7 +290,8 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     setCheckoutAmount(amount);
     setAuthMessage("");
 
-    if (isAuthenticated()) {
+    // Preview walks straight to the confirmation panel — no login, no OTP.
+    if (previewMode || isAuthenticated()) {
       onStepChange("checkout");
     } else {
       setName("");
@@ -557,6 +618,108 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
     else onStepChange("chooser"); // ga / vip / table
   }
 
+  // ── PREVIEW CHECKOUT: price confirmation only. No Stripe Elements, no pay
+  //    button, nothing that can charge or reserve. ──
+  if (step === "checkout" && previewMode) {
+    const line = (label: string, value: string) => (
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 8 }}>
+        <span style={{ color: "#888" }}>{label}</span>
+        <span style={{ color: "white", textAlign: "right" }}>{value}</span>
+      </div>
+    );
+
+    return (
+      <div
+        style={{
+          position: "fixed", inset: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.88)",
+          zIndex: 1000, display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "flex-start",
+          overflowY: "auto", padding: isMobile ? "24px 16px 40px" : "40px 24px 60px",
+        }}
+        onClick={(e) => { if (e.target === e.currentTarget) onStepChange(checkoutSourceStep); }}
+      >
+        <div style={{
+          width: "100%", maxWidth: 520,
+          border: "1px solid #ff3333", background: "black",
+          display: "flex", flexDirection: "column",
+        }}>
+          <div style={{
+            borderBottom: "1px solid #333",
+            padding: isMobile ? "14px 18px" : "16px 24px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            fontFamily: '"Courier New", monospace',
+          }}>
+            <div style={{
+              fontSize: isMobile ? 11 : 12, letterSpacing: 3,
+              color: "#ff8888", textTransform: "uppercase",
+            }}>
+              PREVIEW — NO CHARGE
+            </div>
+            <button
+              onClick={() => onStepChange(checkoutSourceStep)}
+              style={{
+                background: "none", border: "none", color: "#666",
+                cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 16px",
+              }}
+            >×</button>
+          </div>
+
+          <div style={{
+            padding: isMobile ? "20px 18px" : "24px 24px",
+            fontFamily: '"Courier New", monospace',
+            fontSize: isMobile ? 11 : 12,
+            letterSpacing: 1.5,
+          }}>
+            {previewQuoteError && (
+              <div style={{ color: "#ff4444", textTransform: "uppercase" }}>
+                {">"} {previewQuoteError}
+              </div>
+            )}
+
+            {!previewQuoteError && !previewQuote && (
+              <div style={{ color: "#666", letterSpacing: 3, textTransform: "uppercase" }}>
+                RESOLVING PRICE...
+              </div>
+            )}
+
+            {previewQuote && previewQuote.soldOut && (
+              <div style={{ color: "#ff4444", textTransform: "uppercase" }}>
+                {">"} SOLD OUT — NO TIER WITH REMAINING CAPACITY
+              </div>
+            )}
+
+            {previewQuote && !previewQuote.soldOut && (
+              <>
+                {line("TIER", String(previewQuote.tierName ?? "—").toUpperCase())}
+                {line("UNIT PRICE", `$${(previewQuote.unitPriceCents / 100).toFixed(2)}`)}
+                {line("QUANTITY", String(previewQuote.quantity))}
+                {line(
+                  "PROMO",
+                  previewQuote.discountPercent > 0
+                    ? `${gaPromo.toUpperCase()} (-${previewQuote.discountPercent}%)`
+                    : "NONE"
+                )}
+                <div style={{ borderTop: "1px solid #333", marginTop: 14, paddingTop: 14 }}>
+                  {line("TOTAL", `$${(previewQuote.finalAmountCents / 100).toFixed(2)} USD`)}
+                </div>
+              </>
+            )}
+
+            <div style={{
+              marginTop: 22, paddingTop: 14, borderTop: "1px solid #333",
+              color: "#666", fontSize: 10, letterSpacing: 2,
+              textTransform: "uppercase", lineHeight: 1.8,
+            }}>
+              <div>{"> PREVIEW ONLY. NO PAYMENT METHOD IS COLLECTED."}</div>
+              <div>{"> NO CAPACITY RESERVED, NO TOKEN GENERATED."}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── CHECKOUT: render Stripe modal directly, no participation overlay ──
   if (step === "checkout") {
     return (
@@ -614,7 +777,10 @@ export default function ParticipationModal({ step, onClose, onStepChange, isDorm
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
               <button className="cta-button" onClick={() => onStepChange("ga")}>GA TOKENS</button>
-              <button className="cta-button" onClick={() => onStepChange("vip")}>VIP TOKENS</button>
+              {/* Event two has no VIP tier configured; hide it in preview. */}
+              {!previewMode && (
+                <button className="cta-button" onClick={() => onStepChange("vip")}>VIP TOKENS</button>
+              )}
             </div>
 
             <button className="signup-close" onClick={onClose}>CANCEL</button>

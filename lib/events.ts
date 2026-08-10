@@ -61,6 +61,22 @@ export async function getLiveEvent(): Promise<Event | null> {
   return (data as Event | null) ?? null;
 }
 
+/**
+ * The most recent draft event. Draft events are invisible to
+ * getActiveSalesEvent and to every public list; this is the event the
+ * token-gated sales preview renders.
+ */
+export async function getMostRecentDraftEvent(): Promise<Event | null> {
+  const { data } = await admin()
+    .from("events")
+    .select("*")
+    .eq("status", "draft")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as Event | null) ?? null;
+}
+
 /** Direct lookup by primary key. */
 export async function getEventById(id: string): Promise<Event | null> {
   const { data } = await admin()

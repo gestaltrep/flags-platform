@@ -7,7 +7,31 @@ import ParticipationModal from "./components/ParticipationModal";
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
-export default function HomeClient({ isDormant }: { isDormant: boolean }) {
+/** Minimal event shape the preview needs. Public homepage passes nothing. */
+export type HomeEvent = {
+  name: string;
+  slug: string;
+  location: string | null;
+  start_time: string | null;
+  hero_image: string | null;
+};
+
+/**
+ * `event`, `previewMode` and `previewKey` are preview-only and default to the
+ * public homepage's behaviour, so / renders exactly as it did before they
+ * existed.
+ */
+export default function HomeClient({
+  isDormant,
+  event = null,
+  previewMode = false,
+  previewKey = "",
+}: {
+  isDormant: boolean;
+  event?: HomeEvent | null;
+  previewMode?: boolean;
+  previewKey?: string;
+}) {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
   const [open, setOpen] = useState(false);
@@ -240,12 +264,89 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
     border: "1px solid rgba(255,255,255,0.8)",
   };
 
+  // Event-facing copy. With no event (the public homepage) every one of these
+  // resolves to the exact literal the page has always rendered.
+  const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  const fmtTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+  const eventLabel = event?.name ?? "RAVE_Initiation.html";
+  const eventDate = event ? (event.start_time ? fmtDate(event.start_time) : "Date TBA") : "May 30";
+  const eventTime = event ? (event.start_time ? fmtTime(event.start_time) : "Time TBA") : "4:30 PM – 12 AM";
+  const eventLocation = event ? event.location ?? "Location TBA" : "Charlotte County Fair";
+
+  // Event two's poster is not loaded yet; render an empty frame rather than a
+  // broken image.
+  const heroMissing = previewMode && !event?.hero_image;
+
+  function Poster({ className }: { className?: string }) {
+    if (heroMissing) {
+      return (
+        <div
+          className={className}
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            background: "#0a0a0a",
+            border: "1px solid #333",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: '"Courier New", monospace',
+              fontSize: 11,
+              letterSpacing: 2,
+              color: "#555",
+              textTransform: "uppercase",
+              textAlign: "center",
+              padding: "0 16px",
+            }}
+          >
+            POSTER NOT YET LOADED
+          </span>
+        </div>
+      );
+    }
+    if (previewMode && event?.hero_image) {
+      return <HeroGlitch className={className} lineupSrc={event.hero_image} lqipSrc={event.hero_image} />;
+    }
+    return <HeroGlitch className={className} />;
+  }
+
   return (
     <>
+      {previewMode && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 2000,
+            background: "#3d0000",
+            borderBottom: "1px solid #ff3333",
+            color: "#ff8888",
+            fontFamily: '"Courier New", monospace',
+            fontSize: 11,
+            letterSpacing: 3,
+            textAlign: "center",
+            padding: "6px 12px",
+            pointerEvents: "none",
+            textTransform: "uppercase",
+          }}
+        >
+          PREVIEW — NOT LIVE
+        </div>
+      )}
+
       <main className="home-desktop">
         <div className="home-desktop-grid">
           <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
-            <HeroGlitch className="home-poster-image" />
+            <Poster className="home-poster-image" />
             <div style={{
               position: "absolute",
               bottom: 3,
@@ -256,7 +357,7 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
               color: "#ffffff",
               pointerEvents: "none",
             }}>
-              RAVE_Initiation.html
+              {eventLabel}
             </div>
             {isDormant && (
               <div style={{
@@ -287,9 +388,9 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
           </div>
 
           <div className="home-desktop-info">
-            <div className="home-date-desktop">May 30</div>
-            <div className="home-time-desktop">4:30 PM – 12 AM</div>
-            <div className="home-location-desktop">Charlotte County Fair</div>
+            <div className="home-date-desktop">{eventDate}</div>
+            <div className="home-time-desktop">{eventTime}</div>
+            <div className="home-location-desktop">{eventLocation}</div>
 
             <button
               className="cta-button"
@@ -302,33 +403,36 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
               REQUEST PARTICIPATION
             </button>
 
-            <div style={{ textAlign: "center", marginTop: 10, width: 352, maxWidth: "100%" }}>
-              <button
-                onClick={() => {
-                  setMode("login");
-                  setLoginStep("phone");
-                  setLoginPhone("");
-                  setLoginCode("");
-                  setMessage("");
-                  setOpen(true);
-                }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#888",
-                  fontFamily: '"Courier New", monospace',
-                  fontSize: 11,
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  padding: 0,
-                  textDecoration: "none",
-                }}
-              >
-                ALREADY REGISTERED?{" "}
-                <span style={{ fontWeight: 900, color: "#cccccc" }}>LOG IN</span>
-              </button>
-            </div>
+            {/* Log-in sends an SMS code; preview must stay side-effect free. */}
+            {!previewMode && (
+              <div style={{ textAlign: "center", marginTop: 10, width: 352, maxWidth: "100%" }}>
+                <button
+                  onClick={() => {
+                    setMode("login");
+                    setLoginStep("phone");
+                    setLoginPhone("");
+                    setLoginCode("");
+                    setMessage("");
+                    setOpen(true);
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#888",
+                    fontFamily: '"Courier New", monospace',
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    padding: 0,
+                    textDecoration: "none",
+                  }}
+                >
+                  ALREADY REGISTERED?{" "}
+                  <span style={{ fontWeight: 900, color: "#cccccc" }}>LOG IN</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -336,14 +440,14 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
       <main className="home-mobile">
         <div className="home-mobile-frame">
           <div className="home-mobile-text">
-            <div className="home-date-mobile">MAY 30</div>
-            <div className="home-time-mobile">4:30 PM – 12 AM</div>
-            <div className="home-location-mobile">CHARLOTTE COUNTY FAIR</div>
+            <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
+            <div className="home-time-mobile">{eventTime}</div>
+            <div className="home-location-mobile">{eventLocation.toUpperCase()}</div>
           </div>
         </div>
 
         <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
-          <HeroGlitch className="home-mobile-poster" />
+          <Poster className="home-mobile-poster" />
           {isDormant && (
             <div style={{
               position: "absolute",
@@ -380,7 +484,7 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
             letterSpacing: 1.5,
             color: "#ffffff",
           }}>
-            RAVE_Initiation.html
+            {eventLabel}
           </div>
         </div>
 
@@ -395,33 +499,35 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
             REQUEST PARTICIPATION
           </button>
 
-          <div style={{ textAlign: "center", marginTop: 10 }}>
-            <button
-              onClick={() => {
-                setMode("login");
-                setLoginStep("phone");
-                setLoginPhone("");
-                setLoginCode("");
-                setMessage("");
-                setOpen(true);
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#888",
-                fontFamily: '"Courier New", monospace',
-                fontSize: 11,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                cursor: "pointer",
-                padding: 0,
-                textDecoration: "none",
-              }}
-            >
-              ALREADY REGISTERED?{" "}
-              <span style={{ fontWeight: 900, color: "#cccccc" }}>LOG IN</span>
-            </button>
-          </div>
+          {!previewMode && (
+            <div style={{ textAlign: "center", marginTop: 10 }}>
+              <button
+                onClick={() => {
+                  setMode("login");
+                  setLoginStep("phone");
+                  setLoginPhone("");
+                  setLoginCode("");
+                  setMessage("");
+                  setOpen(true);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  padding: 0,
+                  textDecoration: "none",
+                }}
+              >
+                ALREADY REGISTERED?{" "}
+                <span style={{ fontWeight: 900, color: "#cccccc" }}>LOG IN</span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
@@ -433,6 +539,8 @@ export default function HomeClient({ isDormant }: { isDormant: boolean }) {
           onClose={() => setParticipationStep("closed")}
           onStepChange={(s) => setParticipationStep(s)}
           isDormant={isDormant}
+          previewMode={previewMode}
+          previewKey={previewKey}
         />
       )}
 
