@@ -906,15 +906,6 @@ export default function TerminalClient({
       }
     : {};
 
-  const mobileTierTrackStyle: React.CSSProperties = isMobile
-    ? {
-        position: "relative",
-        width: "100%",
-        height: 10,
-        background: "#222",
-      }
-    : {};
-
   const mobileVipTrackStyle: React.CSSProperties = isMobile
     ? {
         position: "relative",
@@ -1481,24 +1472,20 @@ export default function TerminalClient({
             className="signup-modal signup-modal-request"
             style={{ display: "flex", flexDirection: "column" }}
           >
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "44px 1fr 44px",
-              alignItems: "center",
-              minHeight: 104,
-              borderBottom: "1px solid rgba(255,255,255,0.62)",
-              marginBottom: 26,
-              flexShrink: 0,
-            }}>
-              <button
-                style={{ background: "none", border: "none", color: "white", fontSize: 22, cursor: "pointer", padding: "0 8px", lineHeight: 1, fontFamily: '"Courier New", monospace' }}
-                onClick={() => { setCheckoutMessage(""); setPurchaseOpen(false); setGaPromoCode(""); setGaPromoValid(null); setGaPromoDiscount(null); }}
-                aria-label="Close"
-              >◀</button>
-              <span className="signup-title signup-title-large" style={{ width: "100%", textAlign: "center", marginBottom: 0 }}>
-                GA TOKENS
-              </span>
-              <div />
+            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
+              <img src="/logo.png" className="signup-logo" alt="Signo logo" />
+              <img
+                src="/group-name.png"
+                className="signup-group-name"
+                alt="Signo Research Group"
+              />
+            </div>
+
+            <div
+              className="signup-title signup-title-large"
+              style={generateTitleStyle}
+            >
+              Generate Tokens
             </div>
 
             {isMobile ? (
@@ -1531,39 +1518,6 @@ export default function TerminalClient({
                       <span className="modal-status-text">SOLD OUT</span>
                     </div>
                   )}
-                </div>
-
-                <div style={mobileTierVisualWrapStyle}>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
-                      textAlign: "center",
-                      ...mobileTierLabelStyle,
-                    }}
-                  >
-                    {tiers.map((t) => (
-                      <div key={t.id} style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</div>
-                    ))}
-                  </div>
-
-                  <div style={mobileTierTrackStyle}>
-                    <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                      {tiers.map((t, i) => (
-                        <div
-                          key={t.id}
-                          style={{
-                            width: `${100 / Math.max(1, tiers.length)}%`,
-                            height: "100%",
-                            position: "relative",
-                            borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
-                          }}
-                        >
-                          <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
@@ -1676,41 +1630,6 @@ export default function TerminalClient({
                       <span className="modal-status-text">SOLD OUT</span>
                     </div>
                   )}
-                </div>
-
-                <div style={{ marginBottom: 22 }}>
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
-                    textAlign: "center",
-                    fontSize: 10,
-                    letterSpacing: 1.8,
-                    marginBottom: 6,
-                  }}>
-                    {tiers.map((t) => (
-                      <div key={t.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <span style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</span>
-                        <span style={{ color: "#888", fontSize: 9, marginTop: 2 }}>
-                          {priceLabel(t)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", width: "100%", height: 10, background: "#222" }}>
-                    {tiers.map((t, i) => (
-                      <div
-                        key={t.id}
-                        style={{
-                          width: `${100 / Math.max(1, tiers.length)}%`,
-                          height: "100%",
-                          position: "relative",
-                          borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
-                        }}
-                      >
-                        <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
