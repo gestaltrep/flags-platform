@@ -46,13 +46,19 @@ type PreviewQuote = {
 };
 
 export default function ParticipationModal({
-  step,
+  step: stepProp,
   onClose,
   onStepChange,
   isDormant = false,
   previewMode = false,
   previewKey = "",
 }: Props) {
+  // Event two is GA-only, so the non-dormant token-type chooser (GA / VIP
+  // buttons) is bypassed and the modal enters straight at the GA step. The
+  // chooser stays in the state machine for the dormant opt-in branch, which is
+  // untouched. If a future event sells VIP again, drop this mapping.
+  const step: ParticipationStep =
+    stepProp === "chooser" && !isDormant ? "ga" : stepProp;
   // Per-tier quantities (preserved across chooser ↔ tier navigation)
   const [gaQuantity, setGaQuantity] = useState(1);
   const [vipQuantity, setVipQuantity] = useState(1);
@@ -928,7 +934,12 @@ export default function ParticipationModal({
           <>
             {/* Header — shared by ga/vip/table/phone-entry/otp-verify */}
             <div style={tierDetailHeaderStyle}>
-              <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
+              {/* GA is the entry point now — nothing to go back to. */}
+              {step === "ga" ? (
+                <div />
+              ) : (
+                <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
+              )}
               <span
                 className="signup-title signup-title-large"
                 style={{ width: "100%", textAlign: "center", marginBottom: 0 }}
