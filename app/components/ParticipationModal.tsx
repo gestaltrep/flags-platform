@@ -103,6 +103,7 @@ export default function ParticipationModal({
   const [ticketBaseline, setTicketBaseline] = useState(0);
 
   const [tiers, setTiers] = useState<TierInfo[]>([]);
+  const [tier, setTier] = useState(1);
   const [vipSold, setVipSold] = useState(0);
   const [tableSold, setTableSold] = useState(0);
 
@@ -133,6 +134,7 @@ export default function ParticipationModal({
       .then((r) => r.json())
       .then((d) => {
         setTiers(Array.isArray(d.tiers) ? d.tiers : []);
+        setTier(d.activeTierSortOrder ?? 0);
         setVipSold(d.vipSold ?? 0);
       })
       .catch(() => {});
@@ -456,15 +458,22 @@ export default function ParticipationModal({
     }
   }
 
-  // Pricing is driven entirely by the published config. The GA step shows the
-  // active/next tier as status copy only — no in-modal tier graphic.
+  // Tier presentation is driven entirely by the published config: each segment
+  // fills with its own sold/capacity. No dates, no thresholds in the client.
   const activeTier = tiers.find((t) => t.active) ?? null;
   const nextTier = activeTier
     ? tiers.find((t) => t.sortOrder > activeTier.sortOrder) ?? null
     : null;
 
+  function tierFill(t: TierInfo) {
+    if (t.capacity <= 0) return 0;
+    return Math.max(0, Math.min(1, t.sold / t.capacity));
+  }
   function priceLabel(t: TierInfo | null) {
     return t ? `$${(t.priceCents / 100).toFixed(2)}` : "—";
+  }
+  function tierColor(t: number) {
+    return tier === t ? "#ffffff" : "#555555";
   }
 
   const arrowBtnStyle: React.CSSProperties = {
@@ -923,36 +932,22 @@ export default function ParticipationModal({
         {/* ── ALL NON-CHOOSER STATES ───────────────────── */}
         {step !== "chooser" && (
           <>
-            {/* Header — GA is the entry point and matches the Terminal GA
-                modal: logo block, "Generate Tokens", no back button. The auth
-                steps keep the 3-column grid and their back button. */}
-            {step === "ga" ? (
-              <>
-                <div className="signup-header signup-header-home">
-                  <img src="/logo.png" className="signup-logo" alt="Signo logo" />
-                  <img
-                    src="/group-name.png"
-                    className="signup-group-name"
-                    alt="Signo Research Group"
-                  />
-                </div>
-
-                <div className="signup-title signup-title-large">
-                  Generate Tokens
-                </div>
-              </>
-            ) : (
-              <div style={tierDetailHeaderStyle}>
-                <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
-                <span
-                  className="signup-title signup-title-large"
-                  style={{ width: "100%", textAlign: "center", marginBottom: 0 }}
-                >
-                  {tierTitle}
-                </span>
+            {/* Header — shared by ga/vip/table/phone-entry/otp-verify */}
+            <div style={tierDetailHeaderStyle}>
+              {/* GA is the entry point now — nothing to go back to. */}
+              {step === "ga" ? (
                 <div />
-              </div>
-            )}
+              ) : (
+                <button style={backBtnStyle} onClick={handleBack} aria-label="Back">◀</button>
+              )}
+              <span
+                className="signup-title signup-title-large"
+                style={{ width: "100%", textAlign: "center", marginBottom: 0 }}
+              >
+                {tierTitle}
+              </span>
+              <div />
+            </div>
 
             {/* ── PHONE-ENTRY ───────────────────────────── */}
             {step === "phone-entry" && (
@@ -1102,6 +1097,42 @@ export default function ParticipationModal({
                       <span className="modal-status-text">SOLD OUT</span>
                     </div>
                   )}
+                </div>
+
+                {/* Segmented tier bar */}
+                <div style={{ marginBottom: 22 }}>
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${Math.max(1, tiers.length)}, 1fr)`,
+                    textAlign: "center",
+                    fontSize: 10,
+                    letterSpacing: 1.8,
+                    marginBottom: 6,
+                  }}>
+                    {tiers.map((t) => (
+                      <div key={t.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <span style={{ color: tierColor(t.sortOrder) }}>{t.name.toUpperCase()}</span>
+                        <span style={{ color: "#888", fontSize: 9, marginTop: 2 }}>
+                          {priceLabel(t)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", width: "100%", height: 10, background: "#222" }}>
+                    {tiers.map((t, i) => (
+                      <div
+                        key={t.id}
+                        style={{
+                          width: `${100 / Math.max(1, tiers.length)}%`,
+                          height: "100%",
+                          position: "relative",
+                          borderRight: i < tiers.length - 1 ? "1px solid #888" : undefined,
+                        }}
+                      >
+                        <div style={{ width: `${tierFill(t) * 100}%`, height: "100%", background: "white" }} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="modal-quantity-label">QUANTITY</div>
