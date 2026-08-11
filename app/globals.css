@@ -220,7 +220,7 @@ body::before {
 }
 
 .home-date-desktop {
-  font-size: 66px;
+  font-size: 48px;
   letter-spacing: 6px;
   line-height: 1;
   margin-bottom: 42px;
@@ -277,7 +277,7 @@ body::before {
 }
 
 .home-date-mobile {
-  font-size: 34px;
+  font-size: 28px;
   letter-spacing: 6px;
   line-height: 1;
   margin-bottom: 16px;
@@ -350,7 +350,7 @@ body::before {
   }
 
   .home-date-desktop {
-    font-size: 72px;
+    font-size: 52px;
     margin-bottom: 38px;
   }
 
