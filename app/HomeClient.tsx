@@ -13,6 +13,7 @@ export type HomeEvent = {
   slug: string;
   location: string | null;
   start_time: string | null;
+  end_time: string | null;
   hero_image: string | null;
 };
 
@@ -266,14 +267,23 @@ export default function HomeClient({
 
   // Event-facing copy. With no event (the public homepage) every one of these
   // resolves to the exact literal the page has always rendered.
+  // Event times are rendered in venue time. Without an explicit timeZone these
+  // resolve against the runtime's clock — UTC on the server, the visitor's zone
+  // in the browser — which both shifts the printed time and desyncs hydration.
+  // The format itself is unchanged.
+  const EVENT_TZ = "America/New_York";
   const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: EVENT_TZ });
   const fmtTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: EVENT_TZ });
 
   const eventLabel = event?.name ?? "RAVE_Initiation.html";
   const eventDate = event ? (event.start_time ? fmtDate(event.start_time) : "Date TBA") : "May 30";
-  const eventTime = event ? (event.start_time ? fmtTime(event.start_time) : "Time TBA") : "4:30 PM – 12 AM";
+  const eventTimeRange = (start: string, end: string | null) =>
+    end ? `${fmtTime(start)} – ${fmtTime(end)}` : fmtTime(start);
+  const eventTime = event
+    ? (event.start_time ? eventTimeRange(event.start_time, event.end_time) : "Time TBA")
+    : "4:30 PM – 12 AM";
   const eventLocation = event ? event.location ?? "Location TBA" : "Charlotte County Fair";
 
   // Event two's poster is not loaded yet; render an empty frame rather than a

@@ -40,6 +40,7 @@ export default async function PreviewPage({
         slug: event.slug,
         location: event.location,
         start_time: event.start_time,
+        end_time: event.end_time,
         hero_image: event.hero_image,
       }}
     />
