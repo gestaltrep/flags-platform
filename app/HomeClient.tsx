@@ -452,7 +452,11 @@ export default function HomeClient({
           <div className="home-mobile-text">
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
             <div className="home-time-mobile">{eventTime}</div>
-            <div className="home-location-mobile">{eventLocation.toUpperCase()}</div>
+            {/* The extra class is added only on the event-driven render, so the
+                dormant markup is untouched. */}
+            <div className={event ? "home-location-mobile home-location-mobile-event" : "home-location-mobile"}>
+              {eventLocation.toUpperCase()}
+            </div>
           </div>
         </div>
 

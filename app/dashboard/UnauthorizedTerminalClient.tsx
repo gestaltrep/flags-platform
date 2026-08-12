@@ -65,21 +65,26 @@ export default function UnauthorizedTerminalClient({ title = "Terminal" }: { tit
   const desktopBoxMinHeight = isCompactDesktop ? 194 : 178;
   const desktopTitleSize = isCompactDesktop ? 34 : 30;
 
-  const desktopMainStyle: React.CSSProperties = isCompactDesktop
-    ? {
-        marginTop: 72,
-        marginLeft: "auto",
-        marginRight: "auto",
-        marginBottom: 60,
-        width: desktopOuterWidth,
-        maxWidth: "calc(100vw - 80px)",
-      }
-    : {
-        marginTop: 72,
-        marginLeft: 120,
-        marginRight: 40,
-        marginBottom: 60,
-      };
+  // Fill the viewport so the globally-mounted footer — and the divider above
+  // it — sit below the fold here too, matching TerminalClient / RecordsClient.
+  const desktopMainStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    ...(isCompactDesktop
+      ? {
+          marginTop: 72,
+          marginLeft: "auto",
+          marginRight: "auto",
+          marginBottom: 60,
+          width: desktopOuterWidth,
+          maxWidth: "calc(100vw - 80px)",
+        }
+      : {
+          marginTop: 72,
+          marginLeft: 120,
+          marginRight: 40,
+          marginBottom: 60,
+        }),
+  };
 
   const finalBlockStyle: React.CSSProperties = isMobile
     ? { marginTop: 8 }
@@ -147,6 +152,7 @@ export default function UnauthorizedTerminalClient({ title = "Terminal" }: { tit
       ) : (
         <main
           style={{
+            minHeight: "100vh",
             marginTop: 26,
             marginLeft: 20,
             marginRight: 20,
