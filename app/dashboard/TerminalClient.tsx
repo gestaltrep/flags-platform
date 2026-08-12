@@ -565,7 +565,11 @@ export default function TerminalClient({
   const desktopGap = isCompactDesktop ? 92 : 80;
   const desktopRightWidth = isCompactDesktop ? 420 : 360;
 
-  const desktopMainStyle: React.CSSProperties = isMobile
+  // Fill the viewport so the globally-mounted footer — and the divider above
+  // it — sit below the fold, the way the homepage does with min-height: 100vh.
+  const desktopMainStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    ...(isMobile
     ? {
         marginTop: 26,
         marginLeft: 20,
@@ -586,7 +590,8 @@ export default function TerminalClient({
           marginLeft: 120,
           marginRight: 40,
           marginBottom: 60,
-        };
+        }),
+  };
 
   const desktopTitleSize = isCompactDesktop ? 34 : 30;
   const desktopEntryTitleSize = isCompactDesktop ? 30 : 26;

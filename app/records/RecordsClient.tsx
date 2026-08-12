@@ -44,7 +44,11 @@ export default function RecordsClient({
   const isCompactDesktop = !isMobile && viewportWidth >= 1180 && viewportWidth <= 1550;
 
   // Exact values from TerminalClient.tsx desktopMainStyle / mobile main style
-  const mainStyle: React.CSSProperties = isMobile
+  // Fill the viewport so the globally-mounted footer — and the divider above
+  // it — sit below the fold, the way the homepage does with min-height: 100vh.
+  const mainStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    ...(isMobile
     ? {
         marginTop: 26,
         marginLeft: 20,
@@ -65,7 +69,8 @@ export default function RecordsClient({
           marginLeft: 120,
           marginRight: 40,
           marginBottom: 60,
-        };
+        }),
+  };
 
   // Exact value from TerminalClient.tsx: desktopTitleSize = isCompactDesktop ? 34 : 30
   const titleSize = isMobile ? 28 : isCompactDesktop ? 34 : 30;
