@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import HeroGlitch from "./components/HeroGlitch";
+import HeroVideo from "./components/HeroVideo";
 import SponsorSection from "./components/SponsorSection";
 import ParticipationModal from "./components/ParticipationModal";
 
@@ -286,44 +287,18 @@ export default function HomeClient({
     : "4:30 PM – 12 AM";
   const eventLocation = event ? event.location ?? "Location TBA" : "Charlotte County Fair";
 
-  // Event two's poster is not loaded yet; render an empty frame rather than a
-  // broken image.
-  const heroMissing = previewMode && !event?.hero_image;
-
-  function Poster({ className }: { className?: string }) {
-    if (heroMissing) {
-      return (
-        <div
-          className={className}
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            background: "#0a0a0a",
-            border: "1px solid #333",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: '"Courier New", monospace',
-              fontSize: 11,
-              letterSpacing: 2,
-              color: "#555",
-              textTransform: "uppercase",
-              textAlign: "center",
-              padding: "0 16px",
-            }}
-          >
-            POSTER NOT YET LOADED
-          </span>
-        </div>
+  function Poster({ className, media }: { className?: string; media: string }) {
+    // Preview only. HeroVideo is the sole thing that references the poster or
+    // the mp4, so on the public path neither is rendered, preloaded or fetched.
+    if (previewMode) {
+      // A configured event still keeps its own image and gets no video.
+      return event?.hero_image ? (
+        <HeroVideo className={className} media={media} posterSrc={event.hero_image} videoSrc={null} />
+      ) : (
+        <HeroVideo className={className} media={media} />
       );
     }
-    if (previewMode && event?.hero_image) {
-      return <HeroGlitch className={className} lineupSrc={event.hero_image} lqipSrc={event.hero_image} />;
-    }
+    // Public dormant path — unchanged.
     return <HeroGlitch className={className} />;
   }
 
@@ -356,7 +331,7 @@ export default function HomeClient({
       <main className="home-desktop">
         <div className="home-desktop-grid">
           <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
-            <Poster className="home-poster-image" />
+            <Poster className="home-poster-image" media="(min-width: 900px)" />
             <div style={{
               position: "absolute",
               bottom: 3,
@@ -461,7 +436,7 @@ export default function HomeClient({
         </div>
 
         <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
-          <Poster className="home-mobile-poster" />
+          <Poster className="home-mobile-poster" media="(max-width: 899px)" />
           {isDormant && (
             <div style={{
               position: "absolute",

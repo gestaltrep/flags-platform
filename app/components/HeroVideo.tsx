@@ -1,0 +1,346 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+const MAIN_DURATION_MS = 2600;
+const EPILOGUE_DURATION_MS = 600;
+const TOTAL_DURATION_MS = MAIN_DURATION_MS + EPILOGUE_DURATION_MS; // 3200
+
+type Phase = "chaos" | "settled";
+
+// B1: canvas animates against lqipSrc (small WebP) for near-instant start
+// B5: onError removed — phase timer handles fallback if LQIP fails to load
+function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const lineupImg = new Image();
+    lineupImg.crossOrigin = "anonymous";
+    lineupImg.src = lqipSrc;
+
+    let lineupCanvas: HTMLCanvasElement | null = null;
+    let raf = 0;
+    let lastDisplace = 0;
+    const DISPLACE_INTERVAL = 50;
+    const STRIPE_HEIGHT = 8;
+
+    const buildOffscreen = (img: HTMLImageElement) => {
+      const off = document.createElement("canvas");
+      off.width = canvas.width;
+      off.height = canvas.height;
+      const offCtx = off.getContext("2d");
+      if (!offCtx) return off;
+      const w = canvas.width;
+      const h = canvas.height;
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const canvasRatio = w / h;
+      let drawW, drawH, drawX, drawY;
+      if (imgRatio > canvasRatio) {
+        drawH = h;
+        drawW = h * imgRatio;
+        drawX = (w - drawW) / 2;
+        drawY = 0;
+      } else {
+        drawW = w;
+        drawH = w / imgRatio;
+        drawX = 0;
+        drawY = (h - drawH) * 0.5;
+      }
+      offCtx.drawImage(img, drawX, drawY, drawW, drawH);
+      return off;
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      if (lineupImg.complete && lineupImg.naturalWidth > 0) {
+        lineupCanvas = buildOffscreen(lineupImg);
+      }
+    };
+
+    const mainProgress = (now: number): number => {
+      const elapsed = now - startTimeRef.current;
+      return Math.min(1, Math.max(0, elapsed / MAIN_DURATION_MS));
+    };
+
+    const epilogueProgress = (now: number): number => {
+      const elapsed = now - startTimeRef.current;
+      if (elapsed < MAIN_DURATION_MS) return 0;
+      return Math.min(1, (elapsed - MAIN_DURATION_MS) / EPILOGUE_DURATION_MS);
+    };
+
+    const mainChaosIntensity = (mainT: number): number => {
+      if (mainT >= 1) return 0;
+      if (mainT < 0.88) return 1;
+      return Math.max(0, 1 - (mainT - 0.88) / 0.12);
+    };
+
+    const epilogueChaosIntensity = (epT: number): number => {
+      if (epT <= 0 || epT >= 1) return 0;
+      const remaining = 1 - epT;
+      return 0.4 * remaining * remaining;
+    };
+
+    const drawStripes = (now: number) => {
+      const w = canvas.width;
+      const h = canvas.height;
+      const mainT = mainProgress(now);
+      ctx.clearRect(0, 0, w, h);
+
+      if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) return;
+
+      const stripeCount = Math.ceil(h / STRIPE_HEIGHT);
+      for (let i = 0; i < stripeCount; i++) {
+        const y = i * STRIPE_HEIGHT;
+        const stripeH = Math.min(STRIPE_HEIGHT, h - y);
+        if (stripeH <= 0) continue;
+
+        const seed = Math.sin(i * 12.9898) * 43758.5453;
+        const noise = seed - Math.floor(seed);
+        const maxOffset = h * 0.6 * (1 - mainT);
+        const dy = Math.floor((noise - 0.5) * 2 * maxOffset);
+        const sourceY = ((y + dy) % h + h) % h;
+        const drawH = Math.min(stripeH, Math.max(0, h - sourceY));
+        if (drawH <= 0) continue;
+
+        ctx.drawImage(lineupCanvas, 0, sourceY, w, drawH, 0, y, w, drawH);
+      }
+    };
+
+    const displaceBlocks = (now: number) => {
+      const w = canvas.width;
+      const h = canvas.height;
+      const mainT = mainProgress(now);
+      const epT = epilogueProgress(now);
+
+      if (epT > 0) {
+        const intensity = epilogueChaosIntensity(epT);
+        if (intensity <= 0) return;
+        const blockCount = Math.max(0, Math.floor((3 + Math.random() * 4) * intensity));
+        for (let i = 0; i < blockCount; i++) {
+          const blockW = 10 + Math.floor(Math.random() * 40);
+          const blockH = 5 + Math.floor(Math.random() * 12);
+          const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
+          const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
+          const dx = sx + (Math.random() - 0.5) * 50 * intensity;
+          const dy = sy + (Math.random() - 0.5) * 15 * intensity;
+          if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) continue;
+          try {
+            const slice = lineupCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+            if (slice) ctx.putImageData(slice, dx, dy);
+          } catch { /* ignore */ }
+        }
+
+        if (Math.random() < 0.15 * intensity) {
+          const barH = 4 + Math.floor(Math.random() * 8);
+          const sy = Math.floor(Math.random() * Math.max(1, h - barH));
+          const dx = (Math.random() - 0.5) * 60 * intensity;
+          if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) return;
+          try {
+            const bar = lineupCanvas.getContext("2d")?.getImageData(0, sy, w, barH);
+            if (bar) ctx.putImageData(bar, dx, sy);
+          } catch { /* ignore */ }
+        }
+        return;
+      }
+
+      const intensity = mainChaosIntensity(mainT);
+      if (intensity <= 0) return;
+
+      const baseCount = 8 + Math.floor(Math.random() * 8);
+      const blockCount = Math.max(0, Math.floor(baseCount * intensity));
+      const dispMagnitude = intensity;
+
+      for (let i = 0; i < blockCount; i++) {
+        const blockW = 15 + Math.floor(Math.random() * 90);
+        const blockH = 8 + Math.floor(Math.random() * 25);
+        const sx = Math.floor(Math.random() * Math.max(1, w - blockW));
+        const sy = Math.floor(Math.random() * Math.max(1, h - blockH));
+        const dx = sx + (Math.random() - 0.5) * 140 * dispMagnitude;
+        const dy = sy + (Math.random() - 0.5) * 50 * dispMagnitude;
+        if (!lineupCanvas || lineupCanvas.width === 0 || lineupCanvas.height === 0) continue;
+        try {
+          const slice = lineupCanvas.getContext("2d")?.getImageData(sx, sy, blockW, blockH);
+          if (slice) ctx.putImageData(slice, dx, dy);
+        } catch { /* ignore */ }
+      }
+    };
+
+    const tick = (now: number) => {
+      if (startTimeRef.current === 0) startTimeRef.current = now;
+      drawStripes(now);
+      if (now - lastDisplace >= DISPLACE_INTERVAL) {
+        displaceBlocks(now);
+        lastDisplace = now;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    const start = () => {
+      resize();
+      raf = requestAnimationFrame(tick);
+    };
+
+    lineupImg.onload = start;
+    lineupImg.onerror = () => {}; // canvas stays black; phase timer transitions to settled
+    if (lineupImg.complete && lineupImg.naturalWidth > 0) start();
+
+    window.addEventListener("resize", resize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      startTimeRef.current = 0;
+    };
+  }, [lqipSrc]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
+const coverStyle: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  objectPosition: "center center",
+  display: "block",
+};
+
+/**
+ * Poster -> glitch -> video. PREVIEW ONLY.
+ *
+ * This component is rendered exclusively when HomeClient is in previewMode, so
+ * the public dormant homepage never mounts it and never requests the poster or
+ * the mp4. The public hero stays in HeroGlitch.tsx, untouched.
+ *
+ * The desktop and mobile layouts are both in the DOM at all times (CSS display
+ * picks the visible one), so each instance is told which media query it belongs
+ * to and only the matching one builds a canvas or a video. Every other instance
+ * renders the poster alone. That keeps the page at exactly one <video> and at
+ * most one <canvas> at every breakpoint.
+ *
+ * The poster stays mounted underneath the canvas and the video for the whole
+ * sequence, so a slow or failed video can never leave a gap or a black frame.
+ */
+export default function HeroVideo({
+  posterSrc = "/hero_poster.webp",
+  videoSrc = "/hero_1180x840.mp4",
+  media,
+  className,
+}: {
+  posterSrc?: string;
+  /** null renders a still hero with no video at all. */
+  videoSrc?: string | null;
+  /** The media query this instance is the visible one for. */
+  media: string;
+  className?: string;
+}) {
+  const [phase, setPhase] = useState<Phase>("chaos");
+  const [mounted, setMounted] = useState(false);
+  const [active, setActive] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [stillOnly, setStillOnly] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Only the instance whose breakpoint is live does any work.
+  useEffect(() => {
+    setMounted(true);
+    const mq = window.matchMedia(media);
+    const sync = () => setActive(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, [media]);
+
+  useEffect(() => {
+    if (!active) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // B3: bail out on reduced-motion or slow connection — poster only, and the
+    // video is never rendered so it is never fetched.
+    const conn = (navigator as any).connection;
+    if (reduced || conn?.saveData || ["slow-2g", "2g"].includes(conn?.effectiveType)) {
+      setStillOnly(true);
+      setPhase("settled");
+      return;
+    }
+    const t = setTimeout(() => setPhase("settled"), TOTAL_DURATION_MS);
+    return () => clearTimeout(t);
+  }, [active]);
+
+  // Buffer during the glitch. The attribute stays "metadata" so the SSR markup
+  // promises nothing; buffering is opted into here, only on the live instance.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !active || stillOnly) return;
+    el.preload = "auto";
+    el.load();
+  }, [active, stillOnly, videoSrc]);
+
+  const showVideo = phase === "settled" && videoReady && !stillOnly;
+
+  // Play only once the glitch is over and the video can run to the end.
+  useEffect(() => {
+    if (!showVideo) return;
+    videoRef.current?.play().catch(() => {});
+  }, [showVideo]);
+
+  // Pre-mount (SSR + first paint), the inactive instance, or a still-only
+  // render: the poster on its own.
+  if (!mounted || !active || !videoSrc || (stillOnly && phase === "settled")) {
+    return (
+      <div
+        className={className}
+        style={{ position: "relative", overflow: "hidden", background: "transparent" }}
+      >
+        <img src={posterSrc} alt="" style={coverStyle} />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={className}
+      style={{ position: "relative", overflow: "hidden", background: "#000" }}
+    >
+      {/* Floor. Never unmounted, so there is always something painted. */}
+      <img src={posterSrc} alt="" style={{ ...coverStyle, position: "absolute", inset: 0 }} />
+
+      {phase === "chaos" && <GlitchCanvas lqipSrc={posterSrc} />}
+
+      <video
+        ref={videoRef}
+        src={videoSrc}
+        poster={posterSrc}
+        preload="metadata"
+        muted
+        loop
+        playsInline
+        onCanPlayThrough={() => setVideoReady(true)}
+        style={{
+          ...coverStyle,
+          position: "absolute",
+          inset: 0,
+          opacity: showVideo ? 1 : 0,
+          transition: "opacity 220ms linear",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+}
