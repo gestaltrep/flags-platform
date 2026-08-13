@@ -16,12 +16,18 @@ type Phase = "chaos" | "settled";
  * glow. Order matters — the clamp happens first, and zero times anything is
  * still zero, so the floor stays dead.
  *
- * Every layer that can paint in the hero slot carries this, not just the video,
- * or the un-floored ground shows as a panel until playback starts.
+ * This goes on the LAYER PARENT, never on the individual media layers. The
+ * canvas is drawn from the same poster the <img> shows, so two independent
+ * screens would composite an image onto a near-copy of itself:
+ * screen(a,a) = 1-(1-a)^2, roughly doubling the glow, with the brightness
+ * compounding twice on top. mix-blend-mode on the parent creates a stacking
+ * context, so the children composite normally inside and exactly one screen
+ * lands against the page. isolation is redundant with that but stated.
  */
 const HERO_TREATMENT = {
   filter: "contrast(1.10) brightness(1.16)",
   mixBlendMode: "screen" as const,
+  isolation: "isolate" as const,
 };
 
 function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
@@ -223,8 +229,6 @@ function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
         width: "100%",
         height: "100%",
         pointerEvents: "none",
-        // Draws the poster, so it carries the poster's floor.
-        ...HERO_TREATMENT,
       }}
     />
   );
@@ -322,11 +326,16 @@ export default function HeroVideo({
     return (
       <div
         className={className}
-        style={{ position: "relative", overflow: "hidden", background: "transparent" }}
+        // Treated only for our own seal render. A configured event's own image
+        // (videoSrc null) is left exactly as supplied.
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          background: "transparent",
+          ...(videoSrc ? HERO_TREATMENT : {}),
+        }}
       >
-        {/* Treated only for our own seal poster. A configured event's own
-            image (videoSrc null) is left exactly as supplied. */}
-        <img src={posterSrc} alt="" style={videoSrc ? { ...coverStyle, ...HERO_TREATMENT } : coverStyle} />
+        <img src={posterSrc} alt="" style={coverStyle} />
       </div>
     );
   }
@@ -334,26 +343,23 @@ export default function HeroVideo({
   return (
     <div
       className={className}
-      // Transparent, so the screen blend composites against the page rather
-      // than against a black panel of our own making.
-      style={{ position: "relative", overflow: "hidden", background: "transparent" }}
+      // Transparent so the single screen composites against the page, and the
+      // one place the treatment lives — see HERO_TREATMENT.
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        background: "transparent",
+        ...HERO_TREATMENT,
+      }}
     >
-      {/* Floor: covers the load, then gets out of the way. It has to stop
-          painting once the video is up, or the blend would composite the video
-          against the poster instead of against the page. */}
+      {/* Floor. Stays at full opacity for the life of the component: the video
+          is opaque and covers it, and holding it here means the crossfade is a
+          plain alpha blend between two near-identical images rather than a dip
+          through a transparent group. */}
       <img
         src={posterSrc}
         alt=""
-        style={{
-          ...coverStyle,
-          position: "absolute",
-          inset: 0,
-          opacity: showVideo ? 0 : 1,
-          transition: "opacity 220ms linear",
-          // Same still from the same render, so the same floor and the same
-          // correction. Without this it panels until playback starts.
-          ...HERO_TREATMENT,
-        }}
+        style={{ ...coverStyle, position: "absolute", inset: 0 }}
       />
 
       {phase === "chaos" && <GlitchCanvas lqipSrc={posterSrc} />}
@@ -374,9 +380,6 @@ export default function HeroVideo({
           opacity: showVideo ? 1 : 0,
           transition: "opacity 220ms linear",
           pointerEvents: "none",
-          // The filter is on the element itself: applied before the blend, so
-          // it does not isolate the blend group the way an ancestor would.
-          ...HERO_TREATMENT,
         }}
       />
     </div>
