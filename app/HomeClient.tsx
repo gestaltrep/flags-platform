@@ -330,20 +330,30 @@ export default function HomeClient({
 
       <main className="home-desktop">
         <div className="home-desktop-grid">
-          <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
+          {/* Preview drops the frame and the corner label so the seal floats.
+              borderColor rather than border keeps the box metrics identical,
+              so the video's size and the grid do not move. */}
+          <div
+            style={previewMode
+              ? { position: "relative", display: "block", borderColor: "transparent" }
+              : { position: "relative", display: "block" }}
+            className="home-poster-wrap"
+          >
             <Poster className="home-poster-image" media="(min-width: 900px)" />
-            <div style={{
-              position: "absolute",
-              bottom: 3,
-              right: 3,
-              fontFamily: '"Courier New", monospace',
-              fontSize: 13,
-              letterSpacing: 1.5,
-              color: "#ffffff",
-              pointerEvents: "none",
-            }}>
-              {eventLabel}
-            </div>
+            {!previewMode && (
+              <div style={{
+                position: "absolute",
+                bottom: 3,
+                right: 3,
+                fontFamily: '"Courier New", monospace',
+                fontSize: 13,
+                letterSpacing: 1.5,
+                color: "#ffffff",
+                pointerEvents: "none",
+              }}>
+                {eventLabel}
+              </div>
+            )}
             {isDormant && (
               <div style={{
                 position: "absolute",
@@ -435,7 +445,14 @@ export default function HomeClient({
           </div>
         </div>
 
-        <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
+        {/* Preview also clears this wrapper's black background — an opaque
+            backdrop would defeat the screen blend on mobile. */}
+        <div
+          className="home-mobile-poster-wrap"
+          style={previewMode
+            ? { position: "relative", borderColor: "transparent", background: "transparent" }
+            : { position: "relative" }}
+        >
           <Poster className="home-mobile-poster" media="(max-width: 899px)" />
           {isDormant && (
             <div style={{
@@ -463,18 +480,20 @@ export default function HomeClient({
               <div style={{ height: 1, background: "#888" }} />
             </div>
           )}
-          <div style={{
-            position: "absolute",
-            bottom: 10,
-            right: 6,
-            left: "auto",
-            fontFamily: '"Courier New", monospace',
-            fontSize: 11,
-            letterSpacing: 1.5,
-            color: "#ffffff",
-          }}>
-            {eventLabel}
-          </div>
+          {!previewMode && (
+            <div style={{
+              position: "absolute",
+              bottom: 10,
+              right: 6,
+              left: "auto",
+              fontFamily: '"Courier New", monospace',
+              fontSize: 11,
+              letterSpacing: 1.5,
+              color: "#ffffff",
+            }}>
+              {eventLabel}
+            </div>
+          )}
         </div>
 
         <div className="home-mobile-cta-wrap">

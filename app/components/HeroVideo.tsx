@@ -316,10 +316,24 @@ export default function HeroVideo({
   return (
     <div
       className={className}
-      style={{ position: "relative", overflow: "hidden", background: "#000" }}
+      // Transparent, so the screen blend composites against the page rather
+      // than against a black panel of our own making.
+      style={{ position: "relative", overflow: "hidden", background: "transparent" }}
     >
-      {/* Floor. Never unmounted, so there is always something painted. */}
-      <img src={posterSrc} alt="" style={{ ...coverStyle, position: "absolute", inset: 0 }} />
+      {/* Floor: covers the load, then gets out of the way. It has to stop
+          painting once the video is up, or the blend would composite the video
+          against the poster instead of against the page. */}
+      <img
+        src={posterSrc}
+        alt=""
+        style={{
+          ...coverStyle,
+          position: "absolute",
+          inset: 0,
+          opacity: showVideo ? 0 : 1,
+          transition: "opacity 220ms linear",
+        }}
+      />
 
       {phase === "chaos" && <GlitchCanvas lqipSrc={posterSrc} />}
 
@@ -339,6 +353,9 @@ export default function HeroVideo({
           opacity: showVideo ? 1 : 0,
           transition: "opacity 220ms linear",
           pointerEvents: "none",
+          // The video's ground is black and the page is #000, so screen drops
+          // the ground out and leaves the glow sitting on the page.
+          mixBlendMode: "screen",
         }}
       />
     </div>
