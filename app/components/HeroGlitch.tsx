@@ -214,130 +214,63 @@ function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
   );
 }
 
-const coverStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  objectPosition: "center center",
-  display: "block",
-};
-
-/**
- * Poster -> glitch -> video.
- *
- * The desktop and mobile layouts are both in the DOM at all times (CSS display
- * picks the visible one), so each instance is told which media query it belongs
- * to and only the matching one builds a canvas or a video. Every other instance
- * renders the poster alone. That keeps the page at exactly one <video> and at
- * most one <canvas> at every breakpoint.
- *
- * The poster is the SSR image and the LCP element; it also stays mounted
- * underneath the canvas and the video for the whole sequence, so a slow or
- * failed video can never leave a gap or a black frame.
- */
 export default function HeroGlitch({
-  posterSrc = "/hero_poster.webp",
-  videoSrc = "/hero_1180x840.mp4",
-  media,
+  lineupSrc = "/lineup_hero.png",
+  lqipSrc = "/lineup_hero_lqip.webp",
   className,
 }: {
-  posterSrc?: string;
-  /** null renders a still hero with no video at all. */
-  videoSrc?: string | null;
-  /** The media query this instance is the visible one for. */
-  media: string;
+  lineupSrc?: string;
+  lqipSrc?: string;
   className?: string;
 }) {
   const [phase, setPhase] = useState<Phase>("chaos");
   const [mounted, setMounted] = useState(false);
-  const [active, setActive] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
-  const [stillOnly, setStillOnly] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [hiResReady, setHiResReady] = useState(false); // B2
 
-  // Only the instance whose breakpoint is live does any work.
   useEffect(() => {
     setMounted(true);
-    const mq = window.matchMedia(media);
-    const sync = () => setActive(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, [media]);
-
-  useEffect(() => {
-    if (!active) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // B3: bail out on reduced-motion or slow connection — poster only, and the
-    // video is never rendered so it is never fetched.
+    // B3: bail out on reduced-motion or slow connection
     const conn = (navigator as any).connection;
     if (reduced || conn?.saveData || ["slow-2g", "2g"].includes(conn?.effectiveType)) {
-      setStillOnly(true);
       setPhase("settled");
       return;
     }
     const t = setTimeout(() => setPhase("settled"), TOTAL_DURATION_MS);
     return () => clearTimeout(t);
-  }, [active]);
+  }, []);
 
-  // Buffer during the glitch. The attribute stays "metadata" so the SSR markup
-  // promises nothing; buffering is opted into here, only on the live instance.
+  // B2: preload hi-res in parallel so settled state upgrades immediately when ready
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el || !active || stillOnly) return;
-    el.preload = "auto";
-    el.load();
-  }, [active, stillOnly, videoSrc]);
+    const img = new Image();
+    img.onload = () => setHiResReady(true);
+    img.src = lineupSrc;
+    return () => { img.onload = null; };
+  }, [lineupSrc]);
 
-  const showVideo = phase === "settled" && videoReady && !stillOnly;
-
-  // Play only once the glitch is over and the video can run to the end.
-  useEffect(() => {
-    if (!showVideo) return;
-    videoRef.current?.play().catch(() => {});
-  }, [showVideo]);
-
-  // Pre-mount (SSR + first paint), the inactive instance, or a still-only
-  // render: the poster on its own.
-  if (!mounted || !active || !videoSrc || (stillOnly && phase === "settled")) {
+  // Pre-mount (SSR + first paint) or settled: show LQIP until hi-res is ready
+  if (!mounted || phase === "settled") {
     return (
       <div
         className={className}
         style={{ position: "relative", overflow: "hidden", background: "transparent" }}
       >
-        <img src={posterSrc} alt="" style={coverStyle} />
+        <img
+          src={hiResReady ? lineupSrc : lqipSrc}
+          alt="RAVE_Initiation lineup"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center", display: "block" }}
+        />
       </div>
     );
   }
 
+  // chaos phase — canvas animates against LQIP
   return (
     <div
       className={className}
       style={{ position: "relative", overflow: "hidden", background: "#000" }}
     >
-      {/* Floor. Never unmounted, so there is always something painted. */}
-      <img src={posterSrc} alt="" style={{ ...coverStyle, position: "absolute", inset: 0 }} />
-
-      {phase === "chaos" && <GlitchCanvas lqipSrc={posterSrc} />}
-
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        poster={posterSrc}
-        preload="metadata"
-        muted
-        loop
-        playsInline
-        onCanPlayThrough={() => setVideoReady(true)}
-        style={{
-          ...coverStyle,
-          position: "absolute",
-          inset: 0,
-          opacity: showVideo ? 1 : 0,
-          transition: "opacity 220ms linear",
-          pointerEvents: "none",
-        }}
-      />
+      <GlitchCanvas lqipSrc={lqipSrc} />
     </div>
   );
 }

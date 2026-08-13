@@ -290,7 +290,7 @@ export default function HomeClient({
   // broken image.
   const heroMissing = previewMode && !event?.hero_image;
 
-  function Poster({ className, media }: { className?: string; media: string }) {
+  function Poster({ className }: { className?: string }) {
     if (heroMissing) {
       return (
         <div
@@ -321,11 +321,10 @@ export default function HomeClient({
         </div>
       );
     }
-    // A configured event still (no hero video for it yet) renders as a poster.
     if (previewMode && event?.hero_image) {
-      return <HeroGlitch className={className} media={media} posterSrc={event.hero_image} videoSrc={null} />;
+      return <HeroGlitch className={className} lineupSrc={event.hero_image} lqipSrc={event.hero_image} />;
     }
-    return <HeroGlitch className={className} media={media} />;
+    return <HeroGlitch className={className} />;
   }
 
   return (
@@ -357,7 +356,7 @@ export default function HomeClient({
       <main className="home-desktop">
         <div className="home-desktop-grid">
           <div style={{ position: "relative", display: "block" }} className="home-poster-wrap">
-            <Poster className="home-poster-image" media="(min-width: 900px)" />
+            <Poster className="home-poster-image" />
             <div style={{
               position: "absolute",
               bottom: 3,
@@ -462,7 +461,7 @@ export default function HomeClient({
         </div>
 
         <div className="home-mobile-poster-wrap" style={{ position: "relative" }}>
-          <Poster className="home-mobile-poster" media="(max-width: 899px)" />
+          <Poster className="home-mobile-poster" />
           {isDormant && (
             <div style={{
               position: "absolute",
