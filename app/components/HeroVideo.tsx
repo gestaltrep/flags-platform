@@ -353,8 +353,13 @@ export default function HeroVideo({
           opacity: showVideo ? 1 : 0,
           transition: "opacity 220ms linear",
           pointerEvents: "none",
-          // The video's ground is black and the page is #000, so screen drops
-          // the ground out and leaves the glow sitting on the page.
+          // The encode's floor sits at ~(7-10)/255 rather than 0, and screen
+          // against a black page is an identity op, so it cannot pull that
+          // down. contrast(1.10) crushes everything at or below 11.6/255 to
+          // zero, which floors the ground while costing the centre glow ~5%.
+          // The filter is on the element itself: applied before the blend, so
+          // it does not isolate the blend group the way an ancestor would.
+          filter: "contrast(1.10)",
           mixBlendMode: "screen",
         }}
       />
