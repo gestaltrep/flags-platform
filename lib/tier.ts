@@ -40,17 +40,38 @@ export function totalCapacity(tiers: TicketTier[]): number {
 }
 
 /**
- * Reference net-per-ticket for reporting only, in cents:
- *   price / 1.07  -  (price * 0.029 + $0.30)
+ * Tax-inclusive divisor for the venue's combined admissions rate.
  *
- * The 1.07 divisor backs the tax-inclusive price out to the taxable base; the
- * remainder is the card fee. This never touches what a buyer is charged.
+ * Bonita Springs is Lee County: 6% state + 0.5% discretionary surtax (effective
+ * 2019-2028 per the 2026 DR-15DSS) = 6.5%. The old 1.07 was Charlotte County,
+ * carried over from PGICA. Whether admissions are taxable at all, and the exact
+ * DR-15 line treatment, is a Tax & Compliance question — this constant only
+ * backs a tax-inclusive price out to its taxable base for reporting.
  */
-export function netPerTicketCents(priceCents: number): number {
-  return Math.round(priceCents / 1.07 - (priceCents * 0.029 + 30));
+export const TAX_INCLUSIVE_DIVISOR = 1.065;
+
+/** Stripe standard card pricing: 2.9% + $0.30 per TRANSACTION, not per ticket. */
+export const STRIPE_PERCENT_FEE = 0.029;
+export const STRIPE_FIXED_FEE_CENTS = 30;
+
+/** Taxable base for a tax-inclusive gross. Unrounded — callers round at display. */
+export function taxableBaseCents(grossCents: number): number {
+  return grossCents / TAX_INCLUSIVE_DIVISOR;
 }
 
-/** Reference net for n tickets at a given tier price, in cents. */
-export function netForTicketsCents(priceCents: number, count: number): number {
-  return netPerTicketCents(priceCents) * count;
+/**
+ * Estimated Stripe fee for `transactionCount` charges totalling `grossCents`.
+ * Only a fallback: prefer the actual balance-transaction fee when Stripe can be
+ * reached. Unrounded.
+ */
+export function estimatedStripeFeeCents(grossCents: number, transactionCount: number): number {
+  return grossCents * STRIPE_PERCENT_FEE + STRIPE_FIXED_FEE_CENTS * transactionCount;
+}
+
+/**
+ * Reference net, in cents: taxable base minus card fees. Pass actual fees when
+ * available. No intermediate rounding anywhere in this chain.
+ */
+export function netCents(grossCents: number, feeCents: number): number {
+  return taxableBaseCents(grossCents) - feeCents;
 }
