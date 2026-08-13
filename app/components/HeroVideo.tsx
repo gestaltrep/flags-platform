@@ -10,6 +10,20 @@ type Phase = "chaos" | "settled";
 
 // B1: canvas animates against lqipSrc (small WebP) for near-instant start
 // B5: onError removed — phase timer handles fallback if LQIP fails to load
+/**
+ * The seal render's black floor sits at ~(8,10,7) rather than 0. contrast
+ * clamps everything at or below 11.6/255 to zero; brightness then restores the
+ * glow. Order matters — the clamp happens first, and zero times anything is
+ * still zero, so the floor stays dead.
+ *
+ * Every layer that can paint in the hero slot carries this, not just the video,
+ * or the un-floored ground shows as a panel until playback starts.
+ */
+const HERO_TREATMENT = {
+  filter: "contrast(1.10) brightness(1.16)",
+  mixBlendMode: "screen" as const,
+};
+
 function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -209,6 +223,8 @@ function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
         width: "100%",
         height: "100%",
         pointerEvents: "none",
+        // Draws the poster, so it carries the poster's floor.
+        ...HERO_TREATMENT,
       }}
     />
   );
@@ -308,7 +324,9 @@ export default function HeroVideo({
         className={className}
         style={{ position: "relative", overflow: "hidden", background: "transparent" }}
       >
-        <img src={posterSrc} alt="" style={coverStyle} />
+        {/* Treated only for our own seal poster. A configured event's own
+            image (videoSrc null) is left exactly as supplied. */}
+        <img src={posterSrc} alt="" style={videoSrc ? { ...coverStyle, ...HERO_TREATMENT } : coverStyle} />
       </div>
     );
   }
@@ -332,6 +350,9 @@ export default function HeroVideo({
           inset: 0,
           opacity: showVideo ? 0 : 1,
           transition: "opacity 220ms linear",
+          // Same still from the same render, so the same floor and the same
+          // correction. Without this it panels until playback starts.
+          ...HERO_TREATMENT,
         }}
       />
 
@@ -353,14 +374,9 @@ export default function HeroVideo({
           opacity: showVideo ? 1 : 0,
           transition: "opacity 220ms linear",
           pointerEvents: "none",
-          // The encode's floor sits at ~(7-10)/255 rather than 0, and screen
-          // against a black page is an identity op, so it cannot pull that
-          // down. contrast(1.10) crushes everything at or below 11.6/255 to
-          // zero, which floors the ground while costing the centre glow ~5%.
           // The filter is on the element itself: applied before the blend, so
           // it does not isolate the blend group the way an ancestor would.
-          filter: "contrast(1.10)",
-          mixBlendMode: "screen",
+          ...HERO_TREATMENT,
         }}
       />
     </div>
