@@ -315,6 +315,9 @@ export default function HomeClient({
         left: heroLeft,
         top: heroTop,
         width: heroW,
+        // .home-poster-image carries max-width: 100%, which otherwise clamps
+        // the width back to the wrap's content box and kills the spill.
+        maxWidth: "none" as const,
         height: heroH,
         overflow: "visible" as const,
       }
