@@ -6,6 +6,11 @@ import HeroVideo from "./components/HeroVideo";
 import SponsorSection from "./components/SponsorSection";
 import ParticipationModal from "./components/ParticipationModal";
 
+/** The desktop hero slot at 1x, and how far the seal rides above centre. */
+const SLOT_W = 590;
+const SLOT_H = 420;
+export const HERO_LIFT_DEFAULT = 10;
+
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
 /** Minimal event shape the preview needs. Public homepage passes nothing. */
@@ -29,6 +34,7 @@ export default function HomeClient({
   previewMode = false,
   previewKey = "",
   heroScale = 1,
+  heroLift = HERO_LIFT_DEFAULT,
 }: {
   isDormant: boolean;
   event?: HomeEvent | null;
@@ -36,6 +42,8 @@ export default function HomeClient({
   previewKey?: string;
   /** Preview-only hero sizing experiment. 1 leaves the shared CSS alone. */
   heroScale?: number;
+  /** Preview-only: px the seal rides above vertical centre on its slot. */
+  heroLift?: number;
 }) {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
@@ -290,28 +298,38 @@ export default function HomeClient({
     : "4:30 PM – 12 AM";
   const eventLocation = event ? event.location ?? "Location TBA" : "Charlotte County Fair";
 
-  // Preview-only hero sizing. The wrap is a fixed box in a fixed grid track,
-  // so both have to grow or the video just crops harder. .home-poster-wrap and
-  // .home-poster-image are shared with the dormant path, so this is applied as
-  // inline style on the preview branch only — never to the classes.
+  // Preview-only hero sizing. The GRID IS LEFT ALONE — the poster track stays
+  // 590 and the info column keeps its 1x x-position. The video is simply drawn
+  // larger than its slot and allowed to spill, which is safe because
+  // everything outside the seal is floored to page black.
   const heroSized = previewMode && heroScale !== 1;
-  const heroW = Math.round(590 * heroScale);
-  const heroH = Math.round(420 * heroScale);
-  const heroGridStyle = heroSized
-    ? { gridTemplateColumns: `${heroW}px 350px` }
+  const heroW = Math.round(SLOT_W * heroScale);
+  const heroH = Math.round(SLOT_H * heroScale);
+  // Centred on the old 590 track, then lifted above vertical centre.
+  const heroLeft = (SLOT_W - heroW) / 2;
+  const heroTop = (SLOT_H - heroH) / 2 - heroLift;
+  const heroWrapStyle = heroSized ? { overflow: "visible" as const } : {};
+  const heroRootStyle = heroSized
+    ? {
+        position: "absolute" as const,
+        left: heroLeft,
+        top: heroTop,
+        width: heroW,
+        height: heroH,
+        overflow: "visible" as const,
+      }
     : undefined;
-  const heroWrapSize = heroSized ? { width: heroW, height: heroH } : {};
-  const heroRootStyle = heroSized ? { width: "100%", height: "100%" } : undefined;
 
-  function Poster({ className, media }: { className?: string; media: string }) {
+  function Poster({ className, media, sized }: { className?: string; media: string; sized?: boolean }) {
+    const rootStyle = sized ? heroRootStyle : undefined;
     // Preview only. HeroVideo is the sole thing that references the poster or
     // the mp4, so on the public path neither is rendered, preloaded or fetched.
     if (previewMode) {
       // A configured event still keeps its own image and gets no video.
       return event?.hero_image ? (
-        <HeroVideo className={className} media={media} rootStyle={heroRootStyle} posterSrc={event.hero_image} videoSrc={null} />
+        <HeroVideo className={className} media={media} rootStyle={rootStyle} posterSrc={event.hero_image} videoSrc={null} />
       ) : (
-        <HeroVideo className={className} media={media} rootStyle={heroRootStyle} />
+        <HeroVideo className={className} media={media} rootStyle={rootStyle} />
       );
     }
     // Public dormant path — unchanged.
@@ -345,17 +363,17 @@ export default function HomeClient({
       )}
 
       <main className="home-desktop">
-        <div className="home-desktop-grid" style={heroGridStyle}>
+        <div className="home-desktop-grid">
           {/* Preview drops the frame and the corner label so the seal floats.
               borderColor rather than border keeps the box metrics identical,
               so the video's size and the grid do not move. */}
           <div
             style={previewMode
-              ? { position: "relative", display: "block", borderColor: "transparent", ...heroWrapSize }
+              ? { position: "relative", display: "block", borderColor: "transparent", ...heroWrapStyle }
               : { position: "relative", display: "block" }}
             className="home-poster-wrap"
           >
-            <Poster className="home-poster-image" media="(min-width: 900px)" />
+            <Poster className="home-poster-image" media="(min-width: 900px)" sized />
             {!previewMode && (
               <div style={{
                 position: "absolute",

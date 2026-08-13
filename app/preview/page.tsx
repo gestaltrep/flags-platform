@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import HomeClient from "../HomeClient";
+import HomeClient, { HERO_LIFT_DEFAULT } from "../HomeClient";
 import { getMostRecentDraftEvent } from "@/lib/events";
 import { isValidPreviewKey } from "@/lib/preview";
 
@@ -15,7 +15,7 @@ import { isValidPreviewKey } from "@/lib/preview";
 export default async function PreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ key?: string | string[]; hero?: string | string[] }>;
+  searchParams: Promise<{ key?: string | string[]; hero?: string | string[]; lift?: string | string[] }>;
 }) {
   const params = await searchParams;
   const raw = params?.key;
@@ -26,6 +26,13 @@ export default async function PreviewPage({
   const rawHero = Array.isArray(params?.hero) ? params.hero[0] : params?.hero;
   const HERO_SCALES: Record<string, number> = { "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
   const heroScale = (rawHero && HERO_SCALES[rawHero]) || 1;
+
+  // ?lift=<px> tunes how far the seal rides above vertical centre on its slot.
+  const rawLift = Array.isArray(params?.lift) ? params.lift[0] : params?.lift;
+  const parsedLift = rawLift === undefined ? NaN : Number(rawLift);
+  const heroLift = Number.isFinite(parsedLift)
+    ? Math.max(-200, Math.min(200, parsedLift))
+    : HERO_LIFT_DEFAULT;
 
   if (!isValidPreviewKey(key)) {
     return <HomeClient isDormant={true} />;
@@ -42,6 +49,7 @@ export default async function PreviewPage({
       previewMode={true}
       previewKey={key as string}
       heroScale={heroScale}
+      heroLift={heroLift}
       event={{
         name: event.name,
         slug: event.slug,
