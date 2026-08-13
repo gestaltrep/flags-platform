@@ -21,10 +21,11 @@ export default async function PreviewPage({
   const raw = params?.key;
   const key = Array.isArray(raw) ? raw[0] : raw;
 
-  // Hero sizing experiment: ?hero=1.5 or 1.9. Anything else is 1, i.e. the
-  // shared CSS untouched.
+  // Hero sizing experiment: ?hero=1.33, 1.5 or 1.9. Anything else is 1, i.e.
+  // the shared CSS untouched.
   const rawHero = Array.isArray(params?.hero) ? params.hero[0] : params?.hero;
-  const heroScale = rawHero === "1.5" ? 1.5 : rawHero === "1.9" ? 1.9 : 1;
+  const HERO_SCALES: Record<string, number> = { "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
+  const heroScale = (rawHero && HERO_SCALES[rawHero]) || 1;
 
   if (!isValidPreviewKey(key)) {
     return <HomeClient isDormant={true} />;
