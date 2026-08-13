@@ -28,11 +28,14 @@ export default function HomeClient({
   event = null,
   previewMode = false,
   previewKey = "",
+  heroScale = 1,
 }: {
   isDormant: boolean;
   event?: HomeEvent | null;
   previewMode?: boolean;
   previewKey?: string;
+  /** Preview-only hero sizing experiment. 1 leaves the shared CSS alone. */
+  heroScale?: number;
 }) {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
@@ -287,15 +290,28 @@ export default function HomeClient({
     : "4:30 PM – 12 AM";
   const eventLocation = event ? event.location ?? "Location TBA" : "Charlotte County Fair";
 
+  // Preview-only hero sizing. The wrap is a fixed box in a fixed grid track,
+  // so both have to grow or the video just crops harder. .home-poster-wrap and
+  // .home-poster-image are shared with the dormant path, so this is applied as
+  // inline style on the preview branch only — never to the classes.
+  const heroSized = previewMode && heroScale !== 1;
+  const heroW = Math.round(590 * heroScale);
+  const heroH = Math.round(420 * heroScale);
+  const heroGridStyle = heroSized
+    ? { gridTemplateColumns: `${heroW}px 350px` }
+    : undefined;
+  const heroWrapSize = heroSized ? { width: heroW, height: heroH } : {};
+  const heroRootStyle = heroSized ? { width: "100%", height: "100%" } : undefined;
+
   function Poster({ className, media }: { className?: string; media: string }) {
     // Preview only. HeroVideo is the sole thing that references the poster or
     // the mp4, so on the public path neither is rendered, preloaded or fetched.
     if (previewMode) {
       // A configured event still keeps its own image and gets no video.
       return event?.hero_image ? (
-        <HeroVideo className={className} media={media} posterSrc={event.hero_image} videoSrc={null} />
+        <HeroVideo className={className} media={media} rootStyle={heroRootStyle} posterSrc={event.hero_image} videoSrc={null} />
       ) : (
-        <HeroVideo className={className} media={media} />
+        <HeroVideo className={className} media={media} rootStyle={heroRootStyle} />
       );
     }
     // Public dormant path — unchanged.
@@ -329,13 +345,13 @@ export default function HomeClient({
       )}
 
       <main className="home-desktop">
-        <div className="home-desktop-grid">
+        <div className="home-desktop-grid" style={heroGridStyle}>
           {/* Preview drops the frame and the corner label so the seal floats.
               borderColor rather than border keeps the box metrics identical,
               so the video's size and the grid do not move. */}
           <div
             style={previewMode
-              ? { position: "relative", display: "block", borderColor: "transparent" }
+              ? { position: "relative", display: "block", borderColor: "transparent", ...heroWrapSize }
               : { position: "relative", display: "block" }}
             className="home-poster-wrap"
           >

@@ -263,6 +263,7 @@ export default function HeroVideo({
   videoSrc = "/hero_1180x840.mp4",
   media,
   className,
+  rootStyle,
 }: {
   posterSrc?: string;
   /** null renders a still hero with no video at all. */
@@ -270,6 +271,8 @@ export default function HeroVideo({
   /** The media query this instance is the visible one for. */
   media: string;
   className?: string;
+  /** Preview-only size override, merged last so it beats the shared class. */
+  rootStyle?: React.CSSProperties;
 }) {
   const [phase, setPhase] = useState<Phase>("chaos");
   const [mounted, setMounted] = useState(false);
@@ -333,6 +336,7 @@ export default function HeroVideo({
           overflow: "hidden",
           background: "transparent",
           ...(videoSrc ? HERO_TREATMENT : {}),
+          ...rootStyle,
         }}
       >
         <img src={posterSrc} alt="" style={coverStyle} />
@@ -350,6 +354,7 @@ export default function HeroVideo({
         overflow: "hidden",
         background: "transparent",
         ...HERO_TREATMENT,
+        ...rootStyle,
       }}
     >
       {/* Floor. Stays at full opacity for the life of the component: the video

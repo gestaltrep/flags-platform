@@ -15,11 +15,16 @@ import { isValidPreviewKey } from "@/lib/preview";
 export default async function PreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ key?: string | string[] }>;
+  searchParams: Promise<{ key?: string | string[]; hero?: string | string[] }>;
 }) {
   const params = await searchParams;
   const raw = params?.key;
   const key = Array.isArray(raw) ? raw[0] : raw;
+
+  // Hero sizing experiment: ?hero=1.5 or 1.9. Anything else is 1, i.e. the
+  // shared CSS untouched.
+  const rawHero = Array.isArray(params?.hero) ? params.hero[0] : params?.hero;
+  const heroScale = rawHero === "1.5" ? 1.5 : rawHero === "1.9" ? 1.9 : 1;
 
   if (!isValidPreviewKey(key)) {
     return <HomeClient isDormant={true} />;
@@ -35,6 +40,7 @@ export default async function PreviewPage({
       isDormant={false}
       previewMode={true}
       previewKey={key as string}
+      heroScale={heroScale}
       event={{
         name: event.name,
         slug: event.slug,
