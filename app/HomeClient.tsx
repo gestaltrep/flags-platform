@@ -66,6 +66,47 @@ export type HomeEvent = {
  * public homepage's behaviour, so / renders exactly as it did before they
  * existed.
  */
+/**
+ * The hero, in whichever of the two forms the page needs.
+ *
+ * Declared at module scope, not inside HomeClient. A component declared in a
+ * render body is a new function identity on every render, so React treats it
+ * as a different component type and remounts the whole subtree — which meant
+ * the boot glitch, which runs in a mount effect, replayed on every state
+ * change, opening the participation modal included. The four values it used
+ * to close over come in as props instead.
+ */
+function Poster({
+  className, media, sized, mobileVisible,
+  heroRootStyle, mobileRootStyle, previewMode, heroImage,
+}: {
+  className?: string; media: string; sized?: boolean; mobileVisible?: boolean;
+  heroRootStyle?: React.CSSProperties; mobileRootStyle?: React.CSSProperties;
+  previewMode: boolean; heroImage: string | null;
+}) {
+  // The mobile hero is otherwise hidden by
+  // `.home-mobile-poster-wrap > div:last-child { display: none }`, a rule
+  // written to hide the corner label — which preview removes, making the
+  // hero itself the last child. Inline display wins over it.
+  const rootStyle = sized
+    ? heroRootStyle
+    : mobileVisible && previewMode
+      ? mobileRootStyle
+      : undefined;
+  // Preview only. HeroVideo is the sole thing that references the poster or
+  // the mp4, so on the public path neither is rendered, preloaded or fetched.
+  if (previewMode) {
+    // A configured event still keeps its own image and gets no video.
+    return heroImage ? (
+      <HeroVideo className={className} media={media} rootStyle={rootStyle} posterSrc={heroImage} videoSrc={null} />
+    ) : (
+      <HeroVideo className={className} media={media} rootStyle={rootStyle} />
+    );
+  }
+  // Public dormant path — unchanged.
+  return <HeroGlitch className={className} />;
+}
+
 export default function HomeClient({
   isDormant,
   event = null,
@@ -392,32 +433,6 @@ export default function HomeClient({
       }
     : undefined;
 
-  function Poster({ className, media, sized, mobileVisible }: {
-    className?: string; media: string; sized?: boolean; mobileVisible?: boolean;
-  }) {
-    // The mobile hero is otherwise hidden by
-    // `.home-mobile-poster-wrap > div:last-child { display: none }`, a rule
-    // written to hide the corner label — which preview removes, making the
-    // hero itself the last child. Inline display wins over it.
-    const rootStyle = sized
-      ? heroRootStyle
-      : mobileVisible && previewMode
-        ? mobileRootStyle
-        : undefined;
-    // Preview only. HeroVideo is the sole thing that references the poster or
-    // the mp4, so on the public path neither is rendered, preloaded or fetched.
-    if (previewMode) {
-      // A configured event still keeps its own image and gets no video.
-      return event?.hero_image ? (
-        <HeroVideo className={className} media={media} rootStyle={rootStyle} posterSrc={event.hero_image} videoSrc={null} />
-      ) : (
-        <HeroVideo className={className} media={media} rootStyle={rootStyle} />
-      );
-    }
-    // Public dormant path — unchanged.
-    return <HeroGlitch className={className} />;
-  }
-
   // Collapses to nothing outside preview — a bare <div> would still emit
   // tags and break the byte-identical dormant page.
   const DesktopCentre: ElementType = previewMode ? "div" : Fragment;
@@ -474,7 +489,9 @@ export default function HomeClient({
               : { position: "relative", display: "block" }}
             className="home-poster-wrap"
           >
-            <Poster className="home-poster-image" media="(min-width: 900px)" sized />
+            <Poster className="home-poster-image" media="(min-width: 900px)" sized
+              heroRootStyle={heroRootStyle} mobileRootStyle={mobileRootStyle}
+              previewMode={previewMode} heroImage={event?.hero_image ?? null} />
             {!previewMode && (
               <div style={{
                 position: "absolute",
@@ -589,7 +606,9 @@ export default function HomeClient({
             ? { position: "relative", borderColor: "transparent", background: "transparent", ...mobileWrapStyle }
             : { position: "relative" }}
         >
-          <Poster className="home-mobile-poster" media="(max-width: 899px)" mobileVisible />
+          <Poster className="home-mobile-poster" media="(max-width: 899px)" mobileVisible
+            heroRootStyle={heroRootStyle} mobileRootStyle={mobileRootStyle}
+            previewMode={previewMode} heroImage={event?.hero_image ?? null} />
           {isDormant && (
             <div style={{
               position: "absolute",
