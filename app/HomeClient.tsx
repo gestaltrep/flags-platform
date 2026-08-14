@@ -52,6 +52,14 @@ const INFO_GAP = 148;
 const DESKTOP_CTA_W = 468;
 /** Mobile seal scale when no ?mhero= is given. */
 export const MOBILE_HERO_DEFAULT = 1.5;
+/**
+ * Painted ink of the widest mobile line — the date — at the shared CSS's own
+ * type sizes. ?mtype= names a target ink width, and the multiplier is that
+ * target over this, so the three lines keep their ratios to each other.
+ */
+const MOBILE_TYPE_BASE_INK = 263;
+/** Target ink width for the mobile type when no ?mtype= is given. */
+export const MOBILE_TYPE_DEFAULT = 305;
 /** Desktop hero scale when no ?hero= is given. */
 export const HERO_SCALE_DEFAULT = 1.33;
 
@@ -121,6 +129,7 @@ export default function HomeClient({
   heroScale = 1,
   heroLift = HERO_LIFT_DEFAULT,
   mHeroScale = 1,
+  mTypeTarget = MOBILE_TYPE_DEFAULT,
 }: {
   isDormant: boolean;
   event?: HomeEvent | null;
@@ -132,6 +141,7 @@ export default function HomeClient({
   heroLift?: number;
   /** Preview-only mobile seal scale. 1 leaves the mobile hero as-is. */
   mHeroScale?: number;
+  mTypeTarget?: number;
 }) {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
@@ -592,7 +602,10 @@ export default function HomeClient({
 
       <main
         className={previewMode ? "home-mobile home-mobile-preview" : "home-mobile"}
-        style={previewMode ? ({ "--mk": String(mHeroScale) } as React.CSSProperties) : undefined}
+        style={previewMode
+          ? ({ "--mk": String(mHeroScale),
+               "--mtype": (mTypeTarget / MOBILE_TYPE_BASE_INK).toFixed(5) } as React.CSSProperties)
+          : undefined}
       >
         <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
           <div className={previewMode ? "home-mobile-text home-mobile-text-ls" : "home-mobile-text"}>

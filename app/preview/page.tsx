@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import HomeClient, { HERO_LIFT_DEFAULT, MOBILE_HERO_DEFAULT, HERO_SCALE_DEFAULT } from "../HomeClient";
+import HomeClient, { HERO_LIFT_DEFAULT, MOBILE_HERO_DEFAULT, HERO_SCALE_DEFAULT, MOBILE_TYPE_DEFAULT } from "../HomeClient";
 import { getMostRecentDraftEvent } from "@/lib/events";
 import { isValidPreviewKey } from "@/lib/preview";
 
@@ -18,6 +18,7 @@ export default async function PreviewPage({
   searchParams: Promise<{
     key?: string | string[]; hero?: string | string[];
     lift?: string | string[]; mhero?: string | string[];
+    mtype?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -35,6 +36,12 @@ export default async function PreviewPage({
   const rawM = Array.isArray(params?.mhero) ? params.mhero[0] : params?.mhero;
   const M_SCALES: Record<string, number> = { "1": 1, "1.25": 1.25, "1.5": 1.5, "1.75": 1.75, "2": 2 };
   const mHeroScale = (rawM && M_SCALES[rawM]) || MOBILE_HERO_DEFAULT;
+
+  // ?mtype= is the mobile type's target painted ink width, in px. The seal,
+  // the button and the gaps are unaffected; only the three lines scale.
+  const rawT = Array.isArray(params?.mtype) ? params.mtype[0] : params?.mtype;
+  const T_TARGETS: Record<string, number> = { "290": 290, "305": 305, "320": 320 };
+  const mTypeTarget = (rawT && T_TARGETS[rawT]) || MOBILE_TYPE_DEFAULT;
 
   // ?lift=<px> tunes how far the seal rides above vertical centre on its slot.
   const rawLift = Array.isArray(params?.lift) ? params.lift[0] : params?.lift;
@@ -60,6 +67,7 @@ export default async function PreviewPage({
       heroScale={heroScale}
       heroLift={heroLift}
       mHeroScale={mHeroScale}
+      mTypeTarget={mTypeTarget}
       event={{
         name: event.name,
         slug: event.slug,
