@@ -30,11 +30,18 @@ const WRAP_BORDER = 2;
 const SEAL_W_FRAC = 0.657;
 /**
  * Distance from .home-mobile-frame's bottom edge to the last line's rendered
- * glyph bottom. The line box overshoots the glyphs by 4.4px and the frame adds
- * its own slack on top; both are invisible, so the gap has to be measured from
- * here. Constant at 390 and 375 — the text column is 348px at both.
+ * glyph bottom. The line box overshoots the glyphs and the frame adds its own
+ * slack on top; both are invisible, so the gap has to be measured from here.
+ * Measured at the preview type scale, and constant across phone widths — the
+ * text column is 348px at all of them.
  */
-const TEXT_GLYPH_SLACK = 31;
+const TEXT_GLYPH_SLACK = 21;
+/**
+ * The visible gap above and below the mobile seal, glyph bottom to glow and
+ * glow to the CTA's border. Held at what it was before the type grew; the
+ * wrap takes up the difference so both gaps stay equal.
+ */
+const MOBILE_SEAL_GAP = 31;
 /**
  * Seal-right to info-left on desktop. Derived once at 1512 by centring the
  * info column's PAINTED extent, not its declared track: every line is
@@ -44,6 +51,12 @@ const TEXT_GLYPH_SLACK = 31;
  * every other width rather than re-centring.
  */
 const INFO_GAP = 148;
+/**
+ * The desktop CTA's width in preview: the info block's painted width, set by
+ * the venue line at 467.6px. Applied inline because the button carries an
+ * inline width of its own, which no stylesheet rule can outrank.
+ */
+const DESKTOP_CTA_W = 468;
 /** Mobile seal scale when no ?mhero= is given. */
 export const MOBILE_HERO_DEFAULT = 1.5;
 /** Desktop hero scale when no ?hero= is given. */
@@ -407,12 +420,13 @@ export default function HomeClient({
   // mismatch on hydration or shift the layout after mount.
   const mSized = previewMode && mHeroScale !== 1;
   const mobileWrapStyle = previewMode
-    ? ({ overflow: "visible", "--mk": String(mHeroScale) } as React.CSSProperties)
+    ? ({ overflow: "visible", "--mk": String(mHeroScale),
+         marginTop: MOBILE_SEAL_GAP - TEXT_GLYPH_SLACK } as React.CSSProperties)
     : {};
   const mobileRootStyle = { display: "block" as const, overflow: "visible" as const };
   // Equal visible gaps: above is the frame's own glyph slack, so mirroring it
   // below needs nothing but a matching margin on the CTA.
-  const mobileCtaStyle = previewMode ? { marginTop: TEXT_GLYPH_SLACK } : undefined;
+  const mobileCtaStyle = previewMode ? { marginTop: MOBILE_SEAL_GAP } : undefined;
   // Desktop: push the info column out to a constant distance from the seal.
   // Fed to CSS as a length so the calc can subtract the track and gap of
   // whichever breakpoint is live, without measuring anything at runtime.
@@ -542,10 +556,9 @@ export default function HomeClient({
             <button
               className={previewMode ? "cta-button cta-preview" : "cta-button"}
               onClick={() => setParticipationStep("chooser")}
-              style={{
-                width: 352,
-                maxWidth: "100%",
-              }}
+              style={previewMode
+                ? { width: DESKTOP_CTA_W, maxWidth: "none" }
+                : { width: 352, maxWidth: "100%" }}
             >
               REQUEST PARTICIPATION
             </button>

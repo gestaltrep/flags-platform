@@ -974,21 +974,54 @@ body::before {
    equal to the letter-spacing takes it back. The dormant page has the same
    issue and is deliberately left alone. */
 
+/* Type scaled to the CTA's painted width. The widest of the three lines
+   (the date, 263.0px of ink) lands on the button's 350px box, so the
+   multiplier is 1.3308 and every line takes it - sizes stay in the same
+   ratio to each other and the three keep reading as equal width.
+
+   letter-spacing scales with font-size, so the trailing space it appends
+   after the last glyph scales too; the negative right margin that cancels it
+   for optical centring is scaled by the same factor.
+
+   nowrap because the ink now exceeds .home-mobile-text's 312px content box -
+   it is meant to reach the frame's edges, the way the button does. */
 .home-mobile-text-ls .home-date-mobile {
-  margin-right: -6px;
+  font-size: 37.26px;
+  letter-spacing: 7.98px;
+  margin-right: -7.98px;
+  white-space: nowrap;
 }
 
+/* These lines are centred flex items, so the outer box is what gets centred:
+   content centre = box centre - margin-right / 2. A negative margin-right
+   therefore moves the ink RIGHT, which is what cancels the trailing letter
+   space on the other three lines.
+
+   This line needs the opposite. It sat 1.75px right of centre from glyph
+   bearing in "8:00 PM - 2:00 AM" rather than from tracking, and the type
+   scale carried that with it, pushing its ink past the frame's right border.
+   +2.7 is -0.8 for the tracking plus +3.5 to pull the ink back left. */
 .home-mobile-text-ls .home-time-mobile {
-  margin-right: -0.6px;
+  font-size: 33.27px;
+  letter-spacing: 0.8px;
+  margin-right: 2.7px;
+  white-space: nowrap;
 }
 
 .home-mobile-text-ls .home-location-mobile {
-  margin-right: -1.8px;
+  font-size: 27.95px;
+  letter-spacing: 2.4px;
+  margin-right: -2.4px;
+  white-space: nowrap;
 }
 
-/* The active-event variant sets letter-spacing to 1px, so it needs its own. */
+/* The active-event variant runs smaller and at 1px tracking, so it needs its
+   own pair of values rather than inheriting the one above. */
 .home-mobile-text-ls .home-location-mobile-event {
-  margin-right: -1px;
+  font-size: 21.29px;
+  letter-spacing: 1.33px;
+  margin-right: -1.33px;
+  white-space: nowrap;
 }
 
 /* PREVIEW ONLY - desktop info column at a constant distance from the seal.
@@ -1032,4 +1065,33 @@ body::before {
   width: var(--mv-w);
   height: calc(var(--mv-w) * 0.764368);
   max-width: none;
+}
+
+/* PREVIEW ONLY - CTA sizing.
+
+   Mobile: the label keeps the proportion it held to the type before the type
+   grew - 222.5px of ink against the widest line's 263.0 - so it takes the
+   same 1.3308.
+
+   Desktop: the button widens from 350 to 468, the info block's painted width,
+   which is set by the venue line. The label takes the same 1.3371 so it holds
+   its 70.7% of the button's width rather than floating in a bigger box. The
+   button overflows its 350px track to the right exactly as the text lines
+   already do, so the block's left edge - and the centring derived from it -
+   does not move. Border and hover inversion are untouched. */
+@media (max-width: 899px) {
+  .home-mobile .cta-preview {
+    font-size: 17.3px;
+    letter-spacing: 3.99px;
+  }
+}
+
+/* Scoped to .home-desktop, not bare .cta-preview: the 1100-1599 band already
+   carries .home-desktop .cta-button for the type, which outranks a single
+   class and would otherwise win. */
+@media (min-width: 900px) {
+  .home-desktop .cta-preview {
+    font-size: 18.72px;
+    letter-spacing: 4.81px;
+  }
 }
