@@ -10,6 +10,8 @@ import ParticipationModal from "./components/ParticipationModal";
 const SLOT_W = 590;
 const SLOT_H = 420;
 export const HERO_LIFT_DEFAULT = 10;
+/** Mobile navbar height, used to centre the preview stack below it. */
+const MOBILE_NAV_H = 85;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
@@ -323,8 +325,18 @@ export default function HomeClient({
       }
     : undefined;
 
-  function Poster({ className, media, sized }: { className?: string; media: string; sized?: boolean }) {
-    const rootStyle = sized ? heroRootStyle : undefined;
+  function Poster({ className, media, sized, mobileVisible }: {
+    className?: string; media: string; sized?: boolean; mobileVisible?: boolean;
+  }) {
+    // The mobile hero is otherwise hidden by
+    // `.home-mobile-poster-wrap > div:last-child { display: none }`, a rule
+    // written to hide the corner label — which preview removes, making the
+    // hero itself the last child. Inline display wins over it.
+    const rootStyle = sized
+      ? heroRootStyle
+      : mobileVisible && previewMode
+        ? { display: "block" as const }
+        : undefined;
     // Preview only. HeroVideo is the sole thing that references the poster or
     // the mp4, so on the public path neither is rendered, preloaded or fetched.
     if (previewMode) {
@@ -469,8 +481,18 @@ export default function HomeClient({
         </div>
       </main>
 
-      <main className="home-mobile">
-        <div className="home-mobile-frame">
+      {/* Preview centres the three mobile blocks as one unit between the
+          navbar and the fold. The flex lives on an inner wrapper, not on
+          .home-mobile — an inline display would beat the media query that
+          toggles .home-mobile between none and block, and leak it to desktop. */}
+      <main className="home-mobile" style={previewMode ? { marginTop: 0 } : undefined}>
+        <div style={previewMode ? {
+          minHeight: `calc(100vh - ${MOBILE_NAV_H}px)`,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        } : undefined}>
+        <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
           <div className="home-mobile-text">
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
             <div className="home-time-mobile">{eventTime}</div>
@@ -490,7 +512,7 @@ export default function HomeClient({
             ? { position: "relative", borderColor: "transparent", background: "transparent" }
             : { position: "relative" }}
         >
-          <Poster className="home-mobile-poster" media="(max-width: 899px)" />
+          <Poster className="home-mobile-poster" media="(max-width: 899px)" mobileVisible />
           {isDormant && (
             <div style={{
               position: "absolute",
@@ -573,6 +595,7 @@ export default function HomeClient({
               </button>
             </div>
           )}
+        </div>
         </div>
       </main>
 
