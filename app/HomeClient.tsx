@@ -493,7 +493,7 @@ export default function HomeClient({
               </div>
             )}
           </div>
-        </MobileCentre>
+        </div>
       </main>
 
       {/* Preview centres the three mobile blocks as one unit between the
@@ -606,7 +606,7 @@ export default function HomeClient({
             </div>
           )}
         </div>
-        </div>
+        </MobileCentre>
       </main>
 
       <SponsorSection />
