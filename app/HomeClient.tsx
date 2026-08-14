@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, type ElementType } from "react";
+import { Fragment, useEffect, useState, type ElementType } from "react";
 import HeroGlitch from "./components/HeroGlitch";
 import HeroVideo from "./components/HeroVideo";
 import SponsorSection from "./components/SponsorSection";
@@ -12,6 +12,13 @@ const SLOT_H = 420;
 export const HERO_LIFT_DEFAULT = 10;
 /** Navbar heights, used to centre the preview hero below them. */
 const DESKTOP_NAV_H = 109;
+/**
+ * Where the seal's visible edge sits inside the video frame, as a fraction of
+ * frame width. Measured off the rendered frame at luminance > 40, which is the
+ * stable boundary: the fainter outer halo pulses between 0.071 and 0.106 over
+ * the loop, while this edge holds 0.168-0.177.
+ */
+const SEAL_LEFT_FRAC = 0.170;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
@@ -315,6 +322,25 @@ export default function HomeClient({
   const heroTop = (SLOT_H - heroH) / 2 - heroLift;
   const heroWrapStyle = heroSized ? { overflow: "visible" as const } : {};
 
+  // Align the seal's left edge with the navbar logo's. The logo is anchored to
+  // the viewport (60px in) while the hero sits in a centred grid, so the offset
+  // is viewport-dependent and has to be measured rather than hardcoded.
+  const [heroLeftPx, setHeroLeftPx] = useState<number | null>(null);
+  useEffect(() => {
+    if (!heroSized) { setHeroLeftPx(null); return; }
+    const calc = () => {
+      const logo = document.querySelector(".desktop-navbar .nav-logo");
+      const wrap = document.querySelector(".home-poster-wrap");
+      if (!logo || !wrap) return;
+      const logoX = logo.getBoundingClientRect().left;
+      const wrapX = wrap.getBoundingClientRect().left;
+      setHeroLeftPx(Math.round(logoX - wrapX - SEAL_LEFT_FRAC * heroW));
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [heroSized, heroW]);
+
   // Mobile: scale the treated root about its centre. transform does not affect
   // flow, so the wrap keeps its height and the layout does not move; the spill
   // is dead ground and body{overflow-x:hidden} clips it without a scrollbar.
@@ -323,7 +349,7 @@ export default function HomeClient({
   const heroRootStyle = heroSized
     ? {
         position: "absolute" as const,
-        left: heroLeft,
+        left: heroLeftPx ?? heroLeft,
         top: heroTop,
         width: heroW,
         // .home-poster-image carries max-width: 100%, which otherwise clamps
@@ -474,7 +500,7 @@ export default function HomeClient({
             <div className="home-location-desktop">{eventLocation}</div>
 
             <button
-              className="cta-button"
+              className={previewMode ? "cta-button cta-preview" : "cta-button"}
               onClick={() => setParticipationStep("chooser")}
               style={{
                 width: 352,
@@ -585,7 +611,7 @@ export default function HomeClient({
 
         <div className="home-mobile-cta-wrap">
           <button
-            className="cta-button"
+            className={previewMode ? "cta-button cta-preview" : "cta-button"}
             onClick={() => setParticipationStep("chooser")}
             style={{
               width: "100%",

@@ -937,3 +937,32 @@ body::before {
   39%, 40%   { transform: translateX(-11px); filter: hue-rotate(90deg) saturate(1.5); }
   68%, 70%   { transform: translateX(24px); filter: contrast(1.3) hue-rotate(80deg); }
 }
+/* PREVIEW-ONLY CTA TREATMENT
+   .cta-preview is added to the REQUEST PARTICIPATION button only when the
+   homepage renders in previewMode, so the dormant page never matches these
+   rules and its CTA is untouched. */
+
+.cta-preview {
+  border-width: 2px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.cta-preview:focus-visible {
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+}
+
+/* No hover on touch, so the tap state carries the same inversion. */
+.cta-preview:active {
+  background: #ffffff;
+  color: #000000;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cta-preview:hover {
+    background: #ffffff;
+    color: #000000;
+  }
+}
