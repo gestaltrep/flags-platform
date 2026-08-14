@@ -60,6 +60,13 @@ export const MOBILE_HERO_DEFAULT = 1.5;
 const MOBILE_TYPE_BASE_INK = 263;
 /** Target ink width for the mobile type when no ?mtype= is given. */
 export const MOBILE_TYPE_DEFAULT = 305;
+/**
+ * Target for the gap above and below the mobile seal. 31 is what the layout
+ * already gives, so it is the default and reclaims nothing; larger values are
+ * paid for out of the space above the text block, which moves up by twice the
+ * gain so the CTA does not move.
+ */
+export const MOBILE_GAP_DEFAULT = 31;
 /** Desktop hero scale when no ?hero= is given. */
 export const HERO_SCALE_DEFAULT = 1.33;
 
@@ -130,6 +137,7 @@ export default function HomeClient({
   heroLift = HERO_LIFT_DEFAULT,
   mHeroScale = 1,
   mTypeTarget = MOBILE_TYPE_DEFAULT,
+  mGapTarget = MOBILE_GAP_DEFAULT,
 }: {
   isDormant: boolean;
   event?: HomeEvent | null;
@@ -142,6 +150,7 @@ export default function HomeClient({
   /** Preview-only mobile seal scale. 1 leaves the mobile hero as-is. */
   mHeroScale?: number;
   mTypeTarget?: number;
+  mGapTarget?: number;
 }) {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
@@ -604,7 +613,8 @@ export default function HomeClient({
         className={previewMode ? "home-mobile home-mobile-preview" : "home-mobile"}
         style={previewMode
           ? ({ "--mk": String(mHeroScale),
-               "--mtype": (mTypeTarget / MOBILE_TYPE_BASE_INK).toFixed(5) } as React.CSSProperties)
+               "--mtype": (mTypeTarget / MOBILE_TYPE_BASE_INK).toFixed(5),
+               "--mgap": `${mGapTarget}px` } as React.CSSProperties)
           : undefined}
       >
         <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>

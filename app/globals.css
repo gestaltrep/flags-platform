@@ -1063,17 +1063,38 @@ body::before {
      linear in --mtype. Fitted through the two measured points, 31.0px at
      --mtype 1 and 21.0px at 1.3308. */
   --slack: calc(61.23px - 30.23px * var(--mtype));
+  /* Hairline of .navbar-mobile to the date's glyph top. The navbar is a fixed
+     85px and the frame a fixed 156, so this does not vary with viewport
+     height at all - only with the type scale, which moves the centred block's
+     top edge. 43.5px at --mtype 1.1597. */
+  --headroom: calc(80px - 31.48px * var(--mtype));
+  /* Extra gap is bought by moving the text block up, which costs twice what
+     it gives: the seal centres in the space between the block and the CTA, so
+     each gap takes half. Capped by what is left above the date's glyph top,
+     so the gain shrinks by itself on a device that cannot afford it rather
+     than running the type into the navbar. Never negative, so --mgap 31 is
+     exactly today's layout. */
+  --reclaim: max(0px, min(
+    calc(2 * (var(--mgap) - 31px)),
+    calc(var(--headroom) - 16px)
+  ));
+  /* The CTA does not move: the block goes up by --reclaim and both gaps take
+     --reclaim/2, which cancels exactly. */
+  margin-top: calc(18px - var(--reclaim));
   --mv-w: min(
     calc(348px * var(--mk)),
     calc(94.5vw / 0.70544),
     calc((100svh - 361px + var(--slack) - env(safe-area-inset-bottom, 0px)) / 0.70322)
   );
   --seal-h: calc(var(--mv-w) * 0.70322);
-  --gap: clamp(
+  --gap0: clamp(
     12px,
     calc((100svh - 337px + var(--slack) - var(--seal-h) - env(safe-area-inset-bottom, 0px)) / 2),
     31px
   );
+  /* Added, not re-clamped - re-clamping here would break the cancellation
+     that keeps the CTA still. */
+  --gap: calc(var(--gap0) + var(--reclaim) / 2);
   min-height: 100vh;
   min-height: 100svh;
   padding-bottom: env(safe-area-inset-bottom, 0px);
