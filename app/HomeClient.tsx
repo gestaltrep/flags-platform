@@ -62,11 +62,12 @@ const MOBILE_TYPE_BASE_INK = 263;
 export const MOBILE_TYPE_DEFAULT = 305;
 /**
  * Target for the gap above and below the mobile seal. 31 is what the layout
- * already gives, so it is the default and reclaims nothing; larger values are
- * paid for out of the space above the text block, which moves up by twice the
- * gain so the CTA does not move.
+ * gives with no reclaim at all; anything above it is paid for out of the space
+ * above the text block, which moves up by twice the gain so the CTA does not
+ * move. 40 is reached in full on every viewport — it needs 18px of the 27.5
+ * the floor allows.
  */
-export const MOBILE_GAP_DEFAULT = 31;
+export const MOBILE_GAP_DEFAULT = 40;
 /** Desktop hero scale when no ?hero= is given. */
 export const HERO_SCALE_DEFAULT = 1.33;
 
