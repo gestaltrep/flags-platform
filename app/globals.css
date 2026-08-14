@@ -966,3 +966,27 @@ body::before {
     color: #000000;
   }
 }
+
+/* PREVIEW-ONLY OPTICAL CENTRING FOR THE MOBILE TYPE
+   letter-spacing adds a trailing space after the last glyph of a line, so the
+   line box is one letter-space wider than the visible text and centring parks
+   the glyphs half a letter-space left of true centre. A negative right margin
+   equal to the letter-spacing takes it back. The dormant page has the same
+   issue and is deliberately left alone. */
+
+.home-mobile-text-ls .home-date-mobile {
+  margin-right: -6px;
+}
+
+.home-mobile-text-ls .home-time-mobile {
+  margin-right: -0.6px;
+}
+
+.home-mobile-text-ls .home-location-mobile {
+  margin-right: -1.8px;
+}
+
+/* The active-event variant sets letter-spacing to 1px, so it needs its own. */
+.home-mobile-text-ls .home-location-mobile-event {
+  margin-right: -1px;
+}

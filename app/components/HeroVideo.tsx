@@ -6,6 +6,22 @@ const MAIN_DURATION_MS = 2600;
 const EPILOGUE_DURATION_MS = 600;
 const TOTAL_DURATION_MS = MAIN_DURATION_MS + EPILOGUE_DURATION_MS; // 3200
 
+/**
+ * Ceiling on how long the poster may hold before the video is revealed anyway.
+ *
+ * canplaythrough is the strictest readiness event and iOS Safari is notably
+ * reluctant to fire it — it will happily sit on canplay for a large file on
+ * cellular. Waiting on it alone means a silent failure: showVideo never flips,
+ * play() is never called, and the still holds forever. So canplay and
+ * loadeddata also count, and this backstops all three.
+ *
+ * 8s: comfortably past the 3200ms glitch, long enough for a 994kbps file to
+ * buffer a usable head on a slow connection, and short enough that nobody sits
+ * on a still for long. Revealing early is close to free — the element carries
+ * the same poster, so an unbuffered reveal shows that image rather than black.
+ */
+const REVEAL_FALLBACK_MS = 8000;
+
 type Phase = "chaos" | "settled";
 
 // B1: canvas animates against lqipSrc (small WebP) for near-instant start
@@ -317,7 +333,15 @@ export default function HeroVideo({
 
   const showVideo = phase === "settled" && videoReady && !stillOnly;
 
-  // Play only once the glitch is over and the video can run to the end.
+  // Backstop: never let the poster hold indefinitely because a readiness event
+  // did not arrive.
+  useEffect(() => {
+    if (!active || stillOnly || !videoSrc) return;
+    const t = setTimeout(() => setVideoReady(true), REVEAL_FALLBACK_MS);
+    return () => clearTimeout(t);
+  }, [active, stillOnly, videoSrc]);
+
+  // Play once the glitch is over and the video is considered ready.
   useEffect(() => {
     if (!showVideo) return;
     videoRef.current?.play().catch(() => {});
@@ -378,6 +402,8 @@ export default function HeroVideo({
         loop
         playsInline
         onCanPlayThrough={() => setVideoReady(true)}
+        onCanPlay={() => setVideoReady(true)}
+        onLoadedData={() => setVideoReady(true)}
         style={{
           ...coverStyle,
           position: "absolute",

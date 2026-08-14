@@ -19,6 +19,10 @@ const DESKTOP_NAV_H = 109;
  * the loop, while this edge holds 0.168-0.177.
  */
 const SEAL_LEFT_FRAC = 0.170;
+/** .home-poster-wrap's border, backed out when positioning against it. */
+const WRAP_BORDER = 2;
+/** .home-mobile-cta-wrap's margin-top, the only asymmetry in the mobile gap. */
+const MOBILE_CTA_GAP = 14;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
@@ -322,30 +326,22 @@ export default function HomeClient({
   const heroTop = (SLOT_H - heroH) / 2 - heroLift;
   const heroWrapStyle = heroSized ? { overflow: "visible" as const } : {};
 
-  // Align the seal's left edge with the navbar logo's. The logo is anchored to
-  // the viewport (60px in) while the hero sits in a centred grid, so the offset
-  // is viewport-dependent and has to be measured rather than hardcoded.
-  const [heroLeftPx, setHeroLeftPx] = useState<number | null>(null);
-  useEffect(() => {
-    if (!heroSized) { setHeroLeftPx(null); return; }
-    const calc = () => {
-      const logo = document.querySelector(".desktop-navbar .nav-logo");
-      const wrap = document.querySelector(".home-poster-wrap");
-      if (!logo || !wrap) return;
-      const logoX = logo.getBoundingClientRect().left;
-      const wrapX = wrap.getBoundingClientRect().left;
-      setHeroLeftPx(Math.round(logoX - wrapX - SEAL_LEFT_FRAC * heroW));
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [heroSized, heroW]);
+  // Put the seal's left edge where .home-poster-wrap's grey outline used to
+  // sit — the left edge of the 590px track in the 1x centred grid. That target
+  // is the wrap's own border box, which is also this element's positioning
+  // origin, so it needs no measurement and holds at every viewport. The -2
+  // backs out the wrap's border, since left:0 is its padding box.
+  const heroLeftPx = heroSized ? -Math.round(SEAL_LEFT_FRAC * heroW) - WRAP_BORDER : null;
 
   // Mobile: scale the treated root about its centre. transform does not affect
   // flow, so the wrap keeps its height and the layout does not move; the spill
   // is dead ground and body{overflow-x:hidden} clips it without a scrollbar.
   const mSized = previewMode && mHeroScale !== 1;
-  const mobileWrapStyle = mSized ? { overflow: "visible" as const } : {};
+  const mobileWrapStyle = previewMode ? { overflow: "visible" as const } : {};
+  // The poster wrap sits flush under the text block but the CTA is pushed down
+  // by .home-mobile-cta-wrap's 14px margin, so the wrap's centre sits half that
+  // above the true centre of the gap. Constant, and independent of viewport.
+  const mobileSealNudge = MOBILE_CTA_GAP / 2;
   const heroRootStyle = heroSized
     ? {
         position: "absolute" as const,
@@ -372,13 +368,10 @@ export default function HomeClient({
       : mobileVisible && previewMode
         ? {
             display: "block" as const,
-            ...(mSized
-              ? {
-                  overflow: "visible" as const,
-                  transform: `scale(${mHeroScale})`,
-                  transformOrigin: "center center",
-                }
-              : {}),
+            overflow: "visible" as const,
+            // translate first, then scale, so the nudge is not multiplied
+            transform: `translateY(${mobileSealNudge}px) scale(${mHeroScale})`,
+            transformOrigin: "center center",
           }
         : undefined;
     // Preview only. HeroVideo is the sole thing that references the poster or
@@ -547,7 +540,7 @@ export default function HomeClient({
 
       <main className="home-mobile">
         <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
-          <div className="home-mobile-text">
+          <div className={previewMode ? "home-mobile-text home-mobile-text-ls" : "home-mobile-text"}>
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
             <div className="home-time-mobile">{eventTime}</div>
             {/* The extra class is added only on the event-driven render, so the
