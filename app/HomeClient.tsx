@@ -18,7 +18,21 @@ const DESKTOP_NAV_H = 109;
  * stable boundary: the fainter outer halo pulses between 0.071 and 0.106 over
  * the loop, while this edge holds 0.168-0.177.
  */
-const SEAL_LEFT_FRAC = 0.170;
+const SEAL_LEFT_FRAC = 0.161765;
+/**
+ * How far the ring's left edge sits inside .home-poster-wrap today. The live
+ * layout was anchored on the old file's glow at threshold 40, not on its ring,
+ * so the green geometry ended up 20.7px inside the wrap rather than on it.
+ * Held here so the swap changes nothing; drop this term to put the ring itself
+ * on the wrap's edge.
+ */
+const RING_INSET = 20.7;
+/**
+ * The square frame renders larger per unit of ring than the old landscape one,
+ * so the box shrinks to keep the ring exactly the size it is now:
+ * old ring 718px x (559/840 cover) = 477.8 rendered; new ring 1104px of 1632.
+ */
+const HERO_FRAME_ADJUST = 0.899758;
 /** .home-poster-wrap's border, backed out when positioning against it. */
 const WRAP_BORDER = 2;
 /**
@@ -27,7 +41,7 @@ const WRAP_BORDER = 2;
  * the same threshold that fixed SEAL_LEFT_FRAC, so the three agree.
  * The glow is near enough square: 0.657 of the width, 0.920 of the height.
  */
-const SEAL_W_FRAC = 0.657;
+const SEAL_W_FRAC = 0.7302;
 /*
  * The mobile stack's height is solved in globals.css, not here: it is fitted
  * to 100svh and only CSS can see svh. The fixed parts are 103px above the
@@ -411,8 +425,11 @@ export default function HomeClient({
   // larger than its slot and allowed to spill, which is safe because
   // everything outside the seal is floored to page black.
   const heroSized = previewMode && heroScale !== 1;
-  const heroW = Math.round(SLOT_W * heroScale);
-  const heroH = Math.round(SLOT_H * heroScale);
+  const heroW = Math.round(SLOT_W * heroScale * HERO_FRAME_ADJUST);
+  // Square, matching the file, so object-fit crops nothing at all. The box
+  // centre is (SLOT_H / 2 - heroLift) whatever the height, so this does not
+  // move the seal vertically.
+  const heroH = heroW;
   // Centred on the old 590 track, then lifted above vertical centre.
   const heroLeft = (SLOT_W - heroW) / 2;
   const heroTop = (SLOT_H - heroH) / 2 - heroLift;
@@ -423,7 +440,9 @@ export default function HomeClient({
   // is the wrap's own border box, which is also this element's positioning
   // origin, so it needs no measurement and holds at every viewport. The -2
   // backs out the wrap's border, since left:0 is its padding box.
-  const heroLeftPx = heroSized ? -Math.round(SEAL_LEFT_FRAC * heroW) - WRAP_BORDER : null;
+  const heroLeftPx = heroSized
+    ? Math.round(RING_INSET - WRAP_BORDER - SEAL_LEFT_FRAC * heroW)
+    : null;
 
   // Mobile: the wrap is sized to the seal's glow rather than to the video
   // frame, so the layout reflows to what is actually visible and the frame's

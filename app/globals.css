@@ -1044,9 +1044,11 @@ body::before {
    toolbar auto-hiding on scroll and slide the seal and CTA around while
    someone is reading, so this uses svh: stable, and conservative.
 
-   Geometry. The video box is 348 x 266 (.home-mobile is max-width 350px, so
-   348 holds at every phone width). Cover crops it height-first, which puts
-   the seal's glow at 0.70544 of the box's width and 0.70322 of it in height.
+   Geometry. The video box is square, matching the 1632 x 1632 file, so
+   object-fit crops nothing. 336.11 rather than the column's 348 keeps the
+   rendered ring exactly the size the old landscape file gave it: 718px at a
+   0.475 cover, against 1104px of 1632 now. The glow then lands at 0.730401 of
+   the box's width and 0.728103 of it in height.
    The stack above the fold is 103 to the frame + the frame's 156 + the CTA's
    62, less 21 of invisible glyph slack the top gap absorbs, so
 
@@ -1082,11 +1084,11 @@ body::before {
      --reclaim/2, which cancels exactly. */
   margin-top: calc(18px - var(--reclaim));
   --mv-w: min(
-    calc(348px * var(--mk)),
-    calc(94.5vw / 0.70544),
-    calc((100svh - 361px + var(--slack) - env(safe-area-inset-bottom, 0px)) / 0.70322)
+    calc(336.11px * var(--mk)),
+    calc(94.5vw / 0.730401),
+    calc((100svh - 361px + var(--slack) - env(safe-area-inset-bottom, 0px)) / 0.728103)
   );
-  --seal-h: calc(var(--mv-w) * 0.70322);
+  --seal-h: calc(var(--mv-w) * 0.728103);
   --gap0: clamp(
     12px,
     calc((100svh - 337px + var(--slack) - var(--seal-h) - env(safe-area-inset-bottom, 0px)) / 2),
@@ -1117,7 +1119,7 @@ body::before {
   top: 50%;
   transform: translate(-50%, -50%);
   width: var(--mv-w);
-  height: calc(var(--mv-w) * 0.764368);
+  height: var(--mv-w);
   max-width: none;
 }
 

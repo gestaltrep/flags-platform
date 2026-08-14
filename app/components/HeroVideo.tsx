@@ -40,8 +40,14 @@ type Phase = "chaos" | "settled";
  * context, so the children composite normally inside and exactly one screen
  * lands against the page. isolation is redundant with that but stated.
  */
+/**
+ * The square file's ground is exactly 0,0,0 - verified on every border pixel
+ * of five frames of both encodes - so the contrast/brightness pair that used
+ * to lift the old file's raised floor back to black is gone. screen stays: it
+ * is a no-op over a true-zero ground, and it costs nothing to keep as
+ * insurance if the ground ever drifts again.
+ */
 const HERO_TREATMENT = {
-  filter: "contrast(1.10) brightness(1.16)",
   mixBlendMode: "screen" as const,
   isolation: "isolate" as const,
 };
@@ -250,6 +256,17 @@ function GlitchCanvas({ lqipSrc }: { lqipSrc: string }) {
   );
 }
 
+/**
+ * AV1 first, H.264 second. A browser walks these in order and takes the first
+ * type it can decode, so anything without AV1 falls through to the mp4 rather
+ * than failing. Both carry the identical grade - measured pixel-for-pixel
+ * identical seal geometry - so which one is served changes nothing on screen.
+ */
+const HERO_SOURCES = [
+  { src: "/hero_square_1632.webm", type: 'video/webm; codecs="av01.0.12M.08"' },
+  { src: "/hero_square_1632.mp4", type: 'video/mp4; codecs="avc1.640032"' },
+];
+
 const coverStyle: React.CSSProperties = {
   width: "100%",
   height: "100%",
@@ -276,7 +293,7 @@ const coverStyle: React.CSSProperties = {
  */
 export default function HeroVideo({
   posterSrc = "/hero_poster.webp",
-  videoSrc = "/hero_1180x840.mp4",
+  videoSrc = "/hero_square_1632.mp4",
   media,
   className,
   rootStyle,
@@ -395,7 +412,6 @@ export default function HeroVideo({
 
       <video
         ref={videoRef}
-        src={videoSrc}
         poster={posterSrc}
         preload="metadata"
         muted
@@ -412,7 +428,12 @@ export default function HeroVideo({
           transition: "opacity 220ms linear",
           pointerEvents: "none",
         }}
-      />
+      >
+        {/* videoSrc above stays the on/off flag; these are what actually load. */}
+        {HERO_SOURCES.map((v) => (
+          <source key={v.src} src={v.src} type={v.type} />
+        ))}
+      </video>
     </div>
   );
 }
