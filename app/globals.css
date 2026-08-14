@@ -997,11 +997,39 @@ body::before {
    the column would otherwise sit. The column overflows its 350px track to the
    right; the grid is width:max-content off fixed tracks, so it does not grow. */
 .home-desktop-grid-preview .home-desktop-info {
-  margin-left: calc(var(--seal-w) + 207px - 528px - 118px);
+  margin-left: calc(var(--seal-w) + 148px - 528px - 118px);
 }
 
 @media (min-width: 1100px) and (max-width: 1599px) {
   .home-desktop-grid-preview .home-desktop-info {
-    margin-left: calc(var(--seal-w) + 207px - 590px - 92px);
+    margin-left: calc(var(--seal-w) + 148px - 590px - 92px);
   }
+}
+
+/* PREVIEW ONLY - mobile seal, sized off --mk and capped to the viewport.
+
+   The video box is 348 x 266 (.home-mobile is max-width 350px, so 348 holds at
+   every phone width). Cover crops it height-first, which puts the seal's glow
+   at 0.70544 of the box's width and 0.70322 of it in height - near enough
+   square. Capping the glow at 94.5vw caps the box at 94.5vw / 0.70544.
+
+   94.5 rather than 94 because at 390 the glow already measured 94.36vw without
+   clipping, and 94.5 is the value that lets 390 keep the full 1.5 while still
+   easing 375 and 360 back.
+
+   In CSS rather than JS because the cap needs the viewport width, which the
+   server does not have. */
+.home-mobile-poster-wrap-preview {
+  --mv-w: min(calc(348px * var(--mk)), calc(94.5vw / 0.70544));
+  height: calc(var(--mv-w) * 0.70322);
+}
+
+.home-mobile-poster-wrap-preview .home-mobile-poster {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--mv-w);
+  height: calc(var(--mv-w) * 0.764368);
+  max-width: none;
 }

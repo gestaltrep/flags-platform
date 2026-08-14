@@ -28,9 +28,6 @@ const WRAP_BORDER = 2;
  * The glow is near enough square: 0.657 of the width, 0.920 of the height.
  */
 const SEAL_W_FRAC = 0.657;
-const SEAL_H_FRAC = 0.920;
-/** .home-mobile-poster's fixed height, the box the mobile seal is cropped to. */
-const MOBILE_POSTER_H = 266;
 /**
  * Distance from .home-mobile-frame's bottom edge to the last line's rendered
  * glyph bottom. The line box overshoots the glyphs by 4.4px and the frame adds
@@ -39,13 +36,18 @@ const MOBILE_POSTER_H = 266;
  */
 const TEXT_GLYPH_SLACK = 31;
 /**
- * Seal-right to info-left on desktop. Derived once at 1512, where the seal
- * ends at 748.5 and the 350px column centred in the remaining 763.5px would
- * start at 955.25. Held constant at every other width rather than re-centring.
+ * Seal-right to info-left on desktop. Derived once at 1512 by centring the
+ * info column's PAINTED extent, not its declared track: every line is
+ * white-space: nowrap and overflows the 350px track to the right, the venue
+ * furthest at 467.6px. Centring that in the 763.5px between the seal's right
+ * edge and the viewport puts it at 896.5, so the gap is 148. Held constant at
+ * every other width rather than re-centring.
  */
-const INFO_GAP = 207;
+const INFO_GAP = 148;
 /** Mobile seal scale when no ?mhero= is given. */
 export const MOBILE_HERO_DEFAULT = 1.5;
+/** Desktop hero scale when no ?hero= is given. */
+export const HERO_SCALE_DEFAULT = 1.33;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
@@ -357,28 +359,16 @@ export default function HomeClient({
   const heroLeftPx = heroSized ? -Math.round(SEAL_LEFT_FRAC * heroW) - WRAP_BORDER : null;
 
   // Mobile: the wrap is sized to the seal's glow rather than to the video
-  // frame, so the layout reflows to what is actually visible. transform does
-  // not affect flow, so the frame's extra ground overhangs the wrap instead of
-  // pushing the CTA down; body{overflow-x:hidden} clips the sideways spill.
+  // frame, so the layout reflows to what is actually visible and the frame's
+  // extra ground overhangs instead of pushing the CTA down. The sizing lives
+  // in CSS off --mk so the cap against the viewport can use vw; doing it in JS
+  // would need innerWidth, which the server does not have, and would either
+  // mismatch on hydration or shift the layout after mount.
   const mSized = previewMode && mHeroScale !== 1;
-  const mobileSealH = Math.round(SEAL_H_FRAC * MOBILE_POSTER_H * mHeroScale);
   const mobileWrapStyle = previewMode
-    ? { overflow: "visible" as const, height: mobileSealH }
+    ? ({ overflow: "visible", "--mk": String(mHeroScale) } as React.CSSProperties)
     : {};
-  // Border-box, so the 1px transparent borders come out of that height and the
-  // seal lands exactly on the wrap's border box: the wrap's padding box centre
-  // is top + 1 + (h - 2)/2, which is top + h/2.
-  const mobileRootStyle = {
-    position: "absolute" as const,
-    left: 0,
-    right: 0,
-    top: "50%",
-    height: MOBILE_POSTER_H,
-    // scale is applied first, so the -50% stays a literal -133px and is not
-    // multiplied by mHeroScale.
-    transform: `translateY(-50%) scale(${mHeroScale})`,
-    transformOrigin: "center center" as const,
-  };
+  const mobileRootStyle = { display: "block" as const, overflow: "visible" as const };
   // Equal visible gaps: above is the frame's own glyph slack, so mirroring it
   // below needs nothing but a matching margin on the CTA.
   const mobileCtaStyle = previewMode ? { marginTop: TEXT_GLYPH_SLACK } : undefined;
@@ -412,7 +402,7 @@ export default function HomeClient({
     const rootStyle = sized
       ? heroRootStyle
       : mobileVisible && previewMode
-        ? { display: "block" as const, overflow: "visible" as const, ...mobileRootStyle }
+        ? mobileRootStyle
         : undefined;
     // Preview only. HeroVideo is the sole thing that references the poster or
     // the mp4, so on the public path neither is rendered, preloaded or fetched.
@@ -594,7 +584,7 @@ export default function HomeClient({
         {/* Preview also clears this wrapper's black background — an opaque
             backdrop would defeat the screen blend on mobile. */}
         <div
-          className="home-mobile-poster-wrap"
+          className={previewMode ? "home-mobile-poster-wrap home-mobile-poster-wrap-preview" : "home-mobile-poster-wrap"}
           style={previewMode
             ? { position: "relative", borderColor: "transparent", background: "transparent", ...mobileWrapStyle }
             : { position: "relative" }}

@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import HomeClient, { HERO_LIFT_DEFAULT, MOBILE_HERO_DEFAULT } from "../HomeClient";
+import HomeClient, { HERO_LIFT_DEFAULT, MOBILE_HERO_DEFAULT, HERO_SCALE_DEFAULT } from "../HomeClient";
 import { getMostRecentDraftEvent } from "@/lib/events";
 import { isValidPreviewKey } from "@/lib/preview";
 
@@ -24,11 +24,11 @@ export default async function PreviewPage({
   const raw = params?.key;
   const key = Array.isArray(raw) ? raw[0] : raw;
 
-  // Hero sizing experiment: ?hero=1.33, 1.5 or 1.9. Anything else is 1, i.e.
-  // the shared CSS untouched.
+  // Hero sizing. Defaults to 1.33; ?hero=1 is the way back to the shared CSS
+  // untouched, which also drops the preview-only desktop placement rules.
   const rawHero = Array.isArray(params?.hero) ? params.hero[0] : params?.hero;
-  const HERO_SCALES: Record<string, number> = { "1.25": 1.25, "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
-  const heroScale = (rawHero && HERO_SCALES[rawHero]) || 1;
+  const HERO_SCALES: Record<string, number> = { "1": 1, "1.25": 1.25, "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
+  const heroScale = (rawHero && HERO_SCALES[rawHero]) || HERO_SCALE_DEFAULT;
 
   // ?mhero= scales the mobile seal, and the mobile layout reflows to it.
   // Defaults to 1.5; ?mhero=1 is the way back to the unscaled seal.
