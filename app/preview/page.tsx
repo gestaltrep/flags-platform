@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import HomeClient, { HERO_LIFT_DEFAULT } from "../HomeClient";
+import HomeClient, { HERO_LIFT_DEFAULT, MOBILE_HERO_DEFAULT } from "../HomeClient";
 import { getMostRecentDraftEvent } from "@/lib/events";
 import { isValidPreviewKey } from "@/lib/preview";
 
@@ -30,10 +30,11 @@ export default async function PreviewPage({
   const HERO_SCALES: Record<string, number> = { "1.25": 1.25, "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
   const heroScale = (rawHero && HERO_SCALES[rawHero]) || 1;
 
-  // ?mhero= scales the mobile seal without moving the mobile layout.
+  // ?mhero= scales the mobile seal, and the mobile layout reflows to it.
+  // Defaults to 1.5; ?mhero=1 is the way back to the unscaled seal.
   const rawM = Array.isArray(params?.mhero) ? params.mhero[0] : params?.mhero;
-  const M_SCALES: Record<string, number> = { "1.25": 1.25, "1.5": 1.5, "1.75": 1.75, "2": 2 };
-  const mHeroScale = (rawM && M_SCALES[rawM]) || 1;
+  const M_SCALES: Record<string, number> = { "1": 1, "1.25": 1.25, "1.5": 1.5, "1.75": 1.75, "2": 2 };
+  const mHeroScale = (rawM && M_SCALES[rawM]) || MOBILE_HERO_DEFAULT;
 
   // ?lift=<px> tunes how far the seal rides above vertical centre on its slot.
   const rawLift = Array.isArray(params?.lift) ? params.lift[0] : params?.lift;

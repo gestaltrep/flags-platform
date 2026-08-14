@@ -21,8 +21,31 @@ const DESKTOP_NAV_H = 109;
 const SEAL_LEFT_FRAC = 0.170;
 /** .home-poster-wrap's border, backed out when positioning against it. */
 const WRAP_BORDER = 2;
-/** .home-mobile-cta-wrap's margin-top, the only asymmetry in the mobile gap. */
-const MOBILE_CTA_GAP = 14;
+/**
+ * Where the seal's glow sits inside the video frame, as fractions of the
+ * rendered box. Measured off the settled frame at luminance threshold 40 —
+ * the same threshold that fixed SEAL_LEFT_FRAC, so the three agree.
+ * The glow is near enough square: 0.657 of the width, 0.920 of the height.
+ */
+const SEAL_W_FRAC = 0.657;
+const SEAL_H_FRAC = 0.920;
+/** .home-mobile-poster's fixed height, the box the mobile seal is cropped to. */
+const MOBILE_POSTER_H = 266;
+/**
+ * Distance from .home-mobile-frame's bottom edge to the last line's rendered
+ * glyph bottom. The line box overshoots the glyphs by 4.4px and the frame adds
+ * its own slack on top; both are invisible, so the gap has to be measured from
+ * here. Constant at 390 and 375 — the text column is 348px at both.
+ */
+const TEXT_GLYPH_SLACK = 31;
+/**
+ * Seal-right to info-left on desktop. Derived once at 1512, where the seal
+ * ends at 748.5 and the 350px column centred in the remaining 763.5px would
+ * start at 955.25. Held constant at every other width rather than re-centring.
+ */
+const INFO_GAP = 207;
+/** Mobile seal scale when no ?mhero= is given. */
+export const MOBILE_HERO_DEFAULT = 1.5;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
@@ -333,15 +356,38 @@ export default function HomeClient({
   // backs out the wrap's border, since left:0 is its padding box.
   const heroLeftPx = heroSized ? -Math.round(SEAL_LEFT_FRAC * heroW) - WRAP_BORDER : null;
 
-  // Mobile: scale the treated root about its centre. transform does not affect
-  // flow, so the wrap keeps its height and the layout does not move; the spill
-  // is dead ground and body{overflow-x:hidden} clips it without a scrollbar.
+  // Mobile: the wrap is sized to the seal's glow rather than to the video
+  // frame, so the layout reflows to what is actually visible. transform does
+  // not affect flow, so the frame's extra ground overhangs the wrap instead of
+  // pushing the CTA down; body{overflow-x:hidden} clips the sideways spill.
   const mSized = previewMode && mHeroScale !== 1;
-  const mobileWrapStyle = previewMode ? { overflow: "visible" as const } : {};
-  // The poster wrap sits flush under the text block but the CTA is pushed down
-  // by .home-mobile-cta-wrap's 14px margin, so the wrap's centre sits half that
-  // above the true centre of the gap. Constant, and independent of viewport.
-  const mobileSealNudge = MOBILE_CTA_GAP / 2;
+  const mobileSealH = Math.round(SEAL_H_FRAC * MOBILE_POSTER_H * mHeroScale);
+  const mobileWrapStyle = previewMode
+    ? { overflow: "visible" as const, height: mobileSealH }
+    : {};
+  // Border-box, so the 1px transparent borders come out of that height and the
+  // seal lands exactly on the wrap's border box: the wrap's padding box centre
+  // is top + 1 + (h - 2)/2, which is top + h/2.
+  const mobileRootStyle = {
+    position: "absolute" as const,
+    left: 0,
+    right: 0,
+    top: "50%",
+    height: MOBILE_POSTER_H,
+    // scale is applied first, so the -50% stays a literal -133px and is not
+    // multiplied by mHeroScale.
+    transform: `translateY(-50%) scale(${mHeroScale})`,
+    transformOrigin: "center center" as const,
+  };
+  // Equal visible gaps: above is the frame's own glyph slack, so mirroring it
+  // below needs nothing but a matching margin on the CTA.
+  const mobileCtaStyle = previewMode ? { marginTop: TEXT_GLYPH_SLACK } : undefined;
+  // Desktop: push the info column out to a constant distance from the seal.
+  // Fed to CSS as a length so the calc can subtract the track and gap of
+  // whichever breakpoint is live, without measuring anything at runtime.
+  const infoVars = heroSized
+    ? ({ "--seal-w": `${(SEAL_W_FRAC * heroW).toFixed(1)}px` } as React.CSSProperties)
+    : undefined;
   const heroRootStyle = heroSized
     ? {
         position: "absolute" as const,
@@ -366,13 +412,7 @@ export default function HomeClient({
     const rootStyle = sized
       ? heroRootStyle
       : mobileVisible && previewMode
-        ? {
-            display: "block" as const,
-            overflow: "visible" as const,
-            // translate first, then scale, so the nudge is not multiplied
-            transform: `translateY(${mobileSealNudge}px) scale(${mHeroScale})`,
-            transformOrigin: "center center",
-          }
+        ? { display: "block" as const, overflow: "visible" as const, ...mobileRootStyle }
         : undefined;
     // Preview only. HeroVideo is the sole thing that references the poster or
     // the mp4, so on the public path neither is rendered, preloaded or fetched.
@@ -434,7 +474,7 @@ export default function HomeClient({
           hides it below 900px and leak the desktop layout onto mobile. */}
       <main className="home-desktop" style={previewMode ? { marginTop: 0 } : undefined}>
         <DesktopCentre {...desktopCentreProps}>
-        <div className="home-desktop-grid">
+        <div className={heroSized ? "home-desktop-grid home-desktop-grid-preview" : "home-desktop-grid"} style={infoVars}>
           {/* Preview drops the frame and the corner label so the seal floats.
               borderColor rather than border keeps the box metrics identical,
               so the video's size and the grid do not move. */}
@@ -602,7 +642,7 @@ export default function HomeClient({
           )}
         </div>
 
-        <div className="home-mobile-cta-wrap">
+        <div className="home-mobile-cta-wrap" style={mobileCtaStyle}>
           <button
             className={previewMode ? "cta-button cta-preview" : "cta-button"}
             onClick={() => setParticipationStep("chooser")}

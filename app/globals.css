@@ -990,3 +990,18 @@ body::before {
 .home-mobile-text-ls .home-location-mobile-event {
   margin-right: -1px;
 }
+
+/* PREVIEW ONLY - desktop info column at a constant distance from the seal.
+   --seal-w is the seal glow's width, set inline from the live hero scale. The
+   subtraction is the track plus gap of the breakpoint in force, which is where
+   the column would otherwise sit. The column overflows its 350px track to the
+   right; the grid is width:max-content off fixed tracks, so it does not grow. */
+.home-desktop-grid-preview .home-desktop-info {
+  margin-left: calc(var(--seal-w) + 207px - 528px - 118px);
+}
+
+@media (min-width: 1100px) and (max-width: 1599px) {
+  .home-desktop-grid-preview .home-desktop-info {
+    margin-left: calc(var(--seal-w) + 207px - 590px - 92px);
+  }
+}
