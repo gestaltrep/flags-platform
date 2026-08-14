@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState, type ElementType } from "react";
 import HeroGlitch from "./components/HeroGlitch";
 import HeroVideo from "./components/HeroVideo";
 import SponsorSection from "./components/SponsorSection";
@@ -351,6 +351,21 @@ export default function HomeClient({
     return <HeroGlitch className={className} />;
   }
 
+  // Preview wraps the mobile stack in a flex centring box. Outside preview it
+  // must collapse to nothing — a bare <div> would still emit 11 bytes and break
+  // the byte-identical dormant page.
+  const MobileCentre: ElementType = previewMode ? "div" : Fragment;
+  const mobileCentreProps = previewMode
+    ? {
+        style: {
+          minHeight: `calc(100vh - ${MOBILE_NAV_H}px)`,
+          display: "flex",
+          flexDirection: "column" as const,
+          justifyContent: "center",
+        },
+      }
+    : {};
+
   return (
     <>
       {previewMode && (
@@ -478,7 +493,7 @@ export default function HomeClient({
               </div>
             )}
           </div>
-        </div>
+        </MobileCentre>
       </main>
 
       {/* Preview centres the three mobile blocks as one unit between the
@@ -486,12 +501,7 @@ export default function HomeClient({
           .home-mobile — an inline display would beat the media query that
           toggles .home-mobile between none and block, and leak it to desktop. */}
       <main className="home-mobile" style={previewMode ? { marginTop: 0 } : undefined}>
-        <div style={previewMode ? {
-          minHeight: `calc(100vh - ${MOBILE_NAV_H}px)`,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        } : undefined}>
+        <MobileCentre {...mobileCentreProps}>
         <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
           <div className="home-mobile-text">
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
