@@ -10,8 +10,8 @@ import ParticipationModal from "./components/ParticipationModal";
 const SLOT_W = 590;
 const SLOT_H = 420;
 export const HERO_LIFT_DEFAULT = 10;
-/** Mobile navbar height, used to centre the preview stack below it. */
-const MOBILE_NAV_H = 85;
+/** Navbar heights, used to centre the preview hero below them. */
+const DESKTOP_NAV_H = 109;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
@@ -37,6 +37,7 @@ export default function HomeClient({
   previewKey = "",
   heroScale = 1,
   heroLift = HERO_LIFT_DEFAULT,
+  mHeroScale = 1,
 }: {
   isDormant: boolean;
   event?: HomeEvent | null;
@@ -46,6 +47,8 @@ export default function HomeClient({
   heroScale?: number;
   /** Preview-only: px the seal rides above vertical centre on its slot. */
   heroLift?: number;
+  /** Preview-only mobile seal scale. 1 leaves the mobile hero as-is. */
+  mHeroScale?: number;
 }) {
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
@@ -311,6 +314,12 @@ export default function HomeClient({
   const heroLeft = (SLOT_W - heroW) / 2;
   const heroTop = (SLOT_H - heroH) / 2 - heroLift;
   const heroWrapStyle = heroSized ? { overflow: "visible" as const } : {};
+
+  // Mobile: scale the treated root about its centre. transform does not affect
+  // flow, so the wrap keeps its height and the layout does not move; the spill
+  // is dead ground and body{overflow-x:hidden} clips it without a scrollbar.
+  const mSized = previewMode && mHeroScale !== 1;
+  const mobileWrapStyle = mSized ? { overflow: "visible" as const } : {};
   const heroRootStyle = heroSized
     ? {
         position: "absolute" as const,
@@ -335,7 +344,16 @@ export default function HomeClient({
     const rootStyle = sized
       ? heroRootStyle
       : mobileVisible && previewMode
-        ? { display: "block" as const }
+        ? {
+            display: "block" as const,
+            ...(mSized
+              ? {
+                  overflow: "visible" as const,
+                  transform: `scale(${mHeroScale})`,
+                  transformOrigin: "center center",
+                }
+              : {}),
+          }
         : undefined;
     // Preview only. HeroVideo is the sole thing that references the poster or
     // the mp4, so on the public path neither is rendered, preloaded or fetched.
@@ -351,14 +369,13 @@ export default function HomeClient({
     return <HeroGlitch className={className} />;
   }
 
-  // Preview wraps the mobile stack in a flex centring box. Outside preview it
-  // must collapse to nothing — a bare <div> would still emit 11 bytes and break
-  // the byte-identical dormant page.
-  const MobileCentre: ElementType = previewMode ? "div" : Fragment;
-  const mobileCentreProps = previewMode
+  // Collapses to nothing outside preview — a bare <div> would still emit
+  // tags and break the byte-identical dormant page.
+  const DesktopCentre: ElementType = previewMode ? "div" : Fragment;
+  const desktopCentreProps = previewMode
     ? {
         style: {
-          minHeight: `calc(100vh - ${MOBILE_NAV_H}px)`,
+          minHeight: `calc(100vh - ${DESKTOP_NAV_H}px)`,
           display: "flex",
           flexDirection: "column" as const,
           justifyContent: "center",
@@ -392,7 +409,12 @@ export default function HomeClient({
         </div>
       )}
 
-      <main className="home-desktop">
+      {/* Preview centres the hero unit — seal plus info column — between the
+          navbar and the fold. The flex sits on an inner wrapper, not on
+          .home-desktop: an inline display would beat the media query that
+          hides it below 900px and leak the desktop layout onto mobile. */}
+      <main className="home-desktop" style={previewMode ? { marginTop: 0 } : undefined}>
+        <DesktopCentre {...desktopCentreProps}>
         <div className="home-desktop-grid">
           {/* Preview drops the frame and the corner label so the seal floats.
               borderColor rather than border keeps the box metrics identical,
@@ -494,14 +516,10 @@ export default function HomeClient({
             )}
           </div>
         </div>
+        </DesktopCentre>
       </main>
 
-      {/* Preview centres the three mobile blocks as one unit between the
-          navbar and the fold. The flex lives on an inner wrapper, not on
-          .home-mobile — an inline display would beat the media query that
-          toggles .home-mobile between none and block, and leak it to desktop. */}
-      <main className="home-mobile" style={previewMode ? { marginTop: 0 } : undefined}>
-        <MobileCentre {...mobileCentreProps}>
+      <main className="home-mobile">
         <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
           <div className="home-mobile-text">
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
@@ -519,7 +537,7 @@ export default function HomeClient({
         <div
           className="home-mobile-poster-wrap"
           style={previewMode
-            ? { position: "relative", borderColor: "transparent", background: "transparent" }
+            ? { position: "relative", borderColor: "transparent", background: "transparent", ...mobileWrapStyle }
             : { position: "relative" }}
         >
           <Poster className="home-mobile-poster" media="(max-width: 899px)" mobileVisible />
@@ -606,7 +624,6 @@ export default function HomeClient({
             </div>
           )}
         </div>
-        </MobileCentre>
       </main>
 
       <SponsorSection />

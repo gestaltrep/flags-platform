@@ -15,7 +15,10 @@ import { isValidPreviewKey } from "@/lib/preview";
 export default async function PreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ key?: string | string[]; hero?: string | string[]; lift?: string | string[] }>;
+  searchParams: Promise<{
+    key?: string | string[]; hero?: string | string[];
+    lift?: string | string[]; mhero?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const raw = params?.key;
@@ -24,8 +27,13 @@ export default async function PreviewPage({
   // Hero sizing experiment: ?hero=1.33, 1.5 or 1.9. Anything else is 1, i.e.
   // the shared CSS untouched.
   const rawHero = Array.isArray(params?.hero) ? params.hero[0] : params?.hero;
-  const HERO_SCALES: Record<string, number> = { "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
+  const HERO_SCALES: Record<string, number> = { "1.25": 1.25, "1.33": 1.33, "1.5": 1.5, "1.9": 1.9 };
   const heroScale = (rawHero && HERO_SCALES[rawHero]) || 1;
+
+  // ?mhero= scales the mobile seal without moving the mobile layout.
+  const rawM = Array.isArray(params?.mhero) ? params.mhero[0] : params?.mhero;
+  const M_SCALES: Record<string, number> = { "1.25": 1.25, "1.5": 1.5, "1.75": 1.75, "2": 2 };
+  const mHeroScale = (rawM && M_SCALES[rawM]) || 1;
 
   // ?lift=<px> tunes how far the seal rides above vertical centre on its slot.
   const rawLift = Array.isArray(params?.lift) ? params.lift[0] : params?.lift;
@@ -50,6 +58,7 @@ export default async function PreviewPage({
       previewKey={key as string}
       heroScale={heroScale}
       heroLift={heroLift}
+      mHeroScale={mHeroScale}
       event={{
         name: event.name,
         slug: event.slug,
