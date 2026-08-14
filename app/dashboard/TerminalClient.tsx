@@ -84,6 +84,10 @@ export default function TerminalClient({
   const [previewQuoteError, setPreviewQuoteError] = useState("");
 
   const [tiers, setTiers] = useState<TierInfo[]>([]);
+  // Distinguishes "no active tier because the fetch has not answered yet" from
+  // "no active tier because every tier is exhausted". Only the second is SOLD
+  // OUT; a failed fetch stays here rather than claiming the event is gone.
+  const [tiersLoaded, setTiersLoaded] = useState(false);
   const [tier, setTier] = useState(1);
   const [vipSold, setVipSold] = useState(0);
 
@@ -197,6 +201,7 @@ export default function TerminalClient({
       setTiers(Array.isArray(data.tiers) ? data.tiers : []);
       setTier(data.activeTierSortOrder ?? 0);
       setVipSold(data.vipSold ?? 0);
+      setTiersLoaded(true);
     } catch (err) {
       console.error("Tier load failed", err);
     }
@@ -1517,10 +1522,15 @@ export default function TerminalClient({
                         </div>
                       )}
                     </>
-                  ) : (
+                  ) : tiersLoaded ? (
                     <div className="modal-status-line">
                       <span className="modal-status-symbol">{">"}</span>
                       <span className="modal-status-text">SOLD OUT</span>
+                    </div>
+                  ) : (
+                    <div className="modal-status-line">
+                      <span className="modal-status-symbol">{">"}</span>
+                      <span className="modal-status-text">CHECKING AVAILABILITY</span>
                     </div>
                   )}
                 </div>
@@ -1629,10 +1639,15 @@ export default function TerminalClient({
                         </div>
                       )}
                     </>
-                  ) : (
+                  ) : tiersLoaded ? (
                     <div className="modal-status-line">
                       <span className="modal-status-symbol">{">"}</span>
                       <span className="modal-status-text">SOLD OUT</span>
+                    </div>
+                  ) : (
+                    <div className="modal-status-line">
+                      <span className="modal-status-symbol">{">"}</span>
+                      <span className="modal-status-text">CHECKING AVAILABILITY</span>
                     </div>
                   )}
                 </div>
