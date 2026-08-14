@@ -1039,22 +1039,53 @@ body::before {
   }
 }
 
-/* PREVIEW ONLY - mobile seal, sized off --mk and capped to the viewport.
+/* PREVIEW ONLY - mobile layout solved against the SMALL viewport.
 
-   The video box is 348 x 266 (.home-mobile is max-width 350px, so 348 holds at
-   every phone width). Cover crops it height-first, which puts the seal's glow
-   at 0.70544 of the box's width and 0.70322 of it in height - near enough
-   square. Capping the glow at 94.5vw caps the box at 94.5vw / 0.70544.
+   100vh, and window.innerHeight with it, report the height as though iOS
+   Safari's bottom toolbar were hidden; the toolbar is then drawn over that
+   area. svh is that height with the toolbar showing. dvh would track the
+   toolbar auto-hiding on scroll and slide the seal and CTA around while
+   someone is reading, so this uses svh: stable, and conservative.
 
-   94.5 rather than 94 because at 390 the glow already measured 94.36vw without
-   clipping, and 94.5 is the value that lets 390 keep the full 1.5 while still
-   easing 375 and 360 back.
+   Geometry. The video box is 348 x 266 (.home-mobile is max-width 350px, so
+   348 holds at every phone width). Cover crops it height-first, which puts
+   the seal's glow at 0.70544 of the box's width and 0.70322 of it in height.
+   The stack above the fold is 103 to the frame + the frame's 156 + the CTA's
+   62, less 21 of invisible glyph slack the top gap absorbs, so
 
-   In CSS rather than JS because the cap needs the viewport width, which the
-   server does not have. */
-.home-mobile-poster-wrap-preview {
-  --mv-w: min(calc(348px * var(--mk)), calc(94.5vw / 0.70544));
-  height: calc(var(--mv-w) * 0.70322);
+       CTA bottom = 300 + 2 x gap + seal height
+
+   Three caps on the seal, whichever binds first: --mk, 94.5vw so the glow
+   never runs off the sides, and the height left once the gaps are at their
+   12px floor. The gap is solved from what is left and clamped to 12..31, so
+   the gaps give way before the seal does. 16px is held back below the CTA,
+   on top of the safe-area inset for the home indicator. */
+.home-mobile-preview {
+  --mv-w: min(
+    calc(348px * var(--mk)),
+    calc(94.5vw / 0.70544),
+    calc((100svh - 340px - env(safe-area-inset-bottom, 0px)) / 0.70322)
+  );
+  --seal-h: calc(var(--mv-w) * 0.70322);
+  --gap: clamp(
+    12px,
+    calc((100svh - 316px - var(--seal-h) - env(safe-area-inset-bottom, 0px)) / 2),
+    31px
+  );
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.home-mobile-preview .home-mobile-poster-wrap-preview {
+  height: var(--seal-h);
+  /* the visible gap is var(--gap); 21px of it is already there as slack
+     between the frame's bottom edge and the last line's glyph bottom */
+  margin-top: calc(var(--gap) - 21px);
+}
+
+.home-mobile-preview .home-mobile-cta-wrap {
+  margin-top: var(--gap);
 }
 
 .home-mobile-poster-wrap-preview .home-mobile-poster {

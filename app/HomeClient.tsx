@@ -28,20 +28,13 @@ const WRAP_BORDER = 2;
  * The glow is near enough square: 0.657 of the width, 0.920 of the height.
  */
 const SEAL_W_FRAC = 0.657;
-/**
- * Distance from .home-mobile-frame's bottom edge to the last line's rendered
- * glyph bottom. The line box overshoots the glyphs and the frame adds its own
- * slack on top; both are invisible, so the gap has to be measured from here.
- * Measured at the preview type scale, and constant across phone widths — the
- * text column is 348px at all of them.
+/*
+ * The mobile stack's height is solved in globals.css, not here: it is fitted
+ * to 100svh and only CSS can see svh. The fixed parts are 103px above the
+ * frame, the frame's 156, the CTA's 62, and 21 of invisible glyph slack
+ * inside the frame that the gap above the seal absorbs, which gives
+ * CTA bottom = 300 + 2 * gap + seal height.
  */
-const TEXT_GLYPH_SLACK = 21;
-/**
- * The visible gap above and below the mobile seal, glyph bottom to glow and
- * glow to the CTA's border. Held at what it was before the type grew; the
- * wrap takes up the difference so both gaps stay equal.
- */
-const MOBILE_SEAL_GAP = 31;
 /**
  * Seal-right to info-left on desktop. Derived once at 1512 by centring the
  * info column's PAINTED extent, not its declared track: every line is
@@ -419,14 +412,13 @@ export default function HomeClient({
   // would need innerWidth, which the server does not have, and would either
   // mismatch on hydration or shift the layout after mount.
   const mSized = previewMode && mHeroScale !== 1;
-  const mobileWrapStyle = previewMode
-    ? ({ overflow: "visible", "--mk": String(mHeroScale),
-         marginTop: MOBILE_SEAL_GAP - TEXT_GLYPH_SLACK } as React.CSSProperties)
-    : {};
+  const mobileWrapStyle = previewMode ? { overflow: "visible" as const } : {};
   const mobileRootStyle = { display: "block" as const, overflow: "visible" as const };
   // Equal visible gaps: above is the frame's own glyph slack, so mirroring it
   // below needs nothing but a matching margin on the CTA.
-  const mobileCtaStyle = previewMode ? { marginTop: MOBILE_SEAL_GAP } : undefined;
+  // The seal's height and both gaps are set in CSS now: they are solved
+  // against 100svh, and an inline style would outrank that.
+  const mobileCtaStyle = undefined;
   // Desktop: push the info column out to a constant distance from the seal.
   // Fed to CSS as a length so the calc can subtract the track and gap of
   // whichever breakpoint is live, without measuring anything at runtime.
@@ -598,7 +590,10 @@ export default function HomeClient({
         </DesktopCentre>
       </main>
 
-      <main className="home-mobile">
+      <main
+        className={previewMode ? "home-mobile home-mobile-preview" : "home-mobile"}
+        style={previewMode ? ({ "--mk": String(mHeroScale) } as React.CSSProperties) : undefined}
+      >
         <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
           <div className={previewMode ? "home-mobile-text home-mobile-text-ls" : "home-mobile-text"}>
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
