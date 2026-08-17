@@ -659,7 +659,7 @@ export default function ParticipationModal({
 
   // Header title per step
   const tierTitle =
-    step === "ga" ? "Generate Tokens"
+    step === "ga" ? "Generate GA Tokens"
     : step === "vip" ? "VIP TOKENS"
     : step === "table" ? "RESERVE A TABLE"
     : step === "phone-entry" ? "VERIFICATION"

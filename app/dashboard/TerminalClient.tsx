@@ -864,7 +864,7 @@ export default function TerminalClient({
    * same 358px and the same 30px padding, runs its contents at the full 296
    * and lets the shared .modal-* classes set the type. That 47px and the type
    * overrides on top of it are the whole of the squeeze, so both go. The
-   * distinct chrome — logo header, "Generate Tokens", no tier graphic, no back
+   * distinct chrome — logo header, "Generate GA Tokens", no tier graphic, no back
    * button — is untouched; only the width and type of the contents change.
    */
   const gaMobileInnerStyle: React.CSSProperties = isMobile
@@ -1579,7 +1579,7 @@ export default function TerminalClient({
               className="signup-title signup-title-large"
               style={gaTitleStyle}
             >
-              Generate Tokens
+              Generate GA Tokens
             </div>
 
             {isMobile ? (
