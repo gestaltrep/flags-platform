@@ -51,5 +51,11 @@ export default async function RecordsPage({
     counts[r.event_id] = (counts[r.event_id] ?? 0) + 1;
   });
 
-  return <RecordsClient events={eventList} counts={counts} />;
+  // Records is an archive, so an event with nothing in it has nothing to show.
+  // This is a count test rather than a status or name test, so an event joins
+  // the list the moment its first record lands and leaves again if they are
+  // all removed — nothing here needs editing per event.
+  const eventsWithRecords = eventList.filter((e) => (counts[e.id] ?? 0) > 0);
+
+  return <RecordsClient events={eventsWithRecords} counts={counts} />;
 }

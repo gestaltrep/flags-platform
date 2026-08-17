@@ -773,25 +773,9 @@ export default function TerminalClient({
       }
     : desktopSendModalStyle;
 
-  const generateHeaderStyle: React.CSSProperties = isMobile
-    ? {
-        ...mobileModalInnerStyle,
-        paddingTop: 18,
-        paddingBottom: 14,
-        marginBottom: 18,
-      }
-    : {};
-
-  const generateTitleStyle: React.CSSProperties = isMobile
-    ? {
-        ...mobileModalInnerStyle,
-        textAlign: "center",
-        fontSize: 19,
-        letterSpacing: 2.8,
-        marginBottom: 12,
-      }
-    : {};
-
+  // The GA modal was the only consumer of a shared header/title style; it now
+  // has its own (gaHeaderStyle / gaTitleStyle) and the VIP modal builds its
+  // header inline, back button and all.
   const generateStatusCopyStyle: React.CSSProperties = isMobile
     ? {
         ...mobileModalInnerStyle,
@@ -846,6 +830,56 @@ export default function TerminalClient({
         letterSpacing: 2.8,
       }
     : {};
+
+  /**
+   * The Generate-Tokens (GA) modal's mobile contents.
+   *
+   * These exist separately from the generate* styles above because those are
+   * shared with the VIP modal, which is not in scope here.
+   *
+   * mobileModalInnerStyle put the contents in a 84%-of-content-box column —
+   * 248.6px inside a 296px box on a 390px viewport — while the homepage's
+   * participation modal, which is the same .signup-modal-request shell at the
+   * same 358px and the same 30px padding, runs its contents at the full 296
+   * and lets the shared .modal-* classes set the type. That 47px and the type
+   * overrides on top of it are the whole of the squeeze, so both go. The
+   * distinct chrome — logo header, "Generate Tokens", no tier graphic, no back
+   * button — is untouched; only the width and type of the contents change.
+   */
+  const gaMobileInnerStyle: React.CSSProperties = isMobile
+    ? { width: "100%", alignSelf: "stretch" }
+    : {};
+
+  const gaHeaderStyle: React.CSSProperties = isMobile
+    ? { ...gaMobileInnerStyle, paddingTop: 18, paddingBottom: 14, marginBottom: 18 }
+    : {};
+
+  const gaTitleStyle: React.CSSProperties = isMobile
+    ? { ...gaMobileInnerStyle, textAlign: "center", fontSize: 19, letterSpacing: 2.8, marginBottom: 12 }
+    : {};
+
+  // No fontSize or lineHeight: .modal-status-copy already carries the 14px the
+  // homepage renders at. marginBottom matches the homepage's own 18.
+  const gaStatusCopyStyle: React.CSSProperties = isMobile
+    ? { ...gaMobileInnerStyle, marginBottom: 18 }
+    : {};
+
+  // Likewise no type overrides — .modal-quantity-label is 14px/3px already.
+  const gaQuantityLabelStyle: React.CSSProperties = isMobile
+    ? { ...gaMobileInnerStyle }
+    : {};
+
+  const gaQuantityRowStyle: React.CSSProperties = isMobile
+    ? { ...gaMobileInnerStyle, display: "flex", justifyContent: "center" }
+    : {};
+
+  const gaButtonWrapStyle: React.CSSProperties = isMobile
+    ? { ...gaMobileInnerStyle, paddingTop: 14, marginTop: 0 }
+    : { paddingTop: 14, marginTop: 0 };
+
+  // Empty on purpose: the button's own base style is the homepage's 54/13/3.4,
+  // and generateButtonStyle was shrinking it to 52/12/3.2 on mobile.
+  const gaButtonStyle: React.CSSProperties = {};
 
   const sendHeaderStyle: React.CSSProperties = isMobile
     ? {
@@ -1482,7 +1516,7 @@ export default function TerminalClient({
             className="signup-modal signup-modal-request"
             style={{ display: "flex", flexDirection: "column" }}
           >
-            <div className="signup-header signup-header-home" style={generateHeaderStyle}>
+            <div className="signup-header signup-header-home" style={gaHeaderStyle}>
               <img src="/logo.png" className="signup-logo" alt="Signo logo" />
               <img
                 src="/group-name.png"
@@ -1493,14 +1527,14 @@ export default function TerminalClient({
 
             <div
               className="signup-title signup-title-large"
-              style={generateTitleStyle}
+              style={gaTitleStyle}
             >
               Generate Tokens
             </div>
 
             {isMobile ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
-                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                <div className="modal-status-copy" style={gaStatusCopyStyle}>
                   {activeTier ? (
                     <>
                       <div className="modal-status-line">
@@ -1535,11 +1569,11 @@ export default function TerminalClient({
                   )}
                 </div>
 
-                <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
+                <div className="modal-quantity-label" style={gaQuantityLabelStyle}>
                   QUANTITY
                 </div>
 
-                <div className="modal-quantity-row" style={generateQuantityRowStyle}>
+                <div className="modal-quantity-row" style={gaQuantityRowStyle}>
                   <button
                     className="cta-button"
                     style={modalArrowButtonStyle}
@@ -1560,7 +1594,7 @@ export default function TerminalClient({
                 </div>
 
                 <div style={{
-                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  ...gaMobileInnerStyle,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -1617,7 +1651,7 @@ export default function TerminalClient({
               </div>
             ) : (
               <>
-                <div className="modal-status-copy" style={generateStatusCopyStyle}>
+                <div className="modal-status-copy" style={gaStatusCopyStyle}>
                   {activeTier ? (
                     <>
                       <div className="modal-status-line">
@@ -1652,11 +1686,11 @@ export default function TerminalClient({
                   )}
                 </div>
 
-                <div className="modal-quantity-label" style={generateQuantityLabelStyle}>
+                <div className="modal-quantity-label" style={gaQuantityLabelStyle}>
                   QUANTITY
                 </div>
 
-                <div className="modal-quantity-row" style={generateQuantityRowStyle}>
+                <div className="modal-quantity-row" style={gaQuantityRowStyle}>
                   <button
                     className="cta-button"
                     style={modalArrowButtonStyle}
@@ -1677,7 +1711,7 @@ export default function TerminalClient({
                 </div>
 
                 <div style={{
-                  ...(isMobile ? mobileModalInnerStyle : {}),
+                  ...gaMobileInnerStyle,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -1740,7 +1774,7 @@ export default function TerminalClient({
 
             <div
               className="signup-generate-button-wrap"
-              style={generateButtonWrapStyle}
+              style={gaButtonWrapStyle}
             >
               <button
                 className="cta-button"
@@ -1756,7 +1790,7 @@ export default function TerminalClient({
                   whiteSpace: "nowrap",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   textTransform: "uppercase",
-                  ...generateButtonStyle,
+                  ...gaButtonStyle,
                 }}
                 onClick={generateTokens}
               >
