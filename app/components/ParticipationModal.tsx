@@ -621,13 +621,6 @@ export default function ParticipationModal({
     textDecoration: "line-through",
     marginRight: 10,
   };
-  const totalDiscountStyle: React.CSSProperties = {
-    marginTop: 6,
-    fontSize: 11,
-    letterSpacing: 2,
-    color: "#ffffff",
-    textAlign: "right",
-  };
 
   const promoErrorStyle: React.CSSProperties = {
     minHeight: isMobile ? 18 : 16,
@@ -1119,10 +1112,11 @@ export default function ParticipationModal({
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">
+                          {/* Always the tier's own price. A code discounts the
+                              order, not the tier, and the TOTAL line is where
+                              that is stated. */}
                           {activeTier.name.toUpperCase()} ACTIVE - $
-                          {gaPromoValid && gaPromoDiscount != null
-                            ? (Math.round(activeTier.priceCents * (1 - gaPromoDiscount / 100)) / 100).toFixed(2)
-                            : (activeTier.priceCents / 100).toFixed(2)}
+                          {(activeTier.priceCents / 100).toFixed(2)}
                         </span>
                       </div>
                       <div className="modal-status-line">
@@ -1223,11 +1217,6 @@ export default function ParticipationModal({
                         {usd(gaTotalCents)}
                       </span>
                     </div>
-                    {gaDiscountPct > 0 && (
-                      <div style={totalDiscountStyle}>
-                        {gaPromo.trim().toUpperCase()} −{gaDiscountPct}%
-                      </div>
-                    )}
                   </div>
                 )}
 

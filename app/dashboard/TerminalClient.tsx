@@ -332,14 +332,6 @@ export default function TerminalClient({
   const gaBaseCents = (activeTier?.priceCents ?? 0) * gaQuantity;
   const gaTotalCents =
     gaDiscountPct > 0 ? Math.round(gaBaseCents * (1 - gaDiscountPct / 100)) : gaBaseCents;
-  /** Unit price after the code, matching how the homepage states the tier. */
-  const gaUnitLabel = activeTier
-    ? usd(
-        gaDiscountPct > 0
-          ? Math.round(activeTier.priceCents * (1 - gaDiscountPct / 100))
-          : activeTier.priceCents
-      )
-    : "—";
 
   function vipProgressPercent() {
     return Math.max(0, Math.min(100, (vipSold / 50) * 100));
@@ -922,13 +914,6 @@ export default function TerminalClient({
     color: "#666",
     textDecoration: "line-through",
     marginRight: 10,
-  };
-  const gaTotalDiscountStyle: React.CSSProperties = {
-    marginTop: 6,
-    fontSize: 11,
-    letterSpacing: 2,
-    color: "#ffffff",
-    textAlign: "right",
   };
 
   const sendHeaderStyle: React.CSSProperties = isMobile
@@ -1597,7 +1582,7 @@ export default function TerminalClient({
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">
-                          {activeTier.name.toUpperCase()} ACTIVE - {gaUnitLabel}
+                          {activeTier.name.toUpperCase()} ACTIVE - {priceLabel(activeTier)}
                         </span>
                       </div>
                       <div className="modal-status-line">
@@ -1714,7 +1699,7 @@ export default function TerminalClient({
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">
-                          {activeTier.name.toUpperCase()} ACTIVE - {gaUnitLabel}
+                          {activeTier.name.toUpperCase()} ACTIVE - {priceLabel(activeTier)}
                         </span>
                       </div>
                       <div className="modal-status-line">
@@ -1836,11 +1821,6 @@ export default function TerminalClient({
                     {usd(gaTotalCents)}
                   </span>
                 </div>
-                {gaDiscountPct > 0 && (
-                  <div style={gaTotalDiscountStyle}>
-                    {gaPromoCode.trim().toUpperCase()} −{gaDiscountPct}%
-                  </div>
-                )}
               </div>
             )}
 
