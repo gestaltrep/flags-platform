@@ -1273,6 +1273,19 @@ export default function TerminalClient({
                   <div style={{ fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, lineHeight: 1.8, marginBottom: 18, color: "#c8c8c8" }}>
                     <div>{">"} TOKENS REGISTERED TO USER</div>
                     <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
+                    {/* Reads as the next line of terminal output rather than
+                        stranded under the buy buttons, and matches where the
+                        empty-wallet case already puts it. */}
+                    {archivedTickets.length > 0 && (
+                      <div style={{ marginTop: 14 }}>
+                        <button
+                          style={{ background: 'none', border: 'none', color: '#666', fontFamily: '"Courier New", monospace', fontSize: isCompactDesktop ? 13 : 12, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0 }}
+                          onClick={() => setViewMode('archive')}
+                        >
+                          {">"} VIEW ARCHIVE
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1321,14 +1334,6 @@ export default function TerminalClient({
                   </div>
                 )}
 
-                {showEntrySection && archivedTickets.length > 0 && currentTickets.length > 0 && (
-                  <button
-                    style={{ background: 'none', border: 'none', color: '#555', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginTop: 22 }}
-                    onClick={() => setViewMode('archive')}
-                  >
-                    {">"} VIEW ARCHIVE
-                  </button>
-                )}
               </div>
             ) : (
               <div>
@@ -1430,6 +1435,17 @@ export default function TerminalClient({
                     <div style={{ fontSize: 11, letterSpacing: 2, lineHeight: 1.7, marginBottom: 12 }}>
                       <div>{">"} TOKENS REGISTERED TO USER</div>
                       <div>{">"} PRESENT TOKEN AT ENTRY CHECKPOINT</div>
+                      {/* Mobile had the same orphan under the buy buttons. */}
+                      {archivedTickets.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <button
+                            style={{ background: 'none', border: 'none', color: '#666', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0 }}
+                            onClick={() => setViewMode('archive')}
+                          >
+                            {">"} VIEW ARCHIVE
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : !loadingTickets ? (
                     <div style={{ fontSize: 11, letterSpacing: 2, lineHeight: 1.7, marginBottom: 12 }}>
@@ -1494,14 +1510,6 @@ export default function TerminalClient({
                     </div>
                   )}
 
-                  {archivedTickets.length > 0 && currentTickets.length > 0 && (
-                    <button
-                      style={{ background: 'none', border: 'none', color: '#555', fontFamily: '"Courier New", monospace', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, cursor: 'pointer', padding: 0, marginTop: 20 }}
-                      onClick={() => setViewMode('archive')}
-                    >
-                      {">"} VIEW ARCHIVE
-                    </button>
-                  )}
                 </>
               ) : (
                 <>
