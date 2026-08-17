@@ -463,8 +463,23 @@ export default function HomeClient({
   // would need innerWidth, which the server does not have, and would either
   // mismatch on hydration or shift the layout after mount.
   const mSized = showEventHero && mHeroScale !== 1;
-  const mobileWrapStyle = showEventHero ? { overflow: "visible" as const } : {};
-  const mobileRootStyle = { display: "block" as const, overflow: "visible" as const };
+  /**
+   * The overhang is why the seal cannot be allowed to take a tap. The video is
+   * position:absolute and sized to --mv-w inside a wrap only --seal-h tall, so
+   * it spills well past the wrap and over the CTA sitting var(--gap) below it.
+   * Positioned elements paint above later in-flow siblings, so it covered the
+   * button and swallowed every tap on REQUEST PARTICIPATION. The seal is
+   * decorative and wants no pointer events at any breakpoint; it is set on the
+   * wrap and on the media element both, since the media escapes the wrap's box.
+   */
+  const mobileWrapStyle = showEventHero
+    ? { overflow: "visible" as const, pointerEvents: "none" as const }
+    : {};
+  const mobileRootStyle = {
+    display: "block" as const,
+    overflow: "visible" as const,
+    pointerEvents: "none" as const,
+  };
   // Equal visible gaps: above is the frame's own glyph slack, so mirroring it
   // below needs nothing but a matching margin on the CTA.
   // The seal's height and both gaps are set in CSS now: they are solved
@@ -542,7 +557,11 @@ export default function HomeClient({
               video's size and the grid do not move. */}
           <div
             style={showEventHero
-              ? { position: "relative", display: "block", borderColor: "transparent", ...heroWrapStyle }
+              ? { position: "relative", display: "block", borderColor: "transparent",
+                  // Same reasoning as the mobile seal, applied before it can
+                  // bite: this one spills too, and nothing inside it is
+                  // interactive. The desktop CTA is clear of it today.
+                  pointerEvents: "none", ...heroWrapStyle }
               : { position: "relative", display: "block" }}
             className="home-poster-wrap"
           >
@@ -616,7 +635,14 @@ export default function HomeClient({
 
             {/* Log-in sends an SMS code; preview must stay side-effect free. */}
             {!previewMode && (
-              <div style={{ textAlign: "center", marginTop: 10, width: 352, maxWidth: "100%" }}>
+              /* The label centres on this box, so it has to track the button.
+                 On the event path the button widens to DESKTOP_CTA_W and this
+                 stayed at 352, which left LOG IN sitting 58px left of centre.
+                 maxWidth goes with it: the info column is 350 wide, so the
+                 100% that is right for 352 would clamp 468 straight back. */
+              <div style={showEventHero
+                ? { textAlign: "center", marginTop: 10, width: DESKTOP_CTA_W, maxWidth: "none" }
+                : { textAlign: "center", marginTop: 10, width: 352, maxWidth: "100%" }}>
                 <button
                   onClick={() => {
                     setMode("login");
