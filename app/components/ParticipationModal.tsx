@@ -477,6 +477,22 @@ export default function ParticipationModal({
   function priceLabel(t: TierInfo | null) {
     return t ? `$${(t.priceCents / 100).toFixed(2)}` : "—";
   }
+  const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  /**
+   * The GA order total, live.
+   *
+   * Deliberately the same base × quantity and the same rounding that
+   * handleGenerate hands to the Stripe modal, and that create-checkout applies
+   * to the charge — a second formula here is how the displayed price and the
+   * collected one drift apart. Derived rather than stored in state, so it
+   * refollows quantity, a code validating, and a code being cleared without
+   * anything having to remember to recompute it.
+   */
+  const gaDiscountPct = gaPromoValid === true && gaPromoDiscount ? gaPromoDiscount : 0;
+  const gaBaseCents = (activeTier?.priceCents ?? 0) * gaQuantity;
+  const gaTotalCents =
+    gaDiscountPct > 0 ? Math.round(gaBaseCents * (1 - gaDiscountPct / 100)) : gaBaseCents;
   function tierColor(t: number) {
     return tier === t ? "#ffffff" : "#555555";
   }
@@ -585,6 +601,34 @@ export default function ParticipationModal({
     color: "#ffffff",
     fontSize: 14,
   };
+  /** The live order total, sat directly above GENERATE. */
+  const totalBlockStyle: React.CSSProperties = {
+    borderTop: "1px solid #333",
+    paddingTop: 12,
+    marginBottom: 4,
+    fontFamily: '"Courier New", monospace',
+  };
+  const totalRowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    fontSize: isMobile ? 14 : 15,
+    letterSpacing: 2,
+    color: "#ffffff",
+  };
+  const totalStruckStyle: React.CSSProperties = {
+    color: "#666",
+    textDecoration: "line-through",
+    marginRight: 10,
+  };
+  const totalDiscountStyle: React.CSSProperties = {
+    marginTop: 6,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#ffffff",
+    textAlign: "right",
+  };
+
   const promoErrorStyle: React.CSSProperties = {
     minHeight: isMobile ? 18 : 16,
     marginTop: 8,
@@ -1167,6 +1211,25 @@ export default function ParticipationModal({
                     {gaPromoValid === false && gaPromo.trim() ? "INVALID PROMO CODE" : ""}
                   </div>
                 </div>
+
+                {activeTier && (
+                  <div style={totalBlockStyle}>
+                    <div style={totalRowStyle}>
+                      <span style={{ color: "#888" }}>TOTAL</span>
+                      <span>
+                        {gaDiscountPct > 0 && (
+                          <span style={totalStruckStyle}>{usd(gaBaseCents)}</span>
+                        )}
+                        {usd(gaTotalCents)}
+                      </span>
+                    </div>
+                    {gaDiscountPct > 0 && (
+                      <div style={totalDiscountStyle}>
+                        {gaPromo.trim().toUpperCase()} −{gaDiscountPct}%
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="signup-generate-button-wrap" style={{ marginTop: "auto", paddingTop: 14 }}>
                   <button className="cta-button" style={generateBtnStyle} onClick={handleGenerate}>

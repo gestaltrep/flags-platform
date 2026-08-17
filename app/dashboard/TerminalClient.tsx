@@ -319,6 +319,27 @@ export default function TerminalClient({
   function priceLabel(t: TierInfo | null) {
     return t ? `$${(t.priceCents / 100).toFixed(2)}` : "—";
   }
+  const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  /**
+   * The GA order total, live. Same derivation as the homepage modal's, and the
+   * same base × quantity and rounding that generateTokens hands to Stripe and
+   * that create-checkout applies to the charge, so the two entry points agree
+   * with each other and both agree with what is collected. Derived, not state,
+   * so quantity changes and a code validating or being cleared all refollow.
+   */
+  const gaDiscountPct = gaPromoValid === true && gaPromoDiscount ? gaPromoDiscount : 0;
+  const gaBaseCents = (activeTier?.priceCents ?? 0) * gaQuantity;
+  const gaTotalCents =
+    gaDiscountPct > 0 ? Math.round(gaBaseCents * (1 - gaDiscountPct / 100)) : gaBaseCents;
+  /** Unit price after the code, matching how the homepage states the tier. */
+  const gaUnitLabel = activeTier
+    ? usd(
+        gaDiscountPct > 0
+          ? Math.round(activeTier.priceCents * (1 - gaDiscountPct / 100))
+          : activeTier.priceCents
+      )
+    : "—";
 
   function vipProgressPercent() {
     return Math.max(0, Math.min(100, (vipSold / 50) * 100));
@@ -880,6 +901,35 @@ export default function TerminalClient({
   // Empty on purpose: the button's own base style is the homepage's 54/13/3.4,
   // and generateButtonStyle was shrinking it to 52/12/3.2 on mobile.
   const gaButtonStyle: React.CSSProperties = {};
+
+  /** The live order total, sat directly above GENERATE. Mirrors the homepage. */
+  const gaTotalBlockStyle: React.CSSProperties = {
+    ...(isMobile ? gaMobileInnerStyle : {}),
+    borderTop: "1px solid #333",
+    paddingTop: 12,
+    marginBottom: 4,
+    fontFamily: '"Courier New", monospace',
+  };
+  const gaTotalRowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    fontSize: isMobile ? 14 : 15,
+    letterSpacing: 2,
+    color: "#ffffff",
+  };
+  const gaTotalStruckStyle: React.CSSProperties = {
+    color: "#666",
+    textDecoration: "line-through",
+    marginRight: 10,
+  };
+  const gaTotalDiscountStyle: React.CSSProperties = {
+    marginTop: 6,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#ffffff",
+    textAlign: "right",
+  };
 
   const sendHeaderStyle: React.CSSProperties = isMobile
     ? {
@@ -1540,7 +1590,7 @@ export default function TerminalClient({
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">
-                          {activeTier.name.toUpperCase()} ACTIVE - {priceLabel(activeTier)}
+                          {activeTier.name.toUpperCase()} ACTIVE - {gaUnitLabel}
                         </span>
                       </div>
                       <div className="modal-status-line">
@@ -1657,7 +1707,7 @@ export default function TerminalClient({
                       <div className="modal-status-line">
                         <span className="modal-status-symbol">{">"}</span>
                         <span className="modal-status-text">
-                          {activeTier.name.toUpperCase()} ACTIVE - {priceLabel(activeTier)}
+                          {activeTier.name.toUpperCase()} ACTIVE - {gaUnitLabel}
                         </span>
                       </div>
                       <div className="modal-status-line">
@@ -1766,6 +1816,25 @@ export default function TerminalClient({
                   </div>
                 </div>
               </>
+            )}
+
+            {activeTier && (
+              <div style={gaTotalBlockStyle}>
+                <div style={gaTotalRowStyle}>
+                  <span style={{ color: "#888" }}>TOTAL</span>
+                  <span>
+                    {gaDiscountPct > 0 && (
+                      <span style={gaTotalStruckStyle}>{usd(gaBaseCents)}</span>
+                    )}
+                    {usd(gaTotalCents)}
+                  </span>
+                </div>
+                {gaDiscountPct > 0 && (
+                  <div style={gaTotalDiscountStyle}>
+                    {gaPromoCode.trim().toUpperCase()} −{gaDiscountPct}%
+                  </div>
+                )}
+              </div>
             )}
 
             {checkoutMessage && (
