@@ -87,7 +87,7 @@ export const HERO_SCALE_DEFAULT = 1.33;
 
 type ParticipationStep = "closed" | "chooser" | "ga" | "vip" | "table" | "phone-entry" | "otp-verify" | "checkout";
 
-/** Minimal event shape the preview needs. Public homepage passes nothing. */
+/** Minimal event shape the event layout needs. The dormant page passes nothing. */
 export type HomeEvent = {
   name: string;
   slug: string;
@@ -98,9 +98,11 @@ export type HomeEvent = {
 };
 
 /**
- * `event`, `previewMode` and `previewKey` are preview-only and default to the
- * public homepage's behaviour, so / renders exactly as it did before they
- * existed.
+ * Every prop past `isDormant` defaults to the dormant page's behaviour, so a
+ * homepage with no active event renders exactly as it did before they existed.
+ * `previewMode` and `previewKey` are the preview session alone — the banner,
+ * the no-charge checkout, and the blocks preview suppresses. What the hero and
+ * the layout key on is `showEventHero`, i.e. there being an event at all.
  */
 /**
  * The hero, in whichever of the two forms the page needs.
@@ -114,11 +116,11 @@ export type HomeEvent = {
  */
 function Poster({
   className, media, sized, mobileVisible,
-  heroRootStyle, mobileRootStyle, previewMode, heroImage,
+  heroRootStyle, mobileRootStyle, showVideo, heroImage,
 }: {
   className?: string; media: string; sized?: boolean; mobileVisible?: boolean;
   heroRootStyle?: React.CSSProperties; mobileRootStyle?: React.CSSProperties;
-  previewMode: boolean; heroImage: string | null;
+  showVideo: boolean; heroImage: string | null;
 }) {
   // The mobile hero is otherwise hidden by
   // `.home-mobile-poster-wrap > div:last-child { display: none }`, a rule
@@ -126,12 +128,12 @@ function Poster({
   // hero itself the last child. Inline display wins over it.
   const rootStyle = sized
     ? heroRootStyle
-    : mobileVisible && previewMode
+    : mobileVisible && showVideo
       ? mobileRootStyle
       : undefined;
-  // Preview only. HeroVideo is the sole thing that references the poster or
-  // the mp4, so on the public path neither is rendered, preloaded or fetched.
-  if (previewMode) {
+  // Event path only. HeroVideo is the sole thing that references the poster or
+  // the mp4, so on the dormant path neither is rendered, preloaded or fetched.
+  if (showVideo) {
     // A configured event still keeps its own image and gets no video.
     return heroImage ? (
       <HeroVideo className={className} media={media} rootStyle={rootStyle} posterSrc={heroImage} videoSrc={null} />
@@ -158,15 +160,25 @@ export default function HomeClient({
   event?: HomeEvent | null;
   previewMode?: boolean;
   previewKey?: string;
-  /** Preview-only hero sizing experiment. 1 leaves the shared CSS alone. */
+  /** Desktop hero scale. 1 leaves the shared CSS alone. */
   heroScale?: number;
-  /** Preview-only: px the seal rides above vertical centre on its slot. */
+  /** Px the seal rides above vertical centre on its slot. */
   heroLift?: number;
-  /** Preview-only mobile seal scale. 1 leaves the mobile hero as-is. */
+  /** Mobile seal scale. 1 leaves the mobile hero as-is. */
   mHeroScale?: number;
   mTypeTarget?: number;
   mGapTarget?: number;
 }) {
+  /**
+   * Whether to draw the event hero and the approved event layout: the video
+   * seal, its sizing, and every preview-derived class and inline style that
+   * composes around it. Keyed on there being an active event, NOT on being in
+   * a preview session — `previewMode` is now only the banner, the no-charge
+   * checkout and the blocks preview suppresses. With no event the whole set
+   * collapses and the dormant page renders exactly as it always has.
+   */
+  const showEventHero = !isDormant;
+
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
   const [open, setOpen] = useState(false);
@@ -420,11 +432,11 @@ export default function HomeClient({
     : "4:30 PM – 12 AM";
   const eventLocation = event ? event.location ?? "Location TBA" : "Charlotte County Fair";
 
-  // Preview-only hero sizing. The GRID IS LEFT ALONE — the poster track stays
+  // Event-path hero sizing. The GRID IS LEFT ALONE — the poster track stays
   // 590 and the info column keeps its 1x x-position. The video is simply drawn
   // larger than its slot and allowed to spill, which is safe because
   // everything outside the seal is floored to page black.
-  const heroSized = previewMode && heroScale !== 1;
+  const heroSized = showEventHero && heroScale !== 1;
   const heroW = Math.round(SLOT_W * heroScale * HERO_FRAME_ADJUST);
   // Square, matching the file, so object-fit crops nothing at all. The box
   // centre is (SLOT_H / 2 - heroLift) whatever the height, so this does not
@@ -450,8 +462,8 @@ export default function HomeClient({
   // in CSS off --mk so the cap against the viewport can use vw; doing it in JS
   // would need innerWidth, which the server does not have, and would either
   // mismatch on hydration or shift the layout after mount.
-  const mSized = previewMode && mHeroScale !== 1;
-  const mobileWrapStyle = previewMode ? { overflow: "visible" as const } : {};
+  const mSized = showEventHero && mHeroScale !== 1;
+  const mobileWrapStyle = showEventHero ? { overflow: "visible" as const } : {};
   const mobileRootStyle = { display: "block" as const, overflow: "visible" as const };
   // Equal visible gaps: above is the frame's own glyph slack, so mirroring it
   // below needs nothing but a matching margin on the CTA.
@@ -478,10 +490,10 @@ export default function HomeClient({
       }
     : undefined;
 
-  // Collapses to nothing outside preview — a bare <div> would still emit
+  // Collapses to nothing on the dormant page — a bare <div> would still emit
   // tags and break the byte-identical dormant page.
-  const DesktopCentre: ElementType = previewMode ? "div" : Fragment;
-  const desktopCentreProps = previewMode
+  const DesktopCentre: ElementType = showEventHero ? "div" : Fragment;
+  const desktopCentreProps = showEventHero
     ? {
         style: {
           minHeight: `calc(100vh - ${DESKTOP_NAV_H}px)`,
@@ -518,26 +530,34 @@ export default function HomeClient({
         </div>
       )}
 
-      {/* Preview centres the hero unit — seal plus info column — between the
-          navbar and the fold. The flex sits on an inner wrapper, not on
-          .home-desktop: an inline display would beat the media query that
-          hides it below 900px and leak the desktop layout onto mobile. */}
-      <main className="home-desktop" style={previewMode ? { marginTop: 0 } : undefined}>
+      {/* The event layout centres the hero unit — seal plus info column —
+          between the navbar and the fold. The flex sits on an inner wrapper,
+          not on .home-desktop: an inline display would beat the media query
+          that hides it below 900px and leak the desktop layout onto mobile. */}
+      <main className="home-desktop" style={showEventHero ? { marginTop: 0 } : undefined}>
         <DesktopCentre {...desktopCentreProps}>
         <div className={heroSized ? "home-desktop-grid home-desktop-grid-preview" : "home-desktop-grid"} style={infoVars}>
-          {/* Preview drops the frame and the corner label so the seal floats.
-              borderColor rather than border keeps the box metrics identical,
-              so the video's size and the grid do not move. */}
+          {/* The event layout drops the frame so the seal floats. borderColor
+              rather than border keeps the box metrics identical, so the
+              video's size and the grid do not move. */}
           <div
-            style={previewMode
+            style={showEventHero
               ? { position: "relative", display: "block", borderColor: "transparent", ...heroWrapStyle }
               : { position: "relative", display: "block" }}
             className="home-poster-wrap"
           >
             <Poster className="home-poster-image" media="(min-width: 900px)" sized
               heroRootStyle={heroRootStyle} mobileRootStyle={mobileRootStyle}
-              previewMode={previewMode} heroImage={event?.hero_image ?? null} />
-            {!previewMode && (
+              showVideo={showEventHero} heroImage={event?.hero_image ?? null} />
+            {/* Dormant only. The flyer wants its corner label; the video hero
+                does not — the frame's border is transparent there so the seal
+                floats, and a label painted over the bottom-right of the wrap
+                sits on top of the video. Keyed on showEventHero, not
+                previewMode, so the live page matches preview.
+                Mobile keeps rendering its label and lets the existing
+                `.home-mobile-poster-wrap > div:last-child { display: none }`
+                rule hide it. */}
+            {!showEventHero && (
               <div style={{
                 position: "absolute",
                 bottom: 3,
@@ -585,9 +605,9 @@ export default function HomeClient({
             <div className="home-location-desktop">{eventLocation}</div>
 
             <button
-              className={previewMode ? "cta-button cta-preview" : "cta-button"}
+              className={showEventHero ? "cta-button cta-preview" : "cta-button"}
               onClick={() => setParticipationStep("chooser")}
-              style={previewMode
+              style={showEventHero
                 ? { width: DESKTOP_CTA_W, maxWidth: "none" }
                 : { width: 352, maxWidth: "100%" }}
             >
@@ -630,15 +650,15 @@ export default function HomeClient({
       </main>
 
       <main
-        className={previewMode ? "home-mobile home-mobile-preview" : "home-mobile"}
-        style={previewMode
+        className={showEventHero ? "home-mobile home-mobile-preview" : "home-mobile"}
+        style={showEventHero
           ? ({ "--mk": String(mHeroScale),
                "--mtype": (mTypeTarget / MOBILE_TYPE_BASE_INK).toFixed(5),
                "--mgap": `${mGapTarget}px` } as React.CSSProperties)
           : undefined}
       >
-        <div className="home-mobile-frame" style={previewMode ? { borderColor: "transparent" } : undefined}>
-          <div className={previewMode ? "home-mobile-text home-mobile-text-ls" : "home-mobile-text"}>
+        <div className="home-mobile-frame" style={showEventHero ? { borderColor: "transparent" } : undefined}>
+          <div className={showEventHero ? "home-mobile-text home-mobile-text-ls" : "home-mobile-text"}>
             <div className="home-date-mobile">{eventDate.toUpperCase()}</div>
             <div className="home-time-mobile">{eventTime}</div>
             {/* The extra class is added only on the event-driven render, so the
@@ -649,17 +669,17 @@ export default function HomeClient({
           </div>
         </div>
 
-        {/* Preview also clears this wrapper's black background — an opaque
-            backdrop would defeat the screen blend on mobile. */}
+        {/* The event layout also clears this wrapper's black background — an
+            opaque backdrop would defeat the screen blend on mobile. */}
         <div
-          className={previewMode ? "home-mobile-poster-wrap home-mobile-poster-wrap-preview" : "home-mobile-poster-wrap"}
-          style={previewMode
+          className={showEventHero ? "home-mobile-poster-wrap home-mobile-poster-wrap-preview" : "home-mobile-poster-wrap"}
+          style={showEventHero
             ? { position: "relative", borderColor: "transparent", background: "transparent", ...mobileWrapStyle }
             : { position: "relative" }}
         >
           <Poster className="home-mobile-poster" media="(max-width: 899px)" mobileVisible
             heroRootStyle={heroRootStyle} mobileRootStyle={mobileRootStyle}
-            previewMode={previewMode} heroImage={event?.hero_image ?? null} />
+            showVideo={showEventHero} heroImage={event?.hero_image ?? null} />
           {isDormant && (
             <div style={{
               position: "absolute",
@@ -704,7 +724,7 @@ export default function HomeClient({
 
         <div className="home-mobile-cta-wrap" style={mobileCtaStyle}>
           <button
-            className={previewMode ? "cta-button cta-preview" : "cta-button"}
+            className={showEventHero ? "cta-button cta-preview" : "cta-button"}
             onClick={() => setParticipationStep("chooser")}
             style={{
               width: "100%",
