@@ -4,11 +4,11 @@ import Footer from "./components/Footer";
 import { ReactNode } from "react";
 
 export const metadata = {
-  title: "Signo Research Group — Electronic Music Event Ticketing",
-  description: "Signo Research Group is a ticketing platform for electronic music events in Southwest Florida. We send event updates, ticketing information, and announcements by SMS to members who opt in.",
+  title: "RAVE_Exp_1.html — Signo Research Group",
+  description: "September 26 | Disco Bean Coffee Company | Sunken Frequencies, JuLo, Lemon Tech, Dada Cricket, Oxidose | GA tokens in Terminal",
   openGraph: {
-    title: "Signo Research Group — Electronic Music Event Ticketing",
-    description: "Signo Research Group is a ticketing platform for electronic music events in Southwest Florida. We send event updates, ticketing information, and announcements by SMS to members who opt in.",
+    title: "RAVE_Exp_1.html — Signo Research Group",
+    description: "September 26 | Disco Bean Coffee Company | Sunken Frequencies, JuLo, Lemon Tech, Dada Cricket, Oxidose | GA tokens in Terminal",
     siteName: "Signo Research Group",
     type: "website",
     url: "https://signoresearchgroup.com",
