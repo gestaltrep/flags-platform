@@ -188,16 +188,23 @@ export async function GET(req: Request) {
   const transactions = byTier.reduce((s, t) => s + t.transactions, 0);
 
   // ── Sales by promo code ──────────────────────────────────────────────────
-  // promo_code_uses carries no event_id, so uses are windowed from the event
-  // row's creation time. Override with ?since=<ISO8601> if a tighter window is
-  // needed. Figures are attributed to this event on that basis only.
+  // Also the basis for the kickback payout: it is these per-code SAVED and
+  // TICKETS figures that the payout is settled from, so both are fixed by
+  // filtering here — there is no second query to change.
+  //
+  // Redemptions written by the stripe webhook carry event_id and are matched
+  // on it exactly. Rows predating that stamp have event_id null and are still
+  // windowed from the event row's creation time, or ?since=<ISO8601>; without
+  // that arm every historical event would report no promo sales at all.
+  // The two arms are disjoint, so no row can be counted twice.
   const since = url.searchParams.get("since") || event.created_at;
   const { data: useRows } = await supabase
     .from("promo_code_uses")
-    .select("ticket_quantity, amount_paid, amount_saved, created_at, promo_codes(code, label)")
-    .gte("created_at", since);
+    .select("event_id, ticket_quantity, amount_paid, amount_saved, created_at, promo_codes(code, label)")
+    .or(`event_id.eq.${event.id},and(event_id.is.null,created_at.gte."${since}")`);
 
   type UseRow = {
+    event_id: string | null;
     ticket_quantity: number;
     amount_paid: number;
     amount_saved: number;
@@ -208,7 +215,14 @@ export async function GET(req: Request) {
     string,
     { code: string; label: string | null; uses: number; tickets: number; paidCents: number; savedCents: number }
   >();
+  // How each row was attributed. Until a live purchase is seen to arrive
+  // stamped, this is the evidence for whether the webhook write is landing —
+  // and so for whether event_id can be made NOT NULL.
+  let stampedRows = 0;
+  let windowedRows = 0;
   for (const row of (useRows as UseRow[] | null) ?? []) {
+    if (row.event_id) stampedRows += 1;
+    else windowedRows += 1;
     const promo = Array.isArray(row.promo_codes) ? row.promo_codes[0] : row.promo_codes;
     const code = promo?.code ?? "(unknown)";
     const entry = byCodeMap.get(code) ?? {
@@ -248,6 +262,7 @@ export async function GET(req: Request) {
     untieredPaid: untiered,
     salesByCode: byCode,
     promoWindowSince: since,
+    promoAttribution: { byEventId: stampedRows, byCreatedAtWindow: windowedRows },
     totals: {
       paid: totalPaid,
       capacity,
@@ -307,7 +322,9 @@ export async function GET(req: Request) {
   lines.push("");
   lines.push(`PAID ${totalPaid} / CAPACITY ${capacity}   (${Math.max(0, capacity - totalPaid)} remaining)`);
   lines.push("");
-  lines.push(`SALES BY CODE   (promo uses since ${since})`);
+  lines.push(
+    `SALES BY CODE   (${stampedRows} by event_id, ${windowedRows} by created_at since ${since})`
+  );
   if (byCode.length === 0) {
     lines.push("  (none)");
   } else {

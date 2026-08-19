@@ -149,6 +149,12 @@ export async function POST(req: Request) {
     if (promoCodeId) {
       const { error: promoUseError } = await supabase.from("promo_code_uses").insert({
         promo_code_id: promoCodeId,
+        // The same event the tickets above are minted against, off the same
+        // metadata value, so a redemption and the tokens it paid for can never
+        // disagree about which event they belong to. Reporting used to infer
+        // this from created_at against the sales window, which stops being
+        // true the moment two events sell at once.
+        event_id: eventId,
         user_id: userId,
         ticket_quantity: quantity,
         amount_paid: paymentIntent.amount,
