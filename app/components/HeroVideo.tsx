@@ -444,8 +444,17 @@ export default function HeroVideo({
           back at full opacity for the life of the component, which is the point
           of having a floor at all: the video then crossfades as a plain alpha
           blend between two near-identical images rather than dipping through a
-          transparent group. Same 220ms linear as the video, so the two ramp
-          together and the reveal reads as one fade rather than two. */}
+          transparent group.
+
+          Deliberately NOT transitioned. The canvas unmounts the instant phase
+          leaves "chaos", so any fade here is a window with the glitch already
+          gone and the floor not yet arrived — 220ms of black in the middle of
+          the reveal, the seal vanishing right before the video starts. Snapping
+          to 1 in the same render that drops the canvas closes that window. It is
+          seamless because the glitch has already resolved to a near-clean seal by
+          its last epilogue frame, so the snap lands on the image it was already
+          showing. The video keeps its own 220ms crossfade and now fades in over
+          an opaque floor, which is what the floor is for. */}
       <img
         src={posterSrc}
         alt=""
@@ -454,7 +463,6 @@ export default function HeroVideo({
           position: "absolute",
           inset: 0,
           opacity: phase === "chaos" ? 0 : 1,
-          transition: "opacity 220ms linear",
         }}
       />
 
