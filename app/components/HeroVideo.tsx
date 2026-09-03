@@ -364,49 +364,9 @@ export default function HeroVideo({
     videoRef.current?.play().catch(() => {});
   }, [showVideo]);
 
-  /**
-   * Pre-hydration: SSR and the first paint, before we know which breakpoint is
-   * live or whether motion is wanted.
-   *
-   * Black, not the poster. Painting the finished seal here and then tearing it
-   * apart is the sequence backwards — by the time the glitch resolves there is
-   * nothing left to reveal, because the viewer has already seen the answer. The
-   * <img> stays in the tree at zero opacity so the fetch and decode still start
-   * at first paint; only its pixels are withheld. It is absolutely positioned so
-   * it cannot size the box, leaving the noscript copy to do that.
-   *
-   * No-JS never reaches the glitch at all — nothing mounts, so this branch is
-   * the whole render forever. Those readers get the poster outright.
-   */
-  if (!mounted) {
-    return (
-      <div
-        className={className}
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          background: "transparent",
-          ...(videoSrc ? HERO_TREATMENT : {}),
-          ...rootStyle,
-        }}
-      >
-        <img
-          src={posterSrc}
-          alt=""
-          style={{ ...coverStyle, position: "absolute", inset: 0, opacity: 0 }}
-        />
-        <noscript>
-          <img src={posterSrc} alt="" style={coverStyle} />
-        </noscript>
-      </div>
-    );
-  }
-
-  // The genuine still-only renders: the instance whose breakpoint is not live,
-  // a configured event supplying its own image, and the reduced-motion or
-  // slow-connection bail. None of these ever run a glitch, so there is no
-  // reveal to spoil and the poster is simply the render.
-  if (!active || !videoSrc || (stillOnly && phase === "settled")) {
+  // Pre-mount (SSR + first paint), the inactive instance, or a still-only
+  // render: the poster on its own.
+  if (!mounted || !active || !videoSrc || (stillOnly && phase === "settled")) {
     return (
       <div
         className={className}
@@ -438,24 +398,14 @@ export default function HeroVideo({
         ...rootStyle,
       }}
     >
-      {/* Floor. Withheld while the glitch runs — it is the image the glitch is
-          resolving towards, so showing it underneath would give the answer away
-          and leave the reveal with nothing to do. From "settled" onward it is
-          back at full opacity for the life of the component, which is the point
-          of having a floor at all: the video then crossfades as a plain alpha
-          blend between two near-identical images rather than dipping through a
-          transparent group. Same 220ms linear as the video, so the two ramp
-          together and the reveal reads as one fade rather than two. */}
+      {/* Floor. Stays at full opacity for the life of the component: the video
+          is opaque and covers it, and holding it here means the crossfade is a
+          plain alpha blend between two near-identical images rather than a dip
+          through a transparent group. */}
       <img
         src={posterSrc}
         alt=""
-        style={{
-          ...coverStyle,
-          position: "absolute",
-          inset: 0,
-          opacity: phase === "chaos" ? 0 : 1,
-          transition: "opacity 220ms linear",
-        }}
+        style={{ ...coverStyle, position: "absolute", inset: 0 }}
       />
 
       {phase === "chaos" && <GlitchCanvas lqipSrc={posterSrc} />}
