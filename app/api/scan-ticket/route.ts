@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { getOperativeEvent } from "@/lib/events";
 
 export async function POST(req: Request) {
   try {
@@ -43,6 +44,34 @@ export async function POST(req: Request) {
 
     if (error || !ticket) {
       return Response.json({ success: false, message: "Token not found." }, { status: 404 });
+    }
+
+    /**
+     * Scope the door to the event it is actually running.
+     *
+     * Without this a code validates on the strength of existing, which lets any
+     * unclaimed token from any past event through this door — 27 of them are
+     * outstanding from event one alone. Checked before refunded and claimed on
+     * purpose: a ticket for another event is not "already used" here, and the
+     * reason on the scanner should say what is actually wrong with it.
+     *
+     * No operative event means nothing can be admitted. Failing closed is the
+     * only safe direction — the alternative is admitting everything.
+     */
+    const operative = await getOperativeEvent();
+
+    if (!operative) {
+      return Response.json(
+        { success: false, message: "No event is currently open for check-in." },
+        { status: 409 }
+      );
+    }
+
+    if (ticket.event_id !== operative.id) {
+      return Response.json(
+        { success: false, message: "This ticket is for a different event." },
+        { status: 409 }
+      );
     }
 
     if (ticket.refunded_at) {

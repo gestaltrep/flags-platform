@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { WAIVER_BODY, WAIVER_VERSION } from "@/lib/waiver";
-import { getLiveEvent } from "@/lib/events";
+import { getOperativeEvent } from "@/lib/events";
 
 function admin() {
   return createClient(
@@ -31,17 +31,21 @@ async function authStaff(req: Request, supabase: SupabaseAdmin) {
 }
 
 /**
- * Server-side count of under-21 admissions for the live event. Counts every
- * admitted token including comps — this is the venue settlement input.
+ * Server-side count of under-21 admissions for the event being run. Counts
+ * every admitted token including comps — this is the venue settlement input.
+ *
+ * Keyed on the operative event, not getLiveEvent: while the row is still
+ * 'upcoming' getLiveEvent returns null and this reported 0 all night, which is
+ * the number the venue fee is settled from.
  */
 async function under21Count(supabase: SupabaseAdmin): Promise<number> {
-  const live = await getLiveEvent();
-  if (!live) return 0;
+  const operative = await getOperativeEvent();
+  if (!operative) return 0;
 
   const { count } = await supabase
     .from("ticket_codes")
     .select("*", { count: "exact", head: true })
-    .eq("event_id", live.id)
+    .eq("event_id", operative.id)
     .eq("claimed", true)
     .eq("admitted_under_21", true);
 
@@ -99,6 +103,28 @@ export async function POST(req: Request) {
 
     if (ticketError || !ticket) {
       return Response.json({ success: false, message: "Invalid ticket." }, { status: 404 });
+    }
+
+    /**
+     * Same scope check as /api/scan-ticket, and deliberately in the same place
+     * with the same message: a scan and the admit that follows it must fail for
+     * the same reason, or the door gets two different answers about one code.
+     * This is the one that actually matters — scan only advises, this claims.
+     */
+    const operative = await getOperativeEvent();
+
+    if (!operative) {
+      return Response.json(
+        { success: false, message: "No event is currently open for check-in." },
+        { status: 409 }
+      );
+    }
+
+    if (ticket.event_id !== operative.id) {
+      return Response.json(
+        { success: false, message: "This ticket is for a different event." },
+        { status: 409 }
+      );
     }
 
     if (ticket.refunded_at) {

@@ -64,6 +64,26 @@ export async function getLiveEvent(): Promise<Event | null> {
 }
 
 /**
+ * The event the door is running, whichever side of the status split it is on.
+ *
+ * getLiveEvent matches only 'live' and getActiveSalesEvent only 'upcoming', so
+ * anything keyed on one of them alone goes blind the moment the event is on the
+ * other. That is not a theoretical gap: doors open while the row is still
+ * 'upcoming', and the status is usually flipped to 'live' partway through the
+ * night, if at all. Check-in has to work identically either side of that flip,
+ * so it resolves the event here instead.
+ *
+ * 'live' wins when both exist, since a row explicitly marked live is a
+ * deliberate statement about which event is happening now.
+ *
+ * Sales deliberately do NOT use this — they stay on getActiveSalesEvent, so
+ * flipping an event to live closes its sales rather than reopening them.
+ */
+export async function getOperativeEvent(): Promise<Event | null> {
+  return (await getLiveEvent()) ?? (await getActiveSalesEvent());
+}
+
+/**
  * The most recent draft event. Draft events are invisible to
  * getActiveSalesEvent and to every public list; this is the event the
  * token-gated sales preview renders.
