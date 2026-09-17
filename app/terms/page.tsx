@@ -35,7 +35,7 @@ export default function Terms() {
           <strong>"Ticket"</strong> means any entry token, pass, wristband, table reservation, or other admission credential purchased through or issued by the Site.
         </li>
         <li>
-          <strong>"Event"</strong> means any event, performance, gathering, or experience offered for sale through the Site, including without limitation RAVE_Initiation.html scheduled for May 30, 2026 at Charlotte County Fair Association in Port Charlotte, Florida.
+          <strong>"Event"</strong> means any event, performance, gathering, or experience offered for sale through the Site, including without limitation RAVE_Exp_1.html scheduled for September 26, 2026 at Disco Bean Coffee Company in Bonita Springs, Florida.
         </li>
       </ul>
       <p>
@@ -408,7 +408,7 @@ export default function Terms() {
 
       <h3>15.1 Our Intellectual Property</h3>
       <p>
-        All content on the Site and at the Event, including without limitation the names "Signo Research Group," "Signo," "Azazel," "RAVE_Initiation," associated logos, design elements, artwork, posters, promotional materials, lineup graphics, written content, audiovisual materials, and the selection and arrangement thereof, is the property of Signo Research Group LLC or its licensors and is protected by United States and international copyright, trademark, and other intellectual property laws.
+        All content on the Site and at the Event, including without limitation the names "Signo Research Group," "Signo," "Azazel," "RAVE_Initiation," "RAVE_Exp_1," associated logos, design elements, artwork, posters, promotional materials, lineup graphics, written content, audiovisual materials, and the selection and arrangement thereof, is the property of Signo Research Group LLC or its licensors and is protected by United States and international copyright, trademark, and other intellectual property laws.
       </p>
 
       <h3>15.2 Limited License</h3>
