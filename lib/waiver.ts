@@ -1,4 +1,4 @@
-export const WAIVER_VERSION = "rave-initiation-2026-05-30-v1";
+export const WAIVER_VERSION = "rave-exp-1-2026-09-26-v1";
 
 export const WAIVER_BODY = `LIABILITY WAIVER, RELEASE, ASSUMPTION OF RISK, AND INDEMNITY AGREEMENT
 
@@ -22,7 +22,7 @@ Any venue owner, landlord, lessor, security company, emergency or medical provid
 
 5. Released Parties
 
-For purposes of this Agreement, "Released Parties" means Organizer; the Service Providers (Seativa Entertainment LLC, Signo Research Group LLC, 13th Tribe Inc., and Gestalt LLC); Charlotte County Fair Association, Inc.; the event venue; property owner; landlord; lessor; event staff; security providers; emergency or medical personnel; contractors; subcontractors; volunteers; sponsors; artists; performers; vendors; and each of their respective owners, members, managers, officers, directors, employees, representatives, successors, and assigns.
+For purposes of this Agreement, "Released Parties" means Organizer; the Service Providers (Seativa Entertainment LLC, Signo Research Group LLC, 13th Tribe Inc., and Gestalt LLC); Disco Bean Coffee Company, located at 9124 Bonita Beach Rd SE, Bonita Springs, Florida 34135; the event venue; property owner; landlord; lessor; event staff; security providers; emergency or medical personnel; contractors; subcontractors; volunteers; sponsors; artists; performers; vendors; and each of their respective owners, members, managers, officers, directors, employees, representatives, successors, and assigns.
 
 6. Age Representation
 
@@ -118,7 +118,7 @@ I understand that the event environment may change rapidly and that Organizer do
 
 25. Governing Law and Venue
 
-This Agreement is governed by the laws of the State of Florida. Any dispute arising out of or related to this Agreement or the event shall be brought exclusively in the state courts located in Charlotte County, Florida, or, if federal jurisdiction exists, the United States District Court for the Middle District of Florida, Fort Myers Division.
+This Agreement is governed by the laws of the State of Florida. Any dispute arising out of or related to this Agreement or the event shall be brought exclusively in the state courts located in Lee County, Florida, or, if federal jurisdiction exists, the United States District Court for the Middle District of Florida, Fort Myers Division.
 
 26. Severability
 
