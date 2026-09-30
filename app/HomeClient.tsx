@@ -116,11 +116,12 @@ export type HomeEvent = {
  */
 function Poster({
   className, media, sized, mobileVisible,
-  heroRootStyle, mobileRootStyle, showVideo, heroImage,
+  heroRootStyle, mobileRootStyle, showVideo, heroImage, onSettled,
 }: {
   className?: string; media: string; sized?: boolean; mobileVisible?: boolean;
   heroRootStyle?: React.CSSProperties; mobileRootStyle?: React.CSSProperties;
   showVideo: boolean; heroImage: string | null;
+  onSettled?: () => void;
 }) {
   // The mobile hero is otherwise hidden by
   // `.home-mobile-poster-wrap > div:last-child { display: none }`, a rule
@@ -136,9 +137,9 @@ function Poster({
   if (showVideo) {
     // A configured event still keeps its own image and gets no video.
     return heroImage ? (
-      <HeroVideo className={className} media={media} rootStyle={rootStyle} posterSrc={heroImage} videoSrc={null} />
+      <HeroVideo className={className} media={media} rootStyle={rootStyle} posterSrc={heroImage} videoSrc={null} onSettled={onSettled} />
     ) : (
-      <HeroVideo className={className} media={media} rootStyle={rootStyle} />
+      <HeroVideo className={className} media={media} rootStyle={rootStyle} onSettled={onSettled} />
     );
   }
   // Public dormant path — unchanged.
@@ -147,6 +148,7 @@ function Poster({
 
 export default function HomeClient({
   isDormant,
+  completed = false,
   event = null,
   previewMode = false,
   previewKey = "",
@@ -157,6 +159,7 @@ export default function HomeClient({
   mGapTarget = MOBILE_GAP_DEFAULT,
 }: {
   isDormant: boolean;
+  completed?: boolean;
   event?: HomeEvent | null;
   previewMode?: boolean;
   previewKey?: string;
@@ -179,6 +182,7 @@ export default function HomeClient({
    */
   const showEventHero = !isDormant;
 
+  const [heroSettled, setHeroSettled] = useState(false);
   const [participationStep, setParticipationStep] = useState<ParticipationStep>("closed");
 
   const [open, setOpen] = useState(false);
@@ -567,7 +571,8 @@ export default function HomeClient({
           >
             <Poster className="home-poster-image" media="(min-width: 900px)" sized
               heroRootStyle={heroRootStyle} mobileRootStyle={mobileRootStyle}
-              showVideo={showEventHero} heroImage={event?.hero_image ?? null} />
+              showVideo={showEventHero} heroImage={event?.hero_image ?? null}
+              onSettled={() => setHeroSettled(true)} />
             {/* Dormant only. The flyer wants its corner label; the video hero
                 does not — the frame's border is transparent there so the seal
                 floats, and a label painted over the bottom-right of the wrap
@@ -614,6 +619,37 @@ export default function HomeClient({
                   </span>
                 </div>
                 <div style={{ height: 1, background: "#888" }} />
+              </div>
+            )}
+            {completed && (
+              <div style={{
+                position: "absolute",
+                top: heroSized ? heroTop + heroH / 2 : "50%",
+                left: heroSized ? (heroLeftPx ?? heroLeft) + heroW / 2 : "50%",
+                transform: `translate(-50%, -50%) scale(${heroSettled ? 1 : 0.94})`,
+                opacity: heroSettled ? 1 : 0,
+                transition: "opacity 450ms ease, transform 450ms cubic-bezier(.2,.8,.2,1)",
+                width: heroSized ? Math.round(heroW * 0.80) : "100%",
+                pointerEvents: "none",
+                zIndex: 10,
+              }}>
+                <div style={{
+                  border: "1px solid #888",
+                  background: "rgba(0,0,0,0.82)",
+                  padding: "22px 0",
+                  textAlign: "center",
+                }}>
+                  <span style={{
+                    color: "white",
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    fontWeight: 900,
+                    fontSize: 36,
+                    letterSpacing: "0.02em",
+                    textTransform: "uppercase",
+                  }}>
+                    EXP_1 COMPLETE
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -705,7 +741,8 @@ export default function HomeClient({
         >
           <Poster className="home-mobile-poster" media="(max-width: 899px)" mobileVisible
             heroRootStyle={heroRootStyle} mobileRootStyle={mobileRootStyle}
-            showVideo={showEventHero} heroImage={event?.hero_image ?? null} />
+            showVideo={showEventHero} heroImage={event?.hero_image ?? null}
+            onSettled={() => setHeroSettled(true)} />
           {isDormant && (
             <div style={{
               position: "absolute",
@@ -730,6 +767,38 @@ export default function HomeClient({
                 </span>
               </div>
               <div style={{ height: 1, background: "#888" }} />
+            </div>
+          )}
+          {completed && (
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: `translate(-50%, -50%) scale(${heroSettled ? 1 : 0.94})`,
+              opacity: heroSettled ? 1 : 0,
+              transition: "opacity 450ms ease, transform 450ms cubic-bezier(.2,.8,.2,1)",
+              width: "78%",
+              pointerEvents: "none",
+              zIndex: 10,
+            }}>
+              <div style={{
+                border: "1px solid #888",
+                background: "rgba(0,0,0,0.82)",
+                padding: "18px 0",
+                textAlign: "center",
+                lineHeight: 1,
+              }}>
+                <span style={{
+                  color: "white",
+                  fontFamily: "Arial, Helvetica, sans-serif",
+                  fontWeight: 900,
+                  fontSize: 24,
+                  letterSpacing: "0.02em",
+                  textTransform: "uppercase",
+                }}>
+                  EXP_1 COMPLETE
+                </span>
+              </div>
             </div>
           )}
           {!previewMode && (
@@ -798,7 +867,7 @@ export default function HomeClient({
           step={participationStep}
           onClose={() => setParticipationStep("closed")}
           onStepChange={(s) => setParticipationStep(s)}
-          isDormant={isDormant}
+          isDormant={isDormant || completed}
           previewMode={previewMode}
           previewKey={previewKey}
         />

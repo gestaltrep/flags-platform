@@ -297,6 +297,7 @@ export default function HeroVideo({
   media,
   className,
   rootStyle,
+  onSettled,
 }: {
   posterSrc?: string;
   /** null renders a still hero with no video at all. */
@@ -306,6 +307,7 @@ export default function HeroVideo({
   className?: string;
   /** Preview-only size override, merged last so it beats the shared class. */
   rootStyle?: React.CSSProperties;
+  onSettled?: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>("chaos");
   const [mounted, setMounted] = useState(false);
@@ -338,6 +340,10 @@ export default function HeroVideo({
     const t = setTimeout(() => setPhase("settled"), TOTAL_DURATION_MS);
     return () => clearTimeout(t);
   }, [active]);
+
+  useEffect(() => {
+    if (phase === "settled") onSettled?.();
+  }, [phase]);
 
   // Buffer during the glitch. The attribute stays "metadata" so the SSR markup
   // promises nothing; buffering is opted into here, only on the live instance.

@@ -99,6 +99,23 @@ export async function getMostRecentDraftEvent(): Promise<Event | null> {
   return (data as Event | null) ?? null;
 }
 
+/**
+ * The most recent event whose run is over — status 'archived' or 'locked',
+ * newest by start_time. Drives the homepage's post-show state: when nothing is
+ * taking sales, the homepage renders THIS event's hero with the completion
+ * banner, not the hardcoded dormant flyer.
+ */
+export async function getMostRecentCompletedEvent(): Promise<Event | null> {
+  const { data } = await admin()
+    .from("events")
+    .select("*")
+    .in("status", ["archived", "locked"])
+    .order("start_time", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as Event | null) ?? null;
+}
+
 /** Direct lookup by primary key. */
 export async function getEventById(id: string): Promise<Event | null> {
   const { data } = await admin()
