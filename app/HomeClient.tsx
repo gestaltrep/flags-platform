@@ -146,6 +146,14 @@ function Poster({
   return <HeroGlitch className={className} />;
 }
 
+/**
+ * Mobile EXP_1 COMPLETE banner size, as a fraction of the seal's width
+ * (--mv-w). The type is 0.088 of the box and the padding 0.066, so this one
+ * number scales all three. The old fixed banner (271px box, 24px type at a
+ * 504px seal) was about 0.54. Options shown to Enoch: A 0.60, B 0.66, C 0.72.
+ */
+const MOBILE_COMPLETE_SCALE = 0.66;
+
 export default function HomeClient({
   isDormant,
   completed = false,
@@ -777,14 +785,17 @@ export default function HomeClient({
               transform: `translate(-50%, -50%) scale(${heroSettled ? 1 : 0.94})`,
               opacity: heroSettled ? 1 : 0,
               transition: "opacity 450ms ease, transform 450ms cubic-bezier(.2,.8,.2,1)",
-              width: "78%",
+              // Sized off the seal's own width (--mv-w, set on .home-mobile-preview),
+              // not the fixed 350px wrap, and held 12px clear of the screen edges.
+              "--xb": MOBILE_COMPLETE_SCALE,
+              width: "min(calc(var(--mv-w, 336px) * var(--xb)), calc(100vw - 24px))",
               pointerEvents: "none",
               zIndex: 10,
-            }}>
+            } as React.CSSProperties}>
               <div style={{
                 border: "1px solid #888",
                 background: "rgba(0,0,0,0.82)",
-                padding: "18px 0",
+                padding: "clamp(16px, calc(var(--mv-w, 336px) * var(--xb) * 0.066), 30px) 0",
                 textAlign: "center",
                 lineHeight: 1,
               }}>
@@ -792,7 +803,7 @@ export default function HomeClient({
                   color: "white",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontWeight: 900,
-                  fontSize: 24,
+                  fontSize: "clamp(22px, calc(var(--mv-w, 336px) * var(--xb) * 0.088), 40px)",
                   letterSpacing: "0.02em",
                   textTransform: "uppercase",
                 }}>

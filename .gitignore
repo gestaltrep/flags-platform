@@ -42,3 +42,6 @@ next-env.d.ts
 
 .vercel
 dev-server.log
+
+# local-only records preview media (scripts/build-records-preview.mjs)
+/public/records-preview/

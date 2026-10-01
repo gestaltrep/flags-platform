@@ -34,15 +34,30 @@ export async function GET(
 
   const supabase = serviceClient();
 
-  const { data: blob, error } = await supabase.storage
-    .from("records")
-    .download(objectKey);
+  // DEV ONLY: with RECORDS_PREVIEW=1 a playlist that exists in the local
+  // preview folder is read from disk instead of the bucket (see hlsPreview.ts).
+  // The NODE_ENV test is inlined by the build, so production compiles this, and
+  // the import, out. Everything below rewrites the playlist the same way either
+  // way; only where a segment line points differs.
+  const localPlaylist =
+    process.env.NODE_ENV !== "production" && process.env.RECORDS_PREVIEW === "1"
+      ? await (await import("./hlsPreview")).readLocalPlaylist(objectKey)
+      : null;
 
-  if (error || !blob) {
-    return new Response("Not Found", { status: 404 });
+  let text: string;
+  if (localPlaylist !== null) {
+    text = localPlaylist;
+  } else {
+    const { data: blob, error } = await supabase.storage
+      .from("records")
+      .download(objectKey);
+
+    if (error || !blob) {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    text = await blob.text();
   }
-
-  const text = await blob.text();
   const lines = text.split("\n");
   // Directory containing this playlist — used to build sibling paths
   const dir = segments.slice(0, -1).join("/");
@@ -59,7 +74,9 @@ export async function GET(
   }
 
   let signedUrls: string[] = [];
-  if (tsPaths.length > 0) {
+  if (localPlaylist !== null) {
+    signedUrls = tsPaths.map((p) => `/records-preview/${p}`);
+  } else if (tsPaths.length > 0) {
     const { data: signed } = await supabase.storage
       .from("records")
       .createSignedUrls(tsPaths, 10800);

@@ -16,6 +16,9 @@ function formatDate(iso: string | null): string {
   });
 }
 
+/** The one event whose records page opens with the installation embed. */
+const EXP_1_EMBED_SLUG = "rave-exp-1-2026-09";
+
 type EventRecord = {
   id: string;
   kind: string;
@@ -53,6 +56,15 @@ export default async function RecordDetailPage({
     .maybeSingle();
 
   if (!event) notFound();
+
+  // DEV ONLY: RECORDS_PREVIEW=1 renders an event's gallery from a local manifest
+  // and media on disk (see recordsPreview.ts) instead of Supabase. The NODE_ENV
+  // test is inlined by the build, so production compiles this, and the import,
+  // out entirely.
+  const preview =
+    process.env.NODE_ENV !== "production" && process.env.RECORDS_PREVIEW === "1"
+      ? await (await import("./recordsPreview")).loadRecordsPreview(event.slug)
+      : null;
 
   const { data: records } = await supabase
     .from("records")
@@ -97,7 +109,7 @@ export default async function RecordDetailPage({
     })
   );
 
-  const validRecords = recordsWithUrls.filter(
+  const validRecords = preview ?? recordsWithUrls.filter(
     (r): r is { record: EventRecord; signedUrl: string; signedPosterUrl: string | null; index: number } =>
       r !== null
   );
@@ -166,6 +178,19 @@ export default async function RecordDetailPage({
         )}
         <div style={{ height: 1, background: "#333", marginTop: 8 }} />
       </div>
+
+      {/* The live installation, above the gallery. A same-origin static file:
+          see .records-embed in globals.css for how the frame is sized. */}
+      {event.slug === EXP_1_EMBED_SLUG && (
+        <div className="records-embed">
+          <iframe
+            src="/embed/RAVE_Exp_1_records.html"
+            title="RAVE_Exp_1.html — live installation"
+            loading="lazy"
+            scrolling="no"
+          />
+        </div>
+      )}
 
       {/* Gallery */}
       {validRecords.length === 0 ? (

@@ -119,14 +119,16 @@ export async function POST(req: Request) {
     const cookieStore = await cookies();
     cookieStore.set("user_id", signSession(userId), {
       httpOnly: true,
-      secure: true,
+      // Plain-http dev (a phone on the LAN) drops Secure cookies; prod keeps it.
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 30,
     });
     cookieStore.set("authed", "1", {
       httpOnly: false,
-      secure: true,
+      // Plain-http dev (a phone on the LAN) drops Secure cookies; prod keeps it.
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 30,

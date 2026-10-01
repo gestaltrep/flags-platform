@@ -883,6 +883,34 @@ body::before {
 
 /* ---------- Records detail page layout ---------- */
 
+/* The RAVE_Exp_1 installation embed. The embed sizes itself in JS, not CSS:
+   its view is square below 640px of its own width and 16:9 at or above it
+   (h = w < 640 ? w : Math.round(w * 9 / 16)), with a 50px slider bar
+   (the 28px slider + 10px + 12px padding) underneath. It also caps h at
+   innerHeight - bar - 8 so it fits a browser window, and inside a frame
+   innerHeight is the frame, so the frame carries those 8px too: 58px = bar +
+   8, and the picture keeps its full ratio. The frame reproduces the rule
+   against its own width via a container query, so it never scrolls. If the
+   embed's bar or that margin changes, the 58px has to follow. */
+.records-embed {
+  container-type: inline-size;
+  margin-bottom: 32px;
+}
+
+.records-embed iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #000;
+  height: calc(round(100cqw, 1px) + 58px);
+}
+
+@container (min-width: 640px) {
+  .records-embed iframe {
+    height: calc(round(100cqw * 9 / 16, 1px) + 58px);
+  }
+}
+
 .records-detail-main {
   margin-left: auto;
   margin-right: auto;
