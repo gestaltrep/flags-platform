@@ -8,7 +8,9 @@ const CSP = [
   "font-src 'self'",
   "frame-src https://js.stripe.com",
   "connect-src 'self' https://api.stripe.com https://*.supabase.co",
-  "media-src 'self' https://*.supabase.co",
+  // blob: is how hls.js plays: it attaches a MediaSource to the <video> as a
+  // blob: URL. Without it, every non-Safari browser's HLS player is dead.
+  "media-src 'self' blob: https://*.supabase.co",
   "worker-src 'self' blob:",
 ].join("; ");
 
